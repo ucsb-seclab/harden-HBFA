@@ -22,10 +22,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "Udf.h"
 
-EFI_SIMPLE_FILE_SYSTEM_PROTOCOL gUdfSimpleFsTemplate = {
-  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION,
-  UdfOpenVolume
-};
+extern EFI_SIMPLE_FILE_SYSTEM_PROTOCOL gUdfSimpleFsTemplate;
 
 EFI_STATUS
 FindUdfFileSystem (
