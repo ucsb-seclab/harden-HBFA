@@ -21,7 +21,6 @@
 
 [Sources]
   TestVariableSmm.c
-  TestVariableSmmStub.c
   MdeModulePkg/Universal/Variable/RuntimeDxe/Variable.h
 
 [Packages]
