@@ -124,6 +124,12 @@
   UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Library/DxeCapsuleLibFmp/TestDxeCapsuleLibFmp.inf {
     <LibraryClasses>
     NULL|MdeModulePkg/Library/DxeCapsuleLibFmp/DxeCapsuleLib.inf
+    FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
+    UefiHiiServicesLib|MdeModulePkg/Library/UefiHiiServicesLib/UefiHiiServicesLib.inf
+    SortLib|MdeModulePkg/Library/BaseSortLib/BaseSortLib.inf
+    HiiLib|MdeModulePkg/Library/UefiHiiLib/UefiHiiLib.inf
+    DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
+    UefiBootManagerLib|MdeModulePkg/Library/UefiBootManagerLib/UefiBootManagerLib.inf
     BmpSupportLib|MdeModulePkg/Library/BaseBmpSupportLib/BaseBmpSupportLib.inf
     DisplayUpdateProgressLib|MdeModulePkg/Library/DisplayUpdateProgressLibGraphics/DisplayUpdateProgressLibGraphics.inf
   }
