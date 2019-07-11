@@ -57,13 +57,13 @@
   GCC:*_AFL_*_CC_PATH = afl-gcc
 
   GCC:*_KLEE_IA32_DLINK_FLAGS == -o $(BIN_DIR)/$(BASE_NAME)
-  GCC:*_KLEE_IA32_CC_FLAGS == -MD -g -fshort-wchar -fno-strict-aliasing -Wno-int-to-void-pointer-cast -Wall  -c -include $(DEST_DIR_DEBUG)/AutoGen.h
+  GCC:*_KLEE_IA32_CC_FLAGS == -m32 -MD -g -fshort-wchar -fno-strict-aliasing -Wno-int-to-void-pointer-cast -Wall  -c -include $(DEST_DIR_DEBUG)/AutoGen.h
   GCC:*_KLEE_IA32_PP_FLAGS == -m32 -E -x assembler-with-cpp -include $(DEST_DIR_DEBUG)/AutoGen.h
   GCC:*_KLEE_IA32_ASM_FLAGS == -m32 -c -x assembler -imacros $(DEST_DIR_DEBUG)/AutoGen.h
   GCC:*_KLEE_IA32_DLINK2_FLAGS ==
 
   GCC:*_KLEE_X64_DLINK_FLAGS == -o $(BIN_DIR)/$(BASE_NAME)
-  GCC:*_KLEE_X64_CC_FLAGS == -MD -g -fshort-wchar -fno-strict-aliasing -Wno-int-to-void-pointer-cast -Wall  -c -include $(DEST_DIR_DEBUG)/AutoGen.h
+  GCC:*_KLEE_X64_CC_FLAGS == -m64 -MD -g -fshort-wchar -fno-strict-aliasing -Wno-int-to-void-pointer-cast -Wall  -c -include $(DEST_DIR_DEBUG)/AutoGen.h
   GCC:*_KLEE_X64_CC_FLAGS = "-DEFIAPI=__attribute__((ms_abi))"
   GCC:*_KLEE_X64_CC_FLAGS = "-DEFIAPI=__attribute__((ms_abi))" -DUSING_LTO -Os
   GCC:*_KLEE_X64_PP_FLAGS == -m64 -E -x assembler-with-cpp -include $(DEST_DIR_DEBUG)/AutoGen.h
@@ -152,13 +152,13 @@
   GCC:*_AFL_*_CC_PATH = afl-gcc
 
   GCC:*_KLEE_IA32_DLINK_FLAGS == -o $(BIN_DIR)/$(BASE_NAME)
-  GCC:*_KLEE_IA32_CC_FLAGS == -MD -g -fshort-wchar -fno-strict-aliasing -Wno-int-to-void-pointer-cast -Wall  -c -include $(DEST_DIR_DEBUG)/AutoGen.h
+  GCC:*_KLEE_IA32_CC_FLAGS == -m32 -MD -g -fshort-wchar -fno-strict-aliasing -Wno-int-to-void-pointer-cast -Wall  -c -include $(DEST_DIR_DEBUG)/AutoGen.h
   GCC:*_KLEE_IA32_PP_FLAGS == -m32 -E -x assembler-with-cpp -include $(DEST_DIR_DEBUG)/AutoGen.h
   GCC:*_KLEE_IA32_ASM_FLAGS == -m32 -c -x assembler -imacros $(DEST_DIR_DEBUG)/AutoGen.h
   GCC:*_KLEE_IA32_DLINK2_FLAGS ==
 
   GCC:*_KLEE_X64_DLINK_FLAGS == -o $(BIN_DIR)/$(BASE_NAME)
-  GCC:*_KLEE_X64_CC_FLAGS == -MD -g -fshort-wchar -fno-strict-aliasing -Wno-int-to-void-pointer-cast -Wall  -c -include $(DEST_DIR_DEBUG)/AutoGen.h
+  GCC:*_KLEE_X64_CC_FLAGS == -m64 -MD -g -fshort-wchar -fno-strict-aliasing -Wno-int-to-void-pointer-cast -Wall  -c -include $(DEST_DIR_DEBUG)/AutoGen.h
   GCC:*_KLEE_X64_CC_FLAGS = "-DEFIAPI=__attribute__((ms_abi))"
   GCC:*_KLEE_X64_CC_FLAGS = "-DEFIAPI=__attribute__((ms_abi))" -DUSING_LTO -Os
   GCC:*_KLEE_X64_PP_FLAGS == -m64 -E -x assembler-with-cpp -include $(DEST_DIR_DEBUG)/AutoGen.h
