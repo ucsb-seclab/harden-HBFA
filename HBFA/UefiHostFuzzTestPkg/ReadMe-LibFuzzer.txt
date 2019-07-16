@@ -13,7 +13,7 @@ $ cd ../..
 $ cd llvm/tools/clang/tools
 $ svn co http://llvm.org/svn/llvm-project/clang-tools-extra/trunk extra
 $ cd ../../../..
-5) Check out Compiler-RT (optional):
+5) Check out Compiler-RT:
 $ cd llvm/projects
 $ svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt
 $ cd ../..
