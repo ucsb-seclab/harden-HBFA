@@ -118,14 +118,14 @@ def GenerateConfCustomized(ConfSrc, ConfPath, ReConfig):
     if (not os.path.exists(os.path.join(ConfPath, 'target.txt'))) or ReConfig:
         shutil.copy(os.path.join(ConfSrc, 'target.template'), os.path.join(ConfPath, 'target.txt'))
     if (not os.path.exists(os.path.join(ConfPath, 'build_rule.txt'))) or ReConfig:
-        SectionName = '[Static-Library-File.USER_DEFINED]'
+        SectionName = '[Static-Library-File.USER_DEFINED, Static-Library-File.HOST_APPLICATION]'
         InsertContent = '''    <Command.KLEE>
         echo $(STATIC_LIBRARY_FILES_LIST)
         python $(SCRIPT_PATH) ${DLINK_FLAGS} -t $(DLINK) -d $(OUTPUT_DIR)
 
 '''
         InsertContentToBuildRules(os.path.join(ConfSrc, 'build_rule.template'), os.path.join(ConfPath, 'build_rule.txt'), SectionName, InsertContent)
-        SectionNames = ['[Object-File]', '[Static-Library-File]', '[Static-Library-File.USER_DEFINED]',
+        SectionNames = ['[Object-File]', '[Static-Library-File]', '[Static-Library-File.USER_DEFINED, Static-Library-File.HOST_APPLICATION]',
                         '[Dynamic-Library-File]', '[Hii-Binary-Package.UEFI_HII]']
         TargetOption = 'Command.MSFT'
         ExtendOption = 'Command.CLANGWIN'
