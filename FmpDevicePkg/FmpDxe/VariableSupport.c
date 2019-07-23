@@ -491,6 +491,7 @@ SetVersionInVariable (
     return;
   }
 
+  Update = FALSE;
   if (!FmpControllerState->VersionValid) {
     Update = TRUE;
   }
@@ -553,10 +554,11 @@ SetLowestSupportedVersionInVariable (
     return;
   }
 
+  Update = FALSE;
   if (!FmpControllerState->LsvValid) {
     Update = TRUE;
   }
-  if (FmpControllerState->Lsv != LowestSupportedVersion) {
+  if (FmpControllerState->Lsv < LowestSupportedVersion) {
     Update = TRUE;
   }
   FmpControllerState->LsvValid = TRUE;
@@ -615,6 +617,7 @@ SetLastAttemptStatusInVariable (
     return;
   }
 
+  Update = FALSE;
   if (!FmpControllerState->LastAttemptStatusValid) {
     Update = TRUE;
   }
@@ -677,6 +680,7 @@ SetLastAttemptVersionInVariable (
     return;
   }
 
+  Update = FALSE;
   if (!FmpControllerState->LastAttemptVersionValid) {
     Update = TRUE;
   }
