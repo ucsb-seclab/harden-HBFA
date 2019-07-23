@@ -99,12 +99,12 @@ GetFmpControllerState (
   IN FIRMWARE_MANAGEMENT_PRIVATE_DATA  *Private
   )
 {
-  EFI_STATUS                   Status;
+  EFI_STATUS            Status;
   FMP_CONTROLLER_STATE  *FmpControllerState;
-  UINTN                        Size;
+  UINTN                 Size;
 
   FmpControllerState = NULL;
-  Size                     = 0;
+  Size               = 0;
   Status = GetVariable2 (
              Private->FmpStateVariableName,
              &gEfiCallerIdGuid,
@@ -329,7 +329,7 @@ GetVersionFromVariable (
   )
 {
   FMP_CONTROLLER_STATE  *FmpControllerState;
-  UINT32                       Value;
+  UINT32                Value;
 
   Value = DEFAULT_VERSION;
   FmpControllerState = GetFmpControllerState (Private);
@@ -368,7 +368,7 @@ GetLowestSupportedVersionFromVariable (
   )
 {
   FMP_CONTROLLER_STATE  *FmpControllerState;
-  UINT32                       Value;
+  UINT32                Value;
 
   Value = DEFAULT_LOWESTSUPPORTEDVERSION;
   FmpControllerState = GetFmpControllerState (Private);
@@ -406,7 +406,7 @@ GetLastAttemptStatusFromVariable (
   )
 {
   FMP_CONTROLLER_STATE  *FmpControllerState;
-  UINT32                       Value;
+  UINT32                Value;
 
   Value = DEFAULT_LASTATTEMPTSTATUS;
   FmpControllerState = GetFmpControllerState (Private);
@@ -444,7 +444,7 @@ GetLastAttemptVersionFromVariable (
   )
 {
   FMP_CONTROLLER_STATE  *FmpControllerState;
-  UINT32                       Value;
+  UINT32                Value;
 
   Value = DEFAULT_LASTATTEMPTVERSION;
   FmpControllerState = GetFmpControllerState (Private);
@@ -478,9 +478,9 @@ SetVersionInVariable (
   IN UINT32                            Version
   )
 {
-  EFI_STATUS                   Status;
+  EFI_STATUS            Status;
   FMP_CONTROLLER_STATE  *FmpControllerState;
-  BOOLEAN                      Update;
+  BOOLEAN               Update;
 
   FmpControllerState = GetFmpControllerState (Private);
   if (FmpControllerState == NULL) {
@@ -541,9 +541,9 @@ SetLowestSupportedVersionInVariable (
   IN UINT32                            LowestSupportedVersion
   )
 {
-  EFI_STATUS                   Status;
+  EFI_STATUS            Status;
   FMP_CONTROLLER_STATE  *FmpControllerState;
-  BOOLEAN                      Update;
+  BOOLEAN               Update;
 
   FmpControllerState = GetFmpControllerState (Private);
   if (FmpControllerState == NULL) {
@@ -604,9 +604,9 @@ SetLastAttemptStatusInVariable (
   IN UINT32                            LastAttemptStatus
   )
 {
-  EFI_STATUS                   Status;
+  EFI_STATUS            Status;
   FMP_CONTROLLER_STATE  *FmpControllerState;
-  BOOLEAN                      Update;
+  BOOLEAN               Update;
 
   FmpControllerState = GetFmpControllerState (Private);
   if (FmpControllerState == NULL) {
@@ -667,9 +667,9 @@ SetLastAttemptVersionInVariable (
   IN UINT32                            LastAttemptVersion
   )
 {
-  EFI_STATUS                   Status;
+  EFI_STATUS            Status;
   FMP_CONTROLLER_STATE  *FmpControllerState;
-  BOOLEAN                      Update;
+  BOOLEAN               Update;
 
   FmpControllerState = GetFmpControllerState (Private);
   if (FmpControllerState == NULL) {
