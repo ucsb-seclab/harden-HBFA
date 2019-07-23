@@ -498,11 +498,11 @@ SetVersionInVariable (
   if (FmpControllerState->Version != Version) {
     Update = TRUE;
   }
-  FmpControllerState->VersionValid = TRUE;
-  FmpControllerState->Version      = Version;
   if (!Update) {
     DEBUG ((DEBUG_INFO, "FmpDxe(%s): No need to update controller state.  Same value as before.\n", mImageIdName));
   } else {
+    FmpControllerState->VersionValid = TRUE;
+    FmpControllerState->Version      = Version;
     Status = gRT->SetVariable (
                     Private->FmpStateVariableName,
                     &gEfiCallerIdGuid,
@@ -561,11 +561,11 @@ SetLowestSupportedVersionInVariable (
   if (FmpControllerState->Lsv < LowestSupportedVersion) {
     Update = TRUE;
   }
-  FmpControllerState->LsvValid = TRUE;
-  FmpControllerState->Lsv      = LowestSupportedVersion;
   if (!Update) {
     DEBUG ((DEBUG_INFO, "FmpDxe(%s): No need to update controller state.  Same value as before.\n", mImageIdName));
   } else {
+    FmpControllerState->LsvValid = TRUE;
+    FmpControllerState->Lsv      = LowestSupportedVersion;
     Status = gRT->SetVariable (
                     Private->FmpStateVariableName,
                     &gEfiCallerIdGuid,
@@ -624,11 +624,11 @@ SetLastAttemptStatusInVariable (
   if (FmpControllerState->LastAttemptStatus != LastAttemptStatus) {
     Update = TRUE;
   }
-  FmpControllerState->LastAttemptStatusValid = TRUE;
-  FmpControllerState->LastAttemptStatus      = LastAttemptStatus;
   if (!Update) {
     DEBUG ((DEBUG_INFO, "FmpDxe(%s): No need to update controller state.  Same value as before.\n", mImageIdName));
   } else {
+    FmpControllerState->LastAttemptStatusValid = TRUE;
+    FmpControllerState->LastAttemptStatus      = LastAttemptStatus;
     Status = gRT->SetVariable (
                     Private->FmpStateVariableName,
                     &gEfiCallerIdGuid,
@@ -687,11 +687,11 @@ SetLastAttemptVersionInVariable (
   if (FmpControllerState->LastAttemptVersion != LastAttemptVersion) {
     Update = TRUE;
   }
-  FmpControllerState->LastAttemptVersionValid = TRUE;
-  FmpControllerState->LastAttemptVersion      = LastAttemptVersion;
   if (!Update) {
     DEBUG ((DEBUG_INFO, "FmpDxe(%s): No need to update controller state.  Same value as before.\n", mImageIdName));
   } else {
+    FmpControllerState->LastAttemptVersionValid = TRUE;
+    FmpControllerState->LastAttemptVersion      = LastAttemptVersion;
     Status = gRT->SetVariable (
                     Private->FmpStateVariableName,
                     &gEfiCallerIdGuid,
