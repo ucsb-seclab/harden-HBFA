@@ -30,9 +30,10 @@ python run_all_seeds.py <tcs-relative-path> <findings_dir>
 e.g "python Build/UefiHostFuzzTestCasePkg/DEBUG_GCC5/IA32/TestPatition /dev/shm/findings_dir"
 
 -- code coverage in Windows
-1) download DynamoRIO release 6.2.0-2 from https://github.com/DynamoRIO/dynamorio/wiki/Downloads
-2) Read http://dynamorio.org/docs/page_drcov.html
-3) execute below:
+1) download DynamoRIO from https://github.com/DynamoRIO/dynamorio/wiki/Downloads
+2) install Perl
+3) Read http://dynamorio.org/docs/page_drcov.html
+4) execute below:
    DynamoRIO-Windows-6.2.0-2\bin32>drrun.exe -c ..\tools\lib32\release\drcov.dll -- XXX.exe XXX.seed
       // this will generate drcov.XXX.exe.yyy.0000.proc.log
    DynamoRIO-Windows-6.2.0-2\bin32>..\tools\bin32\drcov2lcov.exe -input drcov.XXX.exe.yyy.0000.proc.log -src_filter c:\zzz\edkii\xxxpkg
@@ -41,4 +42,4 @@ e.g "python Build/UefiHostFuzzTestCasePkg/DEBUG_GCC5/IA32/TestPatition /dev/shm/
       // this will generate coverage.info
    DynamoRIO-Windows-6.2.0-2\bin32>perl ..\tools\bin32\genhtml coverage_new.info
       // this will generate index.html
-4) View html
+5) View html
