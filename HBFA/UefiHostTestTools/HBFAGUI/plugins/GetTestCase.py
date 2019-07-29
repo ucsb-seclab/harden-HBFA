@@ -14,11 +14,11 @@ except Exception as e:
 
 class GetTestCase(object):
     def __init__(self):
+        self.HBFAGUI_Path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         self.conf = configparser.ConfigParser()
-        self.conf_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'Env.conf')
+        self.conf_path = os.path.join(self.HBFAGUI_Path, 'Env.conf')
         self.conf.read(self.conf_path)
-        self.HBFA_package_path = os.path.dirname(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+        self.HBFA_package_path = os.path.dirname(os.path.dirname(self.HBFAGUI_Path))
         self.filePath_list = []
 
     def get_test_case_name_path(self):

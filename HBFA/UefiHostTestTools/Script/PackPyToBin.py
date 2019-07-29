@@ -11,9 +11,10 @@ import platform
 
 class PackPyToBinary(object):
     def __init__(self):
-        self.tobe_pack_script_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'Report')
+        self.hbfa_tools_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+        self.tobe_pack_script_path = os.path.join(self.hbfa_tools_path, 'Report')
         self.tobe_pack_script_name = 'GenSanitizerInfo.py'
-        self.outputpath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+        self.outputpath = self.hbfa_tools_path
         self.SysType = platform.system()
 
     def pack(self):
@@ -25,10 +26,11 @@ class PackPyToBinary(object):
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT,
                                     shell=True)
-        msg = proccess.communicate()
+        msg = list(proccess.communicate())
         if sys.version_info[0] == 3:
             for num, submsg in enumerate(msg):
-                msg[num] = submsg.decode()
+                if submsg is not None:
+                    msg[num] = submsg.decode()
         if msg[1]:
             print(msg[0] + msg[1])
             os._exit(0)

@@ -123,7 +123,8 @@ def Build(Arch, Target, ModuleFilePath):
     msg = list(proccess.communicate())
     if PyVersion == 3:
         for num, submsg in enumerate(msg):
-            msg[num] = submsg.decode()
+            if submsg is not None:
+                msg[num] = submsg.decode()
 
     if msg[1]:
         print(msg[0] + msg[1])
@@ -137,7 +138,7 @@ def Build(Arch, Target, ModuleFilePath):
     return ModuleBinAbsPath
 
 def RunLibFuzzer(TestModuleBinPath, InputPath, OutputPath):
-    LibFuzzer_CMD = "{} {} -artifact_prefix={}".format(TestModuleBinPath, InputPath if InputPath else '', OutputPath + ('/' if SysType == "Linux" else '\\'))
+    LibFuzzer_CMD = "{} {} -rss_limit_mb=0 -artifact_prefix={}".format(TestModuleBinPath, InputPath if InputPath else '', OutputPath + ('/' if SysType == "Linux" else '\\'))
     print("Start run LibFuzzer test:")
     print(LibFuzzer_CMD)
     if SysType == "Windows":

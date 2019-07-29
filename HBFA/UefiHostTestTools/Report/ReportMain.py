@@ -40,8 +40,8 @@ class GenerateFinalReport(object):
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
                               shell=True)
-        msg = Cm.communicate()
-        return msg if python_version == 2 else (msg[0].decode(), msg[1].decode())
+        msg = list(Cm.communicate())
+        return msg if python_version == 2 else (msg[0].decode() if msg[0] else msg[0], msg[1].decode() if msg[1] else msg[1])
 
     def __CheckStatus(self):
         Pid = None

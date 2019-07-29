@@ -17,20 +17,20 @@ except Exception as e:
 
 class RunKLEE(object):
     def __init__(self, path):
+        self.HBFAGUI_Path = os.path.dirname(os.path.realpath(__file__))
         self.conf = configparser.ConfigParser()
-        self.conf_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Env.conf')
+        self.conf_path = os.path.join(self.HBFAGUI_Path, 'Env.conf')
         self.conf.read(self.conf_path)
         self.arch = self.conf.get('klee(stp)', 'arch').strip()
         self.buildTarget = self.conf.get('klee(stp)', 'BuildTarget').strip()
         self.outputPath = self.conf.get('klee(stp)', 'OutputPath').strip()
         self.test_case_relative_path = 'UefiHostFuzzTestCasePkg' + path.split('UefiHostFuzzTestCasePkg')[1].strip()
         self.test_case = os.path.basename(path).split('.inf')[0].strip()
-        self.run_klee_script_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-                                                 'RunKLEE.py')
+        self.run_klee_script_path = os.path.join(os.path.dirname(self.HBFAGUI_Path), 'RunKLEE.py')
         self.klee_path = os.path.join(self.outputPath, "klee_%s"%self.test_case)
         self.klee_seeds_path = os.path.join(self.klee_path, 'GeneratedSeeds')
         self.change_ktest_to_seed_script_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'Script', 'TransferKtestToSeed.py')
+            os.path.dirname(self.HBFAGUI_Path), 'Script', 'TransferKtestToSeed.py')
         self.sysType = platform.system()
 
     def make_klee_seeds_dirs(self):
@@ -60,9 +60,10 @@ class RunKLEE(object):
         if os.path.exists(self.klee_seeds_path):
             command = 'python %s %s' % (self.change_ktest_to_seed_script_path, self.klee_seeds_path)
             ret = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            out = ret.communicate()
+            out = list(ret.communicate())
             if sys.version_info[0] == 3:
                 for num, submsg in enumerate(out):
-                    out[num] = submsg.decode()
+                    if submsg is not None:
+                        out[num] = submsg.decode()
             if out[1]:
                 print ('change ktests to seeds failed' + out[1])

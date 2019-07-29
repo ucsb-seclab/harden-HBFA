@@ -19,8 +19,9 @@ from plugins.GenReport import GenerateInfoAndHtml
 
 class RunPeach(object):
     def __init__(self, path):
+        self.HBFAGUI_Path = os.path.dirname(os.path.realpath(__file__))
         self.conf = configparser.ConfigParser()
-        self.conf_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Env.conf')
+        self.conf_path = os.path.join(self.HBFAGUI_Path, 'Env.conf')
         self.conf.read(self.conf_path)
         self.arch = self.conf.get('peach', 'arch').strip()
         self.buildTarget = self.conf.get('peach', 'BuildTarget').strip()
@@ -49,7 +50,7 @@ class RunPeach(object):
 
     def __build_clangwin(self):
         ToolChain = 'CLANGWIN'
-        HBFA_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+        HBFA_PATH = os.path.dirname(os.path.dirname(self.HBFAGUI_Path))
         Conf_Path = os.path.join(HBFA_PATH, 'UefiHostFuzzTestPkg', 'Conf')
         PkgName = self.test_case_relative_path.split(os.path.sep)[0]
         ModuleBinAbsPath = os.path.join(self.workspace, 'Build', PkgName, self.buildTarget + '_' + ToolChain, self.arch,
@@ -74,7 +75,8 @@ class RunPeach(object):
         msg = list(proccess.communicate())
         if sys.version_info[0] == 3:
             for num, submsg in enumerate(msg):
-                msg[num] = submsg.decode()
+                if submsg is not None:
+                    msg[num] = submsg.decode()
         if msg[1]:
             print (msg[0] + msg[1])
         elif "- Done -" not in msg[0]:

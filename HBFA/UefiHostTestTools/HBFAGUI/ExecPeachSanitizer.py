@@ -16,8 +16,9 @@ except Exception as e:
 
 class RunPeachSanitizer(object):
     def __init__(self,path):
+        self.HBFAGUI_Path = os.path.dirname(os.path.realpath(__file__))
         self.conf = configparser.ConfigParser()
-        self.conf_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Env.conf')
+        self.conf_path = os.path.join(self.HBFAGUI_Path, 'Env.conf')
         self.conf.read(self.conf_path)
         self.SysType = platform.system()
         self.arch = self.conf.get('peach+sanitizer', 'arch').strip()
@@ -53,10 +54,11 @@ class RunPeachSanitizer(object):
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT,
                                         shell=True)
-            msg = proccess.communicate()
+            msg = list(proccess.communicate())
             if sys.version_info[0] == 3:
                 for num, submsg in enumerate(msg):
-                    msg[num] = submsg.decode()
+                    if submsg is not None:
+                        msg[num] = submsg.decode()
             if msg[1]:
                 print(msg[0] + msg[1])
                 return False, msg[0]

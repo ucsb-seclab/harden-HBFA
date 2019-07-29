@@ -21,6 +21,15 @@ SysType = platform.system()
 ## HBFA package path
 HBFA_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
+## WORKSPACE
+workspace = ''
+
+# Check EDKII BUILD WORKSPACE whether be set in system environment variable
+if 'WORKSPACE' not in os.environ:
+    print("Please set system environment variable 'WORKSPACE' before run this script.")
+    os._exit(0)
+workspace = os.environ['WORKSPACE']
+
 def CheckTestEnv():
     if SysType == "Windows" and "DRIO_PATH" not in os.environ:
         print("Please set DRIO_PATH in system environment variables.")
@@ -111,17 +120,19 @@ def GenCodeCoverage(TestModuleBinPath, ReportPath):
         TempDir = os.path.join(TestModuleBinFolder, "temp")
         if "IA32" in TestModuleBinPath:
             try:
-                os.system(r"cd {} && %DRIO_PATH%\tools\bin32\drcov2lcov.exe -dir {} -src_filter {}".format(TempDir, LogDir, HBFA_PATH.lower()))
+                os.system(r"cd {} && %DRIO_PATH%\tools\bin32\drcov2lcov.exe -dir {} -src_filter {}".format(TempDir, LogDir, workspace.lower()))
                 os.system(r"cd {} && perl %DRIO_PATH%\tools\bin32\genhtml coverage.info".format(TempDir))
             except Exception as err:
                 print(err)
         elif "X64" in TestModuleBinPath:
             try:
-                os.system(r"cd {} && %DRIO_PATH%\tools\bin64\drcov2lcov.exe -dir {} -src_filter {}".format(TempDir, LogDir, HBFA_PATH.lower()))
+                os.system(r"cd {} && %DRIO_PATH%\tools\bin64\drcov2lcov.exe -dir {} -src_filter {}".format(TempDir, LogDir, workspace.lower()))
                 os.system(r"cd {} && perl %DRIO_PATH%\tools\bin64\genhtml coverage.info".format(TempDir))
             except Exception as err:
                 print(err)
 
+        if os.path.exists(ReportPath):
+            shutil.rmtree(ReportPath)
         shutil.copytree(os.path.join(TestModuleBinFolder, "temp"), ReportPath)
     elif SysType == "Linux":
         try:

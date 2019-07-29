@@ -106,10 +106,10 @@ def GenTestXml(src_xml, temp_xml, ModuleBinPath, EnableSanitizer):
 
     if EnableSanitizer:
         if SysType == 'Windows':
-            content = content.replace('TestModule', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'GenSanitizerInfo.exe'))
+            content = content.replace('TestModule', os.path.join(HBFA_PATH, 'UefiHostTestTools', 'GenSanitizerInfo.exe'))
             content = content.replace('fuzzfile.bin', '-e {} -i fuzzfile.bin -o .'.format(ModuleBinPath), 2)
         elif SysType == "Linux":
-            content = content.replace('TestModule', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'GenSanitizerInfo'))
+            content = content.replace('TestModule', os.path.join(HBFA_PATH, 'UefiHostTestTools', 'GenSanitizerInfo'))
             content = content.replace('fuzzfile.bin', '-e {} -i fuzzfile.bin -o .'.format(ModuleBinPath), 2)
     else:
         content = content.replace('TestModule', ModuleBinPath)
@@ -170,7 +170,8 @@ def Build(Arch, Target, ModuleFilePath, EnableSanitizer):
     msg = list(proccess.communicate())
     if PyVersion == 3:
         for num, submsg in enumerate(msg):
-            msg[num] = submsg.decode()
+            if submsg is not None:
+                msg[num] = submsg.decode()
 
     if msg[1]:
         print(msg[0] + msg[1])

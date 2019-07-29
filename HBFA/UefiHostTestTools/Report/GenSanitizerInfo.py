@@ -292,10 +292,11 @@ class GenSanitizerInfo(object):
             command = self.__exefile + ' ' + os.path.join(self.__output_path, 'fuzzfile',
                                                         number + '_' + self.__peach_origin_seed_name)
             ret = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            error_logs = ret.communicate()
+            error_logs = list(ret.communicate())
             if sys.version_info[0] == 3:
                 for num, submsg in enumerate(error_logs):
-                    error_logs[num] = submsg.decode()
+                    if submsg is not None:
+                        error_logs[num] = submsg.decode()
             if not self.__silence:
                 print(error_logs[0])
                 print(error_logs[1])
@@ -310,10 +311,11 @@ class GenSanitizerInfo(object):
         else:
             command = self.__exefile + ' ' + inputpath
             ret = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            error_logs = ret.communicate()
+            error_logs = list(ret.communicate())
             if sys.version_info[0] == 3:
                 for num, submsg in enumerate(error_logs):
-                    error_logs[num] = submsg.decode()
+                    if submsg is not None:
+                        error_logs[num] = submsg.decode()
             if not self.__silence:
                 print(error_logs[0])
                 print(error_logs[1])
@@ -333,10 +335,11 @@ class GenSanitizerInfo(object):
     def __GenAFLSanitizerInfo(self, inputpath):
         command = self.__exefile + ' ' + inputpath
         ret = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        error_logs = ret.communicate()
+        error_logs = list(ret.communicate())
         if sys.version_info[0] == 3:
             for num, submsg in enumerate(error_logs):
-                error_logs[num] = submsg.decode()
+                if submsg is not None:
+                    error_logs[num] = submsg.decode()
         if not self.__silence:
             print(error_logs[0])
             print(error_logs[1])

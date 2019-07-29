@@ -20,16 +20,16 @@ import webbrowser as web
 class GenerateInfoAndHtml(object):
 
     def __init__(self, casepath, methods):
+        self.HBFAGUI_Path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         self.conf = configparser.ConfigParser()
-        self.conf_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'Env.conf')
+        self.conf_path = os.path.join(self.HBFAGUI_Path, 'Env.conf')
         self.conf.read(self.conf_path)
         self.sections = self.conf.sections()
         self.methodsList = methods
         self.case = os.path.basename(casepath).split('.inf')[0].strip()
         self.casepath = casepath
         self.workspace = os.environ['WORKSPACE']
-        self.script_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
-                                        'Report')
+        self.script_path = os.path.join(os.path.dirname(self.HBFAGUI_Path), 'Report')
         self.gen_report_script_name = "ReportMain.py"
         self.SysType = platform.system()
 
@@ -96,13 +96,13 @@ class GenerateInfoAndHtml(object):
 
 class GenerateSummaryInfo(object):
     def __init__(self, path, method):
+        self.HBFAGUI_Path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         self.conf = configparser.ConfigParser()
-        self.conf_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'Env.conf')
+        self.conf_path = os.path.join(self.HBFAGUI_Path, 'Env.conf')
         self.conf.read(self.conf_path)
         self.method = method
         self.case = os.path.basename(path).split('.inf')[0].strip()
-        self.script_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
-                                        'Report')
+        self.script_path = os.path.join(os.path.dirname(self.HBFAGUI_Path), 'Report')
         self.gen_sumInfo_script_path = "GenSummaryInfo.py"
         self.SysType = platform.system()
 
@@ -155,8 +155,9 @@ class GenerateSummaryInfo(object):
 
 class GenerateSummaryReport(object):
     def __init__(self, path, methods):
+        self.HBFAGUI_Path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         self.conf = configparser.ConfigParser()
-        self.conf_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'Env.conf')
+        self.conf_path = os.path.join(self.HBFAGUI_Path, 'Env.conf')
         self.conf.read(self.conf_path)
         self.methodsList = methods
         self.case = os.path.basename(path).split('.inf')[0].strip()

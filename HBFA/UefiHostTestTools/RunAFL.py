@@ -120,7 +120,8 @@ def Build(Arch, Target, ModuleFilePath):
     msg = list(proccess.communicate())
     if PyVersion == 3:
         for num, submsg in enumerate(msg):
-            msg[num] = submsg.decode()
+            if submsg is not None:
+                msg[num] = submsg.decode()
 
     if msg[1]:
         print(msg[0] + msg[1])

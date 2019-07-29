@@ -19,15 +19,15 @@ except Exception as e:
 
 class RunLibFuzzer(object):
     def __init__(self, path, seedspaths=[], select_seeds=False):
+        self.HBFAGUI_Path = os.path.dirname(os.path.realpath(__file__))
         self.conf = configparser.ConfigParser()
-        self.conf_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Env.conf')
+        self.conf_path = os.path.join(self.HBFAGUI_Path, 'Env.conf')
         self.conf.read(self.conf_path)
         self.arch = self.conf.get('libfuzzer', 'arch').strip()
         self.buildTarget = self.conf.get('libfuzzer', 'BuildTarget').strip()
         self.outputPath = self.conf.get('libfuzzer', 'OutputPath').strip()
         self.test_case_relative_path = 'UefiHostFuzzTestCasePkg' + path.split('UefiHostFuzzTestCasePkg')[1].strip()
-        self.run_LibFuzzer_script_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-                                                      'RunLibFuzzer.py')
+        self.run_LibFuzzer_script_path = os.path.join(os.path.dirname(self.HBFAGUI_Path), 'RunLibFuzzer.py')
         self.workspace = os.environ['WORKSPACE']
         self.test_case = os.path.basename(path).split('.inf')[0]
         self.seedspaths = seedspaths
@@ -62,7 +62,7 @@ class RunLibFuzzer(object):
             ToolChain = 'CLANGWIN'
         elif self.SysType == "Linux":
             ToolChain = 'CLANG8'
-        HBFA_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+        HBFA_PATH = os.path.dirname(os.path.dirname(self.HBFAGUI_Path))
         Conf_Path = os.path.join(HBFA_PATH, 'UefiHostFuzzTestPkg', 'Conf')
         PkgName = self.test_case_relative_path.split(os.path.sep)[0]
         if self.SysType == "Windows":
@@ -98,7 +98,8 @@ class RunLibFuzzer(object):
         msg = list(proccess.communicate())
         if sys.version_info[0] == 3:
             for num, submsg in enumerate(msg):
-                msg[num] = submsg.decode()
+                if submsg is not None:
+                    msg[num] = submsg.decode()
         if msg[1]:
             print (msg[0] + msg[1])
         elif "- Done -" not in msg[0]:

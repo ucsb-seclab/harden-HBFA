@@ -14,15 +14,14 @@ import webbrowser as web
 
 class GetCodeCoverage(object):
     def __init__(self, path, methods):
+        self.HBFAGUI_Path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         self.conf = configparser.ConfigParser()
-        self.conf_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'Env.conf')
+        self.conf_path = os.path.join(self.HBFAGUI_Path, 'Env.conf')
         self.conf.read(self.conf_path)
         self.workspace = os.environ['WORKSPACE']
         self.methodList = methods
         self.test_case = os.path.basename(path).split('.inf')[0].strip()
-        self.run_afl_script_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), 'Report',
-            'GenCodeCoverage.py')
+        self.run_afl_script_path = os.path.join(os.path.dirname(self.HBFAGUI_Path), 'Report', 'GenCodeCoverage.py')
         self.sysType = platform.system()
 
     def run(self):

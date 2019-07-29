@@ -9,7 +9,7 @@ import os
 import platform
 
 workspace_path = os.path.dirname(os.path.realpath(__file__))
-os.chdir(workspace_path)
+
 import wx
 from ExecAFL import RunAFL
 from ExecKLEE import RunKLEE
@@ -103,7 +103,7 @@ class my_frame(wx.Frame):
         self.chang_cases = False
         self.filespaths = []
         self.conf = configparser.ConfigParser()
-        self.conf_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Env.conf')
+        self.conf_path = os.path.join(workspace_path, 'Env.conf')
         self.conf.read(self.conf_path)
 
     def OnClick_IMPORT(self, event):
@@ -155,9 +155,9 @@ class my_frame(wx.Frame):
             self.methods.remove('Peach')
             self.methods.remove('Sanitizer')
             self.methods.insert(-1, 'Peach+Sanitizer')
-            print('%s are clicked from TEST METHOD BOX') % (' '.join(self.methods))
+            print('{} are clicked from TEST METHOD BOX'.format(' '.join(self.methods)))
         else:
-            print('%s is clicked from TEST METHOD BOX') % (','.join(self.methods) if len(self.methods) > 0 else None)
+            print('{} is clicked from TEST METHOD BOX'.format(','.join(self.methods) if len(self.methods) > 0 else None))
 
     def OnClick_SEED(self, event):
         self.click_seed_count = self.click_seed_count + 1
@@ -334,7 +334,7 @@ if __name__ == "__main__":
     frame = my_frame(None, 'Host-based Firmware Analyzer')
     frame.Show(show=True)
     icon = wx.Icon()
-    icon.LoadFile(os.path.join("image", "intel.png"))
+    icon.LoadFile(os.path.join(workspace_path, "image", "intel.png"))
     frame.SetIcon(icon)
 
     frame.Center()
