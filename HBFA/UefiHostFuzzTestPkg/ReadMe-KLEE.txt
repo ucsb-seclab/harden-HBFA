@@ -8,7 +8,7 @@ Prepare Env
 
 Prepare KLEE
 1)	install LLVM 3.8
-	"sudo apt-get install clang llvm llvm-dev"
+	"sudo apt-get install clang-3.8 llvm-3.8 llvm-3.8-dev"
 2)	install constraint solver STP
 	a)	"sudo apt-get install libboost-all-dev perl minisat"
 	b)	"cd /home/<user name>/Env"
@@ -85,12 +85,13 @@ Prepare wllvm
 3)	"sudo pip install -e ."
 
 Build EDKII test case
-1)	"cat HBFA/UefiHostFuzzTestPkg/Conf/tools_def.customized >> Conf/tools_def.txt"
-2)	"cp HBFA/UefiHostFuzzTestPkg/Conf/build_rule.customized Conf/build_rule.txt"
-3)	"export SCRIPT_PATH=<WORKSPACE_PATH>/UefiHostFuzzTestPkg/Conf/LLVMLink.py"
-4)	"export LLVM_COMPILER=clang"
+1)	"python edk2-staging/HBFA/UefiHostTestTools/HBFAEnvSetup.py"
+2)	"cp edk2-staging/HBFA/UefiHostFuzzTestPkg/Conf/build_rule.txt edk2/Conf/build_rule.txt"
+3)	"cp edk2-staging/HBFA/UefiHostFuzzTestPkg/Conf/tools_def.txt edk2/Conf/tools_def.txt"
+4)	"export SCRIPT_PATH=<WORKSPACE_PATH>/edk2-staging/HBFA/UefiHostFuzzTestPkg/Conf/LLVMLink.py"
+5)	"export LLVM_COMPILER=clang"
 	NOTE: if you can't find clang in /usr/bin, you can use clang-3.8 (clang-3.x)
-5)	"build -p UefiHostFuzzTestCasePkg/UefiHostFuzzTestCasePkg.dsc -a IA32 -t KLEE -DTEST_WITH_KLEE --disable-include-path-check"
+6)	"build -p UefiHostFuzzTestCasePkg/UefiHostFuzzTestCasePkg.dsc -a IA32 -t KLEE -DTEST_WITH_KLEE --disable-include-path-check"
 
 Run KLEE
 1)	klee --only-output-states-covering-new Build/UefiHostFuzzTestCasePkg/DEBUG_KLEE/IA32/TestPartition"
@@ -116,6 +117,6 @@ KLEE: WARNING: killing 753 states (over memory cap)
 KLEE: WARNING: killing 552 states (over memory cap)
 
 Transfer generated .ktest to seed file
-1)	"python HBFA/UefiHostTestTools/Script/TransferKtestToSeed.py <KTEST-FILE-FOLDER>"
+1)	"python edk2-staging/HBFA/UefiHostTestTools/Script/TransferKtestToSeed.py <KTEST-FILE-FOLDER>"
 2)	generate .seed file can be used as seeds for AFL-Fuzzer.
 
