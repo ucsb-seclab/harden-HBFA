@@ -25,19 +25,41 @@ Computer platform firmware is a critical element in the root-of-trust. Firmware 
 # How to use HBFA
 
 1. Setup EDKII environment  
-    Please refer to https://github.com/tianocore/tianocore.github.io/wiki/Getting-Started-with-EDK-II and setup EDKII Environment.
+    1) Please refer to https://github.com/tianocore/tianocore.github.io/wiki/Getting-Started-with-EDK-II and setup EDKII Environment.  
+    2) Get EDKII repository with submodule openssl.  
+    `$ git clone https://github.com/tianocore/edk2.git --recursive`  
+    NOTE: if you have already downloaded EDKII, you can manually initialize and update the submodules after the clone operation on main project:  
+    `$ cd edk2`  
+    `$ git submodule update --init --recursive`  
+    3) Compile the BaseTools, please open Terminal/Command prompt in edk2 folder and type below command.  
+    In Linux  
+    `$ make -C BaseTools`  
+    In Windows  
+    `$ edksetup.bat Rebuild`  
 
 2. Setup HBFA environment  
-    1) checkout the HBFA branch.
-    2) Add HBFA path into PACKAGES_PATH when build tree with HBFA.  
+    1) checkout the HBFA branch.  
+    `$ git clone https://github.com/tianocore/edk2-staging.git`  
+    `$ cd edk2-staging`  
+    `$ git checkout -b HBFA origin/HBFA`  
+
+3. Setup Workspace for build  
+    1) Add HBFA path into PACKAGES_PATH when build tree with HBFA.  
     Example:  
     In Linux  
     `$ export WORKSPACE=~/workspace`  
-    `$ export PACKAGES_PATH=$WORKSPACE/HBFA:$WORKSPACE/edk2`  
+    `$ export PACKAGES_PATH=$WORKSPACE/edk2-staging/HBFA:$WORKSPACE/edk2`  
     In Windows  
     `$ set WORKSPACE=c:\workspace`  
-    `$ set PACKAGES_PATH=%WORKSPACE%/HBFA;%WORKSPACE%/edk2`
+    `$ set PACKAGES_PATH=%WORKSPACE%/edk2-staging/HBFA;%WORKSPACE%/edk2`
     3) Run `edksetup.sh/edksetup.bat` under EDKII source code tree. (NOTE: VS environment should be enabled in Windows.)
+    Example:  
+    In Linux  
+    `$ edk2/edksetup.sh`    
+    In Windows  
+    `$ set WORKSPACE=c:\workspace`  
+    `$ set PACKAGES_PATH=%WORKSPACE%/edk2-staging/HBFA;%WORKSPACE%/edk2`
+    NOTE: Workspace need to be set every time you reopen Terminal/Command prompt when you want to build test binary.
 
 3. Do fuzzing test  
     * How to run AFL in OS?  
