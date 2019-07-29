@@ -83,7 +83,7 @@ def GetModuleBinName(ModuleInfPath):
                     return line.split('=')[1].strip()
 
 def GetXmlPath(ModuleInfPath, Arch):
-    PossibleXml = os.path.join(os.path.dirname(ModuleInfPath), 'PeachDataModule', os.path.basename(ModuleInfPath).split('.')[0] + '*.xml')
+    PossibleXml = os.path.join(os.path.dirname(ModuleInfPath), 'PeachDataModel', os.path.basename(ModuleInfPath).split('.')[0] + '*.xml')
     XmlPaths = glob.glob(PossibleXml)
     if len(XmlPaths) < 1:
         print("Test case XML file: {} is not exists.".format(PossibleXml))

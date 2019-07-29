@@ -81,8 +81,9 @@
   <Agent name="WinAgent">
     <Monitor class="WindowsDebugger">
       <Param name="CommandLine" value="TestModule fuzzfile.bin"/>
+      <Param name="WinDbgPath" value="C:\Program Files (x86)\Windows Kits\10\Debuggers\x64" />
     </Monitor>
-        
+      
   </Agent>
     
   <!-- Setup linux agent that will monitor for faults -->
@@ -91,14 +92,14 @@
       <Param name="Executable" value="TestModule" />
       <Param name="Arguments" value="fuzzfile.bin" />
     </Monitor>
-        
+      
   </Agent>
     
   <Test name="Default">
     <Agent ref="WinAgent" platform='windows'/>
     <Agent ref="LinuxAgent" platform="linux"/>
     <StateModel ref="State"/>
-        
+    
     <!-- Configure our publisher with correct filename to write too -->
     <Publisher class="File">
       <Param name="FileName" value="fuzzfile.bin" />

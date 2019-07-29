@@ -5,14 +5,14 @@
   <!-- Define our file format DDL -->
 
   <DataModel name="SMM_VARIABLE_COMMUNICATE_HEADER">
-    <Number name="Function" size="32" value="00000001" valueType="hex"/>
-    <Number name="ReturnStatus" size="32" value="00000000" valueType="hex" mutable="false"/>
+    <Number name="Function" size="64" value="0000000000000001" valueType="hex"/>
+    <Number name="ReturnStatus" size="64" value="0000000000000000" valueType="hex" mutable="false"/>
   </DataModel>
 
   <DataModel name="SMM_VARIABLE_COMMUNICATE_ACCESS_VARIABLE">
     <Blob name="Guid" length="16" value="00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00" valueType="hex" mutable="false"/>
-    <Number name="DataSize" size="32" value="00000004" valueType="hex"/>
-    <Number name="NameSize" size="32" value="0000000E" valueType="hex"/>
+    <Number name="DataSize" size="64" value="0000000000000004" valueType="hex"/>
+    <Number name="NameSize" size="64" value="000000000000000E" valueType="hex"/>
     <Number name="Attributes" size="32" value="00000007" valueType="hex"/>
     <String value="Hello World!" nullTerminated="true"/>
   </DataModel>
@@ -46,6 +46,7 @@
   <Agent name="WinAgent">
     <Monitor class="WindowsDebugger">
       <Param name="CommandLine" value="TestModule fuzzfile.bin"/>
+      <Param name="WinDbgPath" value="C:\Program Files (x86)\Windows Kits\10\Debuggers\x64" />
     </Monitor>
         
   </Agent>
