@@ -57,7 +57,7 @@ def HasIni(path):
 
 def CreateGcovTool(path):
     with open(path, 'w') as fd:
-        fd.write('#!/bin/bash\nexec llvm-cov gcov "$@"')
+        fd.write('#!/bin/bash\nexport PATH=$CLANG_PATH:$PATH\nexec llvm-cov gcov "$@"')
     os.system("chmod +x {}".format(path))
     
 def CheckIsPeach(path):
@@ -195,6 +195,16 @@ def main():
     else:
         ModuleBinPath = Option.ModuleBin
 
+    if not Option.ReportPath:
+        ReportPath = os.path.join(WORK_DIR, 'CodeCoverageReport')
+    elif os.path.isabs(Option.ReportPath):
+        ReportPath = os.path.join(Option.ReportPath, 'CodeCoverageReport')
+    elif not os.path.isabs(Option.ReportPath):
+        ReportPath = os.path.join(WORK_DIR, Option.ReportPath, 'CodeCoverageReport')
+    else:
+        print("Please check the input report path.")
+        os._exit(0)
+
     if "CLANG8" not in ModuleBinPath:
         if not Option.SeedPath:
             print("Test output seed directory path should be set once by command -d SEEDPATH, --dir=SEEDPATH.")
@@ -216,24 +226,14 @@ def main():
         else:
             TestIniPath = Option.TestIniPath
 
-    if not Option.ReportPath:
-        ReportPath = os.path.join(WORK_DIR, 'CodeCoverageReport')
-    elif os.path.isabs(Option.ReportPath):
-        ReportPath = os.path.join(Option.ReportPath, 'CodeCoverageReport')
-    elif not os.path.isabs(Option.ReportPath):
-        ReportPath = os.path.join(WORK_DIR, Option.ReportPath, 'CodeCoverageReport')
-    else:
-        print("Please check the input report path.")
-        os._exit(0)
+        IsPeach = CheckIsPeach(OutputSeedPath)
+        if SysType == "Linux" and not IsPeach:
+            # delete .gcda files before collect code coverage
+            delete_gcda_file(ModuleBinPath)
 
-    IsPeach = CheckIsPeach(OutputSeedPath)
-    if SysType == "Linux" and "CLANG8" not in ModuleBinPath and not IsPeach:
-        # delete .gcda files before collect code coverage
-        delete_gcda_file(ModuleBinPath)
-
-    if "CLANG8" not in ModuleBinPath and not IsPeach:
-        # Run binary with all seeds
-        Run_All_Seeds(ModuleBinPath, OutputSeedPath, TestIniPath)
+        if not IsPeach:
+            # Run binary with all seeds
+            Run_All_Seeds(ModuleBinPath, OutputSeedPath, TestIniPath)
 
     # Generate Code coverage report
     GenCodeCoverage(ModuleBinPath, ReportPath)
