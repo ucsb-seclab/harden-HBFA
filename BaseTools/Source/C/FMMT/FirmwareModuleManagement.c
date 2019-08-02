@@ -911,6 +911,7 @@ FmmtImageView (
   if (ViewFlag) {
 
     TemDir = getcwd (NULL, _MAX_PATH);
+    TemDir = realloc (TemDir, _MAX_PATH);
     if (strlen (TemDir) + strlen(OS_SEP_STR) + strlen (TEMP_DIR_NAME) > _MAX_PATH - 1) {
       Error("FMMT", 0, 1001, "The directory is too long.", "");
       ErrorStatus = EFI_ABORTED;
@@ -1059,6 +1060,7 @@ FmmtImageAdd(
     }
 
     TemDir = getcwd(NULL, _MAX_PATH);
+    TemDir = realloc (TemDir, _MAX_PATH);
     if (strlen (TemDir) + strlen(OS_SEP_STR) + strlen (TEMP_DIR_NAME) > _MAX_PATH - 1) {
       Error("FMMT", 0, 1001, "The directory is too long.", "");
       return EFI_ABORTED;
@@ -1294,6 +1296,7 @@ FmmtImageDeleteFv(
   FIRMWARE_DEVICE *FdData = NULL;
 
   TemDir = getcwd(NULL, _MAX_PATH);
+  TemDir = realloc (TemDir, _MAX_PATH);
   if (strlen (TemDir) + strlen(OS_SEP_STR) + strlen (TEMP_DIR_NAME) > _MAX_PATH - 1) {
     Error("FMMT", 0, 1001,  "The directory is too long.", "");
     return EFI_ABORTED;
@@ -1499,6 +1502,7 @@ FmmtImageDelete (
     }
 
     TemDir = getcwd(NULL, _MAX_PATH);
+    TemDir = realloc (TemDir, _MAX_PATH);
     if (strlen (TemDir) + strlen(OS_SEP_STR) + strlen (TEMP_DIR_NAME) > _MAX_PATH - 1) {
       Error("FMMT", 0, 1001, "The directory is too long.", "");
       return EFI_ABORTED;
@@ -1821,6 +1825,7 @@ FmmtImageReplace (
         sortList ((FileList + i)-> NewFile);
     }
     TemDir = getcwd (NULL, _MAX_PATH);
+    TemDir = realloc (TemDir, _MAX_PATH);
     if (strlen (TemDir) + strlen(OS_SEP_STR) + strlen (TEMP_DIR_NAME) > _MAX_PATH - 1) {
       Error("FMMT", 0, 1001,  "The directory  is too long.", "");
       return EFI_ABORTED;
@@ -2052,6 +2057,7 @@ int main(
   exist                         = -1;
 
   TemDir = getcwd (NULL, _MAX_PATH);
+  TemDir = realloc (TemDir, _MAX_PATH);
   if (strlen (TemDir) + strlen(OS_SEP_STR) + strlen (TEMP_DIR_NAME) > _MAX_PATH - 1) {
     Error("FMMT", 0, 1001,  "The directory is too long.", "");
     return 1;
