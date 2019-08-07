@@ -38,11 +38,11 @@ Method.2:
 	cd winafl
 	mkdir build32
 	cd build32
-	cmake -G"Visual Studio 14 2015" .. -DDynamoRIO_DIR=%DRIO_PATH%\cmake -DUSE_DRSYSMS=1
+	cmake -G"Visual Studio 14 2015" .. -DDynamoRIO_DIR=%DRIO_PATH%\cmake -DUSE_DRSYMS=1
 	cmake --build . --config Release
 	cd ..
 	mkdir build64
-	cmake -G"Visual Studio 14 2015 Win64" .. -DDynamoRIO_DIR=%DRIO_PATH%\cmake -DUSE_DRSYSMS=1
+	cmake -G"Visual Studio 14 2015 Win64" .. -DDynamoRIO_DIR=%DRIO_PATH%\cmake -DUSE_DRSYMS=1
 	cmake --build . --config Release
 	NOTE: If you get errors where the linker couldn't find certain .lib files. please refer to https://github.com/googleprojectzero/winafl/issues/145 and delete the nonexistent files from "Additional Dependencies".
 4)	copy all binary under build32/bin/Release to bin32, copy all binary under build64/bin/Release to bin64

@@ -61,7 +61,7 @@ Computer platform firmware is a critical element in the root-of-trust. Firmware 
     `$ set PACKAGES_PATH=%WORKSPACE%/edk2-staging/HBFA;%WORKSPACE%/edk2`
     NOTE: Workspace need to be set every time you reopen Terminal/Command prompt when you want to build test binary.
 
-3. Do fuzzing test  
+4. Do fuzzing test  
     * How to run AFL in OS?  
     Please refer to [`HBFA/UefiHostFuzzTestPkg/ReadMe-AFL.txt`](HBFA/UefiHostFuzzTestPkg/ReadMe-AFL.txt).
     * How to run KLEE in OS (Linux only)?  
@@ -73,7 +73,7 @@ Computer platform firmware is a critical element in the root-of-trust. Firmware 
     * How to use instrumentation methods in OS?  
     Please refer to [`HBFA/UefiHostFuzzTestPkg/ReadMe-ErrorInjection.txt`](HBFA/UefiHostFuzzTestPkg/ReadMe-ErrorInjection.txt).
 
-4. Do unit test  
+5. Do unit test  
     *  How to run cmocka for UEFI code?  
     Please refer to [`HBFA/UefiHostUnitTestPkg/ReadMe-cmocka.txt`](HBFA/UefiHostUnitTestPkg/ReadMe-cmocka.txt).
     * How to run HOST for UEFI code?  
@@ -85,8 +85,11 @@ Computer platform firmware is a critical element in the root-of-trust. Firmware 
     `build -p UefiHostUnitTestCasePkg/UefiHostUnitTestCasePkg.dsc -a X64 -t VS2015x86 -DUNIT_TEST_FRAMEWORK_MODE=HOST`  
     `<...>\Build\UefiHostUnitTestCasePkg\DEBUG_VS2015x86\X64\TestBaseSafeIntLib.exe`
 
-5. Get code coverage  
-    Please refer to [`HBFA/UefiHostUnitTestPkg/ReadMe-Coverage.txt`](HBFA/UefiHostUnitTestPkg/ReadMe-Coverage.txt).
+6. Get code coverage  
+    Please refer to [`HBFA/UefiHostUnitTestPkg/ReadMe-Coverage.txt`](HBFA/UefiHostUnitTestPkg/ReadMe-Coverage.txt).  
+
+7. Add new case  
+    please refer to [`HBFA/Doc/User Guide - How to Add New Case.pdf`](HBFA/Doc/User Guide - How to Add New Case.pdf).  
 
 ---
 

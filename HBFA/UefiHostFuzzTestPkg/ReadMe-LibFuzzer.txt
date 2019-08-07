@@ -21,8 +21,8 @@ Install LLVM in Windows (currently CLAGN8)
 1)	Download LLVM 8.0.0 windows pre build binary from http://releases.llvm.org/download.html and setup LLVM environment.
 Note: Please install 64bit exe for X64 build and 32bit exe for IA32 build.
 2)	After LLVM setup done, please add LLVM installed location to system environment variable:
-	  set LLVM_PATH=<32_LLVM_PATH>
-	  set LLVMx86_PATH =<64_LLVM_PATH>
+	  set LLVM_PATH=<64_LLVM_PATH>
+	  set LLVMx86_PATH =<32_LLVM_PATH>
 	For example:
 	  set LLVM_PATH=C:\Program Files\LLVM
 	  set LLVMx86_PATH =C:\Program Files (x86)\LLVM
