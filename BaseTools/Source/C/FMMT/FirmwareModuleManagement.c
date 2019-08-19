@@ -85,6 +85,12 @@ Usage (
             Delete a file (or files) from the firmware volume in an FD binary\n");
 
   //
+  // Command Line for Extract ffs file from FV
+  //
+  fprintf (stdout, "  -e <input-binary-file> <FV-id> <File-Name> [<FV-id> <File-Name> ...] <output-binary-file|output-directory>\n\
+            Delete a file (or files) from the firmware volume in an FD binary\n");
+
+  //
   // Command Line for Add
   //
   fprintf (stdout, "  -a <input-binary-file> <FV-id> <NewFilePath> [<FV-id> <NewFilePath> ...] <output-binary-file>\n\
@@ -1655,6 +1661,318 @@ FmmtImageDelete (
 }
 
 /**
+  Extract an FFS file from a specify FV.
+
+  @param[in]   FdInName     Input FD binary/image file name;
+  @param[in]   FileList     The FV ID and FFS file Data;
+  @param[in]   count        The length of FileList;
+  @param[in]   FfsName|FfsOutputDirectory    Name of output ffs file or directory of all output ffs.
+
+  @retval      EFI_SUCCESS
+  @retval      EFI_INVALID_PARAMETER
+  @retval      EFI_ABORTED
+
+**/
+EFI_STATUS
+FmmtImageExtract (
+  IN     CHAR8*    FdInName,
+  IN     Data      *FileList,
+  IN     int       count,
+  IN     CHAR8*    FfsOutFileOrDirName
+)
+{
+  EFI_STATUS                  Status;
+  FIRMWARE_DEVICE             *FdData;
+  FV_INFORMATION              *FvInFd;
+  UINT32                      Index;
+  UINT32                      FfsFoundFlag;
+  FFS_INFORMATION             *OutputFileName;
+  FILE*                       NewFdFile;
+  FILE*                       NewFvFile;
+  UINT64                      NewFvLength;
+  VOID*                       Buffer;
+  CHAR8                       *TemDir;
+  UINT8                       FvNumInFd;
+  UINT32                      Offset;
+  UINT8                       *FdBuffer;
+  EFI_FFS_FILE_HEADER2        *CurrentFile;
+  EFI_FFS_FILE_HEADER2        *PreFile;
+  Data                        *tmp;
+  CHAR8*                      FvId;
+  CHAR8*                      ExtractFile;
+  FILENode                    *OldFileNode;
+  int                         i;
+  UINT32                      FfsSize;
+  UINT32                      FdSize;
+  int                         j;
+  CHAR8                       FfsOutputFileName[_MAX_DIR];
+
+  FdSize                      = 0;
+  Index                       = 0;
+  NewFvLength                 = 0;
+  FfsFoundFlag                = 0;
+  FdData                      = NULL;
+  FvInFd                      = NULL;
+  OutputFileName              = NULL;
+  NewFdFile                   = NULL;
+  NewFvFile                   = NULL;
+  Buffer                      = NULL;
+  TemDir                      = NULL;
+  FvNumInFd                   = 0;
+  Offset                      = 0;
+  FdBuffer                    = NULL;
+  if (sizeof(FfsOutFileOrDirName) > _MAX_DIR) {
+    Error("FMMT", 0, 0004, "error while input file name", "Output directory path is too long" );
+    return EFI_ABORTED;
+  }
+
+  for (i = 0; i < count; i++)
+  {
+    tmp = FileList + i;
+    FvId = tmp->FvId;
+    FdData = tmp->FdData;
+    if (FdData == NULL)
+    {
+      Status = FmmtImageView(FdInName, FvId, FALSE, &FdData);
+      if (EFI_ERROR(Status) && Status != EFI_UNSUPPORTED)
+      {
+        Error("FMMT", 0, 0004, "error while parsing FD Image", "Gathering FD information failed!");
+        return Status;
+      }
+      if (FdData == NULL)
+      {
+        Error("FMMT", 0, 0004, "error while parsing FD Image", "");
+        return EFI_ABORTED;
+      }
+
+      Status = LibLocateFvViaFvId(FdData, FvId, &FvInFd);
+      if (EFI_ERROR(Status))
+      {
+        Error("FMMT", 0, 0005, "error while locate FV in FD", "");
+        return Status;
+      }
+      (FileList + i)->FdData = FdData;
+      (FileList + i)->FvInFd = FvInFd;
+      (FileList + i)->FvLevel = FvInFd->FvLevel;
+    }
+    FvNumInFd = ((UINT8)atoi(FvId + 2) - (UINT8)atoi(FvInFd->FvName + 2)) + 1;
+    OldFileNode = tmp->OldFile;
+    do
+    {
+      ExtractFile = OldFileNode->FileName;
+      if (FvInFd == NULL)
+      {
+        break;
+      }
+      FfsFoundFlag = FindFile(FvInFd, FvNumInFd, ExtractFile, &Index);
+      if (FfsFoundFlag)
+      {
+        if (FfsFoundFlag > 1)
+        {
+          printf("Duplicated file found in this FV, file name: %s\n", ExtractFile);
+          return EFI_ABORTED;
+        }
+      }
+      else
+      {
+        printf("Could not found the FFS file from FD!, file name: %s\n", ExtractFile);
+        return EFI_ABORTED;
+      }
+      OldFileNode->SubLevel = FvInFd->FfsAttuibutes[Index].Level;
+      OldFileNode = OldFileNode->Next;
+    } while (OldFileNode != NULL);
+  }
+
+  for (i = 0; i < count; i++)
+  {
+    for (j = i + 1; j < count; j++)
+    {
+      if (((FileList + i)->FvId == NULL) || ((FileList + j)->FvId == NULL))
+      {
+        continue;
+      }
+      if (strcmp((FileList + j)->FvId, (FileList + i)->FvInFd->FvName) == 0)
+      {
+        OldFileNode = (FileList + j)->OldFile;
+        while (OldFileNode->Next != NULL)
+        {
+          OldFileNode = OldFileNode->Next;
+        }
+        OldFileNode->Next = (FileList + i)->OldFile;
+        (FileList + i)->FvId = NULL;
+      }
+    }
+  }
+
+  for (i = 0; i < count; i++)
+  {
+    if ((FileList + i)->FvId == NULL)
+    {
+      continue;
+    }
+    sortList((FileList + i)->OldFile);
+  }
+
+  TemDir = getcwd(NULL, _MAX_PATH);
+  TemDir = realloc(TemDir, _MAX_PATH);
+  if (strlen(TemDir) + strlen(OS_SEP_STR) + strlen(TEMP_DIR_NAME) > _MAX_PATH - 1)
+  {
+    Error("FMMT", 0, 1001, "The directory is too long.", "");
+    return EFI_ABORTED;
+  }
+  strncat(TemDir, OS_SEP_STR, _MAX_PATH - strlen(TemDir) - 1);
+  strncat(TemDir, TEMP_DIR_NAME, _MAX_PATH - strlen(TemDir) - 1);
+
+  if (FdBuffer == NULL)
+  {
+    FdBuffer = ReadFileToBuffer(FdInName, &FdSize);
+    if (FdBuffer == NULL)
+    {
+      Error("FMMT", 0, 0004, "error while extracting file", "cannot read input file.");
+      return EFI_ABORTED;
+    }
+  }
+
+  for (i = 0; i < count; i++)
+  {
+    tmp = FileList + i;
+    FvId = tmp->FvId;
+    if (FvId == NULL)
+    {
+      continue;
+    }
+    FdData = tmp->FdData;
+    FvInFd = tmp->FvInFd;
+    FvNumInFd = ((UINT8)atoi(FvId + 2) - (UINT8)atoi(FvInFd->FvName + 2)) + 1;
+    OldFileNode = tmp->OldFile;
+    ExtractFile = OldFileNode->FileName;
+    FfsFoundFlag = FindFile(FvInFd, FvNumInFd, ExtractFile, &Index);
+    if (FfsFoundFlag && NeedNewPath(FvInFd, FvId, Index, FALSE))
+    {
+      do
+      {
+        ExtractFile = OldFileNode->FileName;
+        FfsFoundFlag = FindFile(FvInFd, FvNumInFd, ExtractFile, &Index);
+        //
+        // TODO: currently only root FV is handled
+        //
+        Offset = FvInFd->ImageAddress + FvInFd->FfsAttuibutes[Index].Offset;
+        if (FdBuffer != NULL)
+        {
+          CurrentFile = (EFI_FFS_FILE_HEADER2 *)(FdBuffer + Offset);
+
+          FfsSize = CalcuFfsSize((EFI_FIRMWARE_VOLUME_HEADER *)(FdBuffer + FvInFd->ImageAddress), CurrentFile);
+
+          FindPreviousFile((EFI_FIRMWARE_VOLUME_HEADER *)(FdBuffer + FvInFd->ImageAddress), CurrentFile, (VOID **)&PreFile);
+          if (PreFile != NULL && PreFile->Type == EFI_FV_FILETYPE_FFS_PAD)
+          {
+            FfsSize += (UINT8 *)CurrentFile - (UINT8 *)PreFile;
+            CurrentFile = PreFile;
+          }
+          AddPadFile((EFI_FIRMWARE_VOLUME_HEADER *)(FdBuffer + FvInFd->ImageAddress), CurrentFile, FfsSize);
+        }
+        OldFileNode = OldFileNode->Next;
+      } while (OldFileNode != NULL);
+    } else {
+      do
+      {
+        ExtractFile = OldFileNode->FileName;
+        FfsFoundFlag = FindFile(FvInFd, FvNumInFd, ExtractFile, &Index);
+
+        if (FfsFoundFlag)
+        {
+          //
+          // Extract this FFS file from Current FV structure.
+          //
+          if (count > 1 && strlen(FfsOutputFileName) + strlen(ExtractFile) + 1 > _MAX_PATH) {
+            Error("FMMT", 0, 1001, "The directory is too long.", "");
+            return EFI_ABORTED;
+          } else if (count > 1) {
+            strcat(FfsOutputFileName, ExtractFile);
+          } else {
+            strcpy(FfsOutputFileName, FfsOutFileOrDirName);
+          }
+          Status = LibFmmtExtractFile(FvInFd->FfsAttuibutes[Index].FfsName, FfsOutputFileName);
+          if (EFI_ERROR(Status))
+          {
+            Error("FMMT", 0, 0004, "error while encapsulate FD Image", "Extract the specified file failed!");
+            Error("FMMT", 0, 0004, "Cannot find the file need to delete", "Please check the name of the file you want to delete!");
+            goto FAILED;
+          }
+
+          memset(FvInFd->FfsAttuibutes[Index].FfsName, '\0', _MAX_PATH);
+          FvInFd->FfsAttuibutes[Index].Level = 0xFF;
+
+          //
+          // Since we can avoid to add NULL ffs file, at this time we don't need to decrease the FFS number.
+          // If decrease operation executed, we should adjust the ffs list. It will bring in more complex.
+          //
+          //FvInFd->FfsNumbers                    -= 1;
+          memset(FvInFd->FfsAttuibutes[Index].UiName, '\0', _MAX_PATH * sizeof(CHAR16));
+          if (FvInFd->FfsAttuibutes[Index].FvLevel > 1)
+          {
+            for (j = Index - 1; j >= 0; j--)
+            {
+              if (FvInFd->FfsAttuibutes[j].FvLevel == FvInFd->FfsAttuibutes[Index].FvLevel - 1)
+              {
+                break;
+              }
+            }
+            if (Index + 1 <= FvInFd->FfsNumbers)
+            {
+              if (FvInFd->FfsAttuibutes[Index + 1].FvLevel == FvInFd->FfsAttuibutes[Index].FvLevel + 1)
+              {
+                for (j = Index + 1; j <= (signed)FvInFd->FfsNumbers; j++)
+                {
+                  if (FvInFd->FfsAttuibutes[j].FvLevel > FvInFd->FfsAttuibutes[Index].FvLevel)
+                  {
+                    if (count > 1 && strlen(FfsOutputFileName) + strlen(ExtractFile) + 1 > _MAX_PATH) {
+                      Error("FMMT", 0, 1001, "The directory is too long.", "");
+                      return EFI_ABORTED;
+                    } else if (count > 1) {
+                      strcat(FfsOutputFileName, ExtractFile);
+                    } else {
+                      strcpy(FfsOutputFileName, FfsOutFileOrDirName);
+                    }
+                    Status = LibFmmtExtractFile(FvInFd->FfsAttuibutes[j].FfsName, FfsOutputFileName);
+                    if (EFI_ERROR(Status))
+                    {
+                      Error("FMMT", 0, 0004, "error while encapsulate FD Image", "Extract the specified file failed!");
+                      return Status;
+                    }
+                    memset(FvInFd->FfsAttuibutes[j].FfsName, '\0', _MAX_PATH);
+                    FvInFd->FfsAttuibutes[j].Level = 0xFF;
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          printf("Could not found the FFS file from FD!, file name: %s\n", ExtractFile);
+          Status = EFI_ABORTED;
+          goto FAILED;
+        }
+        OldFileNode = OldFileNode->Next;
+
+      } while (OldFileNode != NULL);
+    }
+  }
+
+  Status = LibRmDir(TemDir);
+  if (EFI_ERROR(Status))
+  {
+    Error("FMMT", 0, 0004, "error while encapsulate FD Image", "remove directory failed!");
+    goto FAILED;
+  }
+
+  return EFI_SUCCESS;
+
+FAILED:
+  free(FdBuffer);
+  return Status;
+}
+
+/**
   Replace the exist FFS file with new one from a specify FV.
 
   @param[in]   FdInName     Input FD binary/image file name;
@@ -2290,7 +2608,104 @@ int main(
             return 1;
         }
     }
+  } else if ((strcmp(Argv[0], "-e") == 0) || (strcmp(Argv[0], "-E") == 0)) {
+    //
+    // Extract some named FFS file from FD binary image.
+    //
 
+    //
+    // Open the file containing the FV to check whether it exist or not
+    //
+    CheckFileExist = fopen (Argv[1], "rb");
+    if (CheckFileExist == NULL) {
+      Error ("FMMT", 0, 0001, "Error opening the input binary file, Please make sure the <input-binary-file> exist!", Argv[1]);
+      return 1;
+    }
+    fclose(CheckFileExist);
+
+    if ((Argc - 3) % 2 == 0) {
+        FileData = malloc(sizeof (Data) * (Argc - 3)/2);
+        if (FileData == NULL) {
+          Error ("FMMT", 0, 4001, "Resource: Memory can't be allocated", NULL);
+          return 1;
+        }
+        for(index = 0; index < (Argc - 3)/2; index ++) {
+            p = malloc(sizeof (FILENode));
+            if (p == NULL) {
+              Error ("FMMT", 0, 4001, "Resource: Memory can't be allocated", NULL);
+              free (FileData);
+              return 1;
+            }
+            p -> FileName = Argv[3 + index * 2];
+            p -> SubLevel = 0;
+            exist = -1;
+            for (j = 0; j < count; j ++) {
+                if ((strcmp(Argv[2 + index * 2], (FileData + j) -> FvId) == 0)) {
+                    exist = j;
+                    break;
+                }
+            }
+            if (exist >= 0) {
+                p -> Next = (FileData + j) -> OldFile;
+                (FileData + j) -> OldFile = p;
+            } else {
+                (FileData + count) -> NewFile = NULL;
+                (FileData + count) -> FdData = NULL;
+                (FileData + count) -> FvLevel = 0;
+                (FileData + count) -> FvInFd = NULL;
+                (FileData + count) -> FvId = Argv[2 + index * 2];;
+                (FileData + count) -> OldFile = p;
+                p -> Next = NULL;
+                count ++;
+            }
+        }
+
+        if (count <= 0) {
+            Error("FMMT", 0, 0004, "error while parsing FD Image", "Gathering information failed!");
+        }
+        for (index = 0; index < count; index ++) {
+            for (j = index + 1; j < count; j ++) {
+                if ((strcmp((FileData + index)->FvId, (FileData + j)->FvId) < 0)) {
+                    CHAR8 *tmp = (FileData + index)->FvId;
+                    FILENode *t = (FileData + index)->OldFile;
+                    (FileData + index)->FvId = (FileData + j)->FvId;
+                    (FileData + index)-> OldFile = (FileData + j)->OldFile;
+                    (FileData + j)-> OldFile = t;
+                    (FileData + j)-> FvId = tmp;
+                }
+            }
+        }
+
+        //
+        // Extract some FFS file
+        //
+        Status = FmmtImageExtract(Argv[1], FileData, count, Argv[Argc-1]);
+        for (index = 0; index < count; index ++) {
+          if ((FileData + index) ->NewFile != NULL) {
+            free ((FileData + index)->NewFile);
+            (FileData + index)->NewFile = NULL;
+          }
+          if ((FileData + index)->OldFile != NULL) {
+            free ((FileData + index)->OldFile);
+            (FileData + index)->OldFile = NULL;
+          }
+        }
+        for (index = 0; index < count; index ++) {
+          if ((FileData + index)->FdData != NULL) {
+            LibFmmtFreeFd ((FileData + index)->FdData);
+          }
+        }
+        free (FileData);
+        if (EFI_ERROR (Status)) {
+            Error("FMMT", 0, 1001,  "Error while delete some named ffs file from the FD image file.", "");
+            LibRmDir (TemDir);
+            return 1;
+        }
+    } else {
+      Error("FMMT", 0, 1001,  "Invalid parameter, Please make sure the parameter is correct.", "");
+      Usage();
+      return 1;
+    }
   } else if ((strcmp(Argv[0], "-a") == 0) || (strcmp(Argv[0], "-A") == 0)) {
     //
     // Add some named FFS file into FD binary image.

@@ -431,6 +431,22 @@ LibFmmtDeleteFile(
 
 
 /**
+  Extract a file.
+
+  @param[in]   FileName   Name of the file need to be extracted.
+  @param[in]   OutputFileNmae Name of the file need to be generated
+
+  @return EFI_INVALID_PARAMETER
+  @return EFI_SUCCESS
+**/
+EFI_STATUS
+LibFmmtExtractFile(
+  IN   CHAR8    *FileName,
+  IN   CHAR8    *OutputFileName
+);
+
+
+/**
 
   Free the whole Fd data structure.
 

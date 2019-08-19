@@ -3768,6 +3768,80 @@ LibFmmtDeleteFile(
 
 }
 
+/**
+  Extract a file.
+
+  @param[in]   FileName   Name of the file need to be extracted.
+  @param[in]   ExtractFileName Name of the file need to be generated.
+
+  @return EFI_INVALID_PARAMETER
+  @return EFI_SUCCESS
+**/
+EFI_STATUS
+LibFmmtExtractFile(
+  IN   CHAR8    *FileName,
+  IN   CHAR8    *ExtractFileName
+)
+{
+  CHAR8*                 SystemCommand;
+  CHAR8                  *TemDir;
+
+  SystemCommand             = NULL;
+  TemDir                    = NULL;
+
+
+  if (FileName == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  // if the FileName is not in TemDir, we don't need to delete.
+  TemDir = getcwd (NULL, _MAX_PATH);
+  TemDir = realloc (TemDir, _MAX_PATH);
+  if (*(TemDir + strlen(TemDir) - 1) == OS_SEP) {
+    *(TemDir + strlen(TemDir) - 1) = '\0';
+  }
+  if (strlen (TemDir) + strlen (OS_SEP_STR) + strlen (TEMP_DIR_NAME) > _MAX_PATH - 1) {
+    Error (NULL, 0, 2000, "Path: The current path is too long.", NULL);
+    return EFI_ABORTED;
+  }
+  strncat (TemDir, OS_SEP_STR, _MAX_PATH - strlen (TemDir) - 1);
+  strncat (TemDir, TEMP_DIR_NAME, _MAX_PATH - strlen (TemDir) - 1);
+  if (strstr(FileName, TemDir) == NULL) {
+    return EFI_SUCCESS;
+  }
+
+  //
+  // Delete a file
+  //
+
+  SystemCommand = malloc (
+    strlen (COPY_STR) +
+    strlen (FileName)     +
+    strlen (ExtractFileName) +
+    1
+    );
+   if (SystemCommand == NULL) {
+     Error (NULL, 0, 4001, "Resource: Memory can't be allocated", NULL);
+     return EFI_ABORTED;
+   }
+
+  sprintf (
+    SystemCommand,
+    COPY_STR,
+    FileName,
+    ExtractFileName
+    );
+
+  if (system (SystemCommand) != EFI_SUCCESS) {
+    free(SystemCommand);
+    return EFI_ABORTED;
+  }
+  free(SystemCommand);
+
+  return EFI_SUCCESS;
+
+}
+
 
 /**
 
