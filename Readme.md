@@ -51,14 +51,16 @@ Computer platform firmware is a critical element in the root-of-trust. Firmware 
     `$ export PACKAGES_PATH=$WORKSPACE/edk2-staging/HBFA:$WORKSPACE/edk2`  
     In Windows  
     `$ set WORKSPACE=c:\workspace`  
-    `$ set PACKAGES_PATH=%WORKSPACE%/edk2-staging/HBFA;%WORKSPACE%/edk2`
+    `$ set PACKAGES_PATH=%WORKSPACE%/edk2-staging/HBFA;%WORKSPACE%/edk2`  
+    Note: In Windows, you may meet build error if the PACKAGES_PATH for HBFA is too long. 
+          You can use `Subst` to shorten HBFA path to a virtual disk and set PACKAGES_PATH for HBFA to that virtual disk. 
     3) Run `edksetup.sh/edksetup.bat` under EDKII source code tree. (NOTE: VS environment should be enabled in Windows.)
     Example:  
     In Linux  
     `$ edk2/edksetup.sh`    
     In Windows  
     `$ set WORKSPACE=c:\workspace`  
-    `$ set PACKAGES_PATH=%WORKSPACE%/edk2-staging/HBFA;%WORKSPACE%/edk2`
+    `$ set PACKAGES_PATH=%WORKSPACE%/edk2-staging/HBFA;%WORKSPACE%/edk2`  
     NOTE: Workspace need to be set every time you reopen Terminal/Command prompt when you want to build test binary.
 
 4. Do fuzzing test  
