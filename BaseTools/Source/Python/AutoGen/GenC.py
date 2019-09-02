@@ -1337,7 +1337,7 @@ def CreateLibraryConstructorCode(Info, AutoGenC, AutoGenH):
         if len(Lib.ConstructorList) <= 0:
             continue
         Dict = {'Function':Lib.ConstructorList}
-        if Lib.ModuleType in [SUP_MODULE_BASE, SUP_MODULE_SEC]:
+        if Lib.ModuleType in [SUP_MODULE_BASE, SUP_MODULE_SEC, SUP_MODULE_HOST_APPLICATION]:
             ConstructorPrototypeString.Append(gLibraryStructorPrototype[SUP_MODULE_BASE].Replace(Dict))
             ConstructorCallingString.Append(gLibraryStructorCall[SUP_MODULE_BASE].Replace(Dict))
         if Info.ModuleType not in [SUP_MODULE_BASE, SUP_MODULE_USER_DEFINED, SUP_MODULE_HOST_APPLICATION]:
