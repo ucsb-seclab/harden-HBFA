@@ -1,97 +1,50 @@
 # Testing
 
-Project Mu supports a few types of testing and this page will help provide some high level info and links for more information.
+Uefi FW Testing Infrastructure supports a few types of testing and this page will help provide some high level info and links for more information.
 
 ## Testing Infrastructure - Definitions and Descriptions
 
-### Host-Based Unit Tests (cmocka)
+### Host-Based Unit Tests 
 
-Host-based unit tests let you compile your unit tests to run as an application in the host.  This method can also leverage "mocking" objects/functions so that unit tests can validate functionality in isolation and force unexpected edge cases.  These unit tests call C functions directly with known parameter sets to force good and bad conditions.  They are linked directly against C code in either a library instance or module. These tests leverage a UnitTest Library.  For Project Mu we have chosen cmocka.
+Host-based unit tests let you compile your unit tests to run as an application in the host.  This method can also leverage "mocking" objects/functions so that unit tests can validate functionality in isolation and force unexpected edge cases.  These unit tests call C functions directly with known parameter sets to force good and bad conditions.  They are linked directly against C code in either a library instance or module. These tests leverage a UnitTest Library.  
 
-There are a few different types of these tests...
 
-#### Library/Protocol Interface
+#### Library/Protocol/Ppi/Guid Interface
 
 An interface unit test should be written such that it would be valid against any implementation of the library or protocol. For example, an interface test of DxeImageVerification lib should produce valid results for both an OpenSSL implementation and an implementation using another crypto provider. This is not going to always be true for proprietary implementations of certain libraries, such as libraries that intentionally remove some defined functionality, but it should be the ultimate goal of all interface tests.
 
 *Note:* This assertion may not hold true for Null library implementations, which will usually return fixed values.
 
-#### Library/Protocol Implementation
+#### Library/Driver(PEI/DXE/SMM) Implementation
 
-These tests expect a particular implementation of a library or protocol interface and may have far more detailed test cases. For example, an implementation test could be written for both a Null instance and/or a proprietary implementation of a given library.
+These tests expect a particular implementation of a library or a driver(PEI/DXE/SMM) and may have far more detailed test cases. For example, an implementation test could be written for both a Null instance and/or a proprietary implementation of a given library.
 
-#### Functionality Tests
+### Host-Based Functionality Tests
 
-These tests are written against larger chunks of business logic and may not have obvious divisions along a single library or protocol interface. Most of these will likely be UEFI shell-based tests, rather than host-based tests, but it's conceivable that some host-based examples may exist.
+#### Tests for a functionality or feature
 
-**Location**
-: These should be checked in a "UnitTest" folder found within the folder containing the INF of the code being tested (module or library)
+These tests are written against larger chunks of business logic and may not have obvious divisions along a single library or protocol/ppi/guid interface. Test targets come from multiple folders or packages.Most of these will likely be UEFI-based tests, rather than host-based tests, but it's conceivable that some host-based examples may exist.
 
-### Edk2- and UEFI-specific Codebase Analysis
+### Host-Based Fuzz Tests
+Host-based fuzz tests let you compile your fuzz tests to run as an application in the host. Fuzz testing (“Fuzzing”) automates software testing for invalid data inputs. Program is monitored for exceptions (crashes, failing built-in code assertions, potential memory leaks, …).  This method can also leverage "mocking" objects/functions so that fuzz tests can validate UEFI code security in isolation and use existing security test tools (AFL, Peach, Sanitizer, …). These fuzz tests call C functions directly with invalid, unexpected, or random data inputs. They are linked directly against C code in either a library instance or module.
 
-_Mu_Build_ provides a framework for running static tests on the code base.  Simple tests like character encoding are examples.  In Project Mu we are working to expand this set of tests to include checking guids, checking for library classes, etc.
+#### Library/Protocol/Ppi/Guid Interface
+An interface fuzz test should be written such that it would be valid against any implementation of the library, protocol, ppi or guid.
 
-**Location**
-: Can vary, as it uses the Plugin Model, so they are located anywhere within the code tree.  For Open Source common functionality tests we have added numerous to MU_Basecore/BaseTools/*PluginName*
+#### Library/Protocol/Ppi/Guid Implementation
+These fuzz tests expect a particular implementation of a library or a driver(PEI/DXE/SMM).
 
-### Basic Compilation
 
-Each package must have a _*Pkg.ci.dsc_ file.  This DSC should list every module and library instance inf in the components section for the appropriate architectures.  This forces compilation when doing a CI build.  Since this is only to validate code builds successfully the library classes used to resolve dependencies should leverage null library instances whenever possible.  These null libs should minimize dependencies and make DSC management minimal. 
+### UEFI-Based Functionality Tests
 
-**Location**
-: At the root of each package there should be a complete \<*PackageName*\>.ci.dsc file.  
-
-### Compile-Time Asserts
-
-Compile-time asserts can be used to check assertions in the code for build-time defined data.  An example could be confirming the size of a pixel array for an image matches the width x length.  
-
-* C code (header and code)
-  * Leverage C11 Static Assert feature for compile time verification in C code.
-  * Read here for more details https://docs.microsoft.com/en-us/cpp/cpp/static-assert?view=vs-2019
-  * And here https://en.cppreference.com/w/cpp/language/static_assert
-
-Another great reason for these types of tests is that many IDEs will verify inline and show issues without the compiler.  
-
-### Runtime Debug Asserts
-
-Not really a "testing" tool but more of a debug and development practice.
-
-> Describe more here about best practices and usage.  
-
-### HBFA Based Unit Tests (INTEL)
-
-> This section may not actually exist, and may entirely be the cmocka tests.
-
-> Intel to describe more
-
-### Host-Based Instrument Tests (INTEL)
-
-> Intel to describe more
-
-### Host-Based Fuzz Testing (INTEL)
-
-> I don't know much about this except what Intel has published.
-
-> * Read here for some intel information. https://firmware.intel.com/sites/default/files/Intel_UsingHBFAtoImprovePlatformResiliency.pdf
-> * First iteration from Intel: https://github.com/tianocore/edk2-staging/tree/HBFA/HBFA 
-
-### UEFI Shell-Based Functional Tests
-
-Some tests are best run from within the UEFI environment.  These tests might be for APIs that leverage platform and global state.
+Some tests are best run from within the UEFI environment. These tests might be written against larger chunks of business logic and may not have obvious divisions along a single library or protocol/ ppi/guid interface. Test targets come from multiple folders or packages.
 
 > Review Project Mu Unit Test framework: https://github.com/Microsoft/mu_basecore/tree/release/201903/MsUnitTestPkg
 
-### UEFI Shell-Based Audit Tests
-
-These tests are run from UEFI to collect information in a machine-parsible format and then post-processed to compare against a "Golden Copy".  These tests often contain a UEFI shell application as well as a script for intelligent comparison against a known good "Golden Copy".  The "Golden Copy" could be device specific and is often curated and managed by a developer of that platform.
-
-### SCT Framework
-
-> Documented elsewhere.
 
 ### Shared Artifacts
 
-Some testing formats -- especially the host-based unit tests, the fuzzing tests, and the shell-based functional tests -- may find it convenient to share logic in the form of libraries and helpers. These libraries may include mocks and stubs.
+Some testing formats -- especially the host-based unit tests, the fuzzing tests, and the shell-based functional tests -- may find it convenient to share logic in the form of libraries and helpers. These helpers may include mocks and stubs.
 
 #### Shared Mocks (proposed definition)
 
@@ -103,26 +56,41 @@ Stubs are a little more complicated than mocks. Rather than blindly returning va
 
 ## Where Should Things Live?
 
+### Test cases for a library/protocol/ppi/guid interface
+
+Pkg/Test/UnitTest/[Library|protocol|ppi|guid] 
+Pkg/Test/FuzzTest/Library|protocol|ppi|guid] 
+
+### Test cases for the feature under one package
+
+Pkg/Test/HostFuncTest   
+Pkg/Test/[Shell|Dxe|Smm|Pei]
+
+### Test cases for a library/driver(PEI/DXE/SMM)’ implementation 
+
+Pkg/Universal/EsrtFmpDxe/UnitTest/ 
+Pkg/Universal/EsrtFmpDxe/FuzzTest 
+
+### Test cases for the feature that spans multiple packages.
+
+UefiTestPkg/HostFuncTest   
+UefiTestPkg/[Shell|Dxe|Smm|Pei]  
+
 Code/Test                                   | Location
 ---------                                   | --------
-`1)`  Host-Based Test for a library/protocol/ppi/guid interface     | In the package that declares the library interface in its .DEC file. Should be located in the `*Pkg/Test/UnitTest/[Library|protocol|ppi|guid]` directory.
-`2)` Host-Based Test for a library/driver(PEI/DXE/SMM) implementation   | In the directory that contains the library/driver implementation, in a UnitTest subdirectory. <br /><br /> ============= <br /> Module Example: *Pkg/Universal/EsrtFmpDxe/UnitTest/ <br /> Library Example:  *Pkg/Library/BaseMemoryLib/UnitTest/ <br /> ============= <br /><br />
-`3)` Host-Based Fuzz Tests  | Fuzz tests should follow a pattern similar to the Host-Based Unit Tests. They should live in the package most closely aligned with the interface or implementation being fuzzed in the `*Pkg/Test/FuzzTest` directory, optionally under Library/Protocol/Ppi/Guid subdirectories, if it makes sense.
-`4)` Host-Based Test for a function or feature  | The package that contains the feature code under the `*Pkg/Test/UnitTest/Functional directory`, if the feature is in one package. <br />(or) <br />The `UefiTestPkg/TestCases/Functional` directory if the feature spans multiple packages.
-`5)` Non-Host-Based (PEI/DXE/SMM/Shell) Test for a function or feature | Should follow a pattern similar to the Host-Based Function or Feature Tests.  <br />Directory should be <code>*Pkg/Test/[Shell&#124;Dxe&#124;Smm&#124;Pei]Test</code>, if the feature is in one package <br /> <br /> (Or) <br />  <br /> <code>UefiTestPkg/Feature/Functional/[Shell&#124;Dxe&#124;Smm&#124;Pei]Test</code> if the feature spans multiple packages.  <br /><br /> ============= <br /> * PEI Example: MP_SERVICE_PPI. Or check MTRR configuration in a notification function. <br /> * SMM Example: a test in a protocol callback function. (It is different with the solution that SmmAgent+ShellApp) <br /> * DXE Example: a test in a UEFI event call back to check SPI/SMRAM status. <br /> * Shell Example: the SMM handler audit test has a shell-based app that interacts with an SMM handler to get information. The SMM paging audit test gathers information about both DXE and SMM. And the SMM paging functional test actually forces errors into SMM via a DXE driver. <br /> ============= <br /> <br />
-`6)` Host-Based Library Implementations                 | Host-Based Implementations of common libraries (eg. MemoryAllocationLibHost) should live in the same package that declares the library interface in its .DEC file in the `*Pkg/HostLibrary` directory. Should have 'Host' in the name.
-`7)` Mocks and Stubs  | Mock and Stub libraries should live in the `UefiHostTestPkg/Helpers` with either 'Mock' or 'Stub' in the library name.
-
-## Testing Python
-
-* Create pytest and/or python unit-test compatible tests.
-* Make sure the python code passes the `flake8` "linter"
-
-> Need to finish this documentation.
+`1)` Host-Based Unit Tests for a library/protocol/ppi/guid interface   | In the package that declares the library, protocol, ppi or guid interface in its .DEC file. Should be located in the  <code>*Pkg/Test/UnitTest/[Library&#124;Protocol&#124;Ppi&#124;Guid] directory.                                                            
+`2)` Host-Based Unit Tests for a library/driver(PEI/DXE/SMM) implementation   | In the directory that contains the library/driver implementation, in a UnitTest subdirectory. <br /><br /> ============= <br /> Module Example: *Pkg/Universal/EsrtFmpDxe/UnitTest/ <br /> Library Example:  *Pkg/Library/BaseMemoryLib/UnitTest/ <br /> ============= <br /><br />
+`3)` Host-Based Fuzz Tests for a library/protocol/ppi/guid interface  | In the package that declares the library, protocol, ppi or guid interface in its .DEC file. Should be located in the  <code>*Pkg/Test/FuzzTest/[Library&#124;Protocol&#124;Ppi&#124;Guid] directory.
+`4)` Host-Based Fuzz Tests for a library/driver(PEI/DXE/SMM) implementation   | In the directory that contains the library/driver implementation, in a FuzzTest subdirectory. <br /><br /> ============= <br /> Module Example: *Pkg/Universal/EsrtFmpDxe/FuzzTest/ <br /> Library Example:  *Pkg/Library/BaseMemoryLib/FuzzTest/ <br /> ============= <br /><br />
+`5)` Host-Based Tests for a functionality or feature  | If the feature is in one package, should be located in the*Pkg/Test/HostFuncTest directory. <br />(or) <br />If the feature spans multiple packages, should be located in the <br />(or) <br /> UefiTestPkg/HostFuncTest  directory.
+`6)` Non-Host-Based (PEI/DXE/SMM/Shell) Tests for a functionality or feature | If the feature is in one package, should be located in the <code>*Pkg/Test/[Shell&#124;Dxe&#124;Smm&#124;Pei]Test</code> directory.   <br /> <br /> (Or) <br />  <br /> if the feature spans multiple packages, should be located in <code>UefiTestPkg/Feature/Functional/[Shell&#124;Dxe&#124;Smm&#124;Pei]Test</code>  <br /><br /> ============= <br /> * PEI Example: MP_SERVICE_PPI. Or check MTRR configuration in a notification function. <br /> * SMM Example: a test in a protocol callback function. (It is different with the solution that SmmAgent+ShellApp) <br /> * DXE Example: a test in a UEFI event call back to check SPI/SMRAM status. <br /> * Shell Example: the SMM handler audit test has a shell-based app that interacts with an SMM handler to get information. The SMM paging audit test gathers information about both DXE and SMM. And the SMM paging functional test actually forces errors into SMM via a DXE driver. <br /> ============= <br /> <br />
+`7)` Host-Based Library Implementations                 | Host-Based Implementations of common libraries (eg. MemoryAllocationLibHost) should live in the same package that declares the library interface in its .DEC file in the `*Pkg/HostLibrary` directory. Should have 'Host' in the name.
+`8)` Host-Based Mocks and Stubs  | Mock and Stub libraries should live in the `UefiHostTestPkg/Helpers` with either 'Mock' or 'Stub' in the library name.
 
 ## RFC and Misc TODOs:
 
-- CmockaHostUnitTestPkg, UefiHostTestPkg, and UefiHostUnitTestPkg should move to their own repo
+- CmockaHostUnitTestPkg and UefiHostUnitTestPkg - move to edk2-test repo?
+- UefiHostTestPkg - Move to edk2 repo?
 
 - UefiHostFuzzTestCasePkg
   - Should move these into their packages as described for test cases and stubs.  
@@ -135,9 +103,9 @@ Code/Test                                   | Location
 
 - UefiHostTestTools - Move to edk2-test repo but should be called HBFATestTools?  
 
-- UefiInstrumentTestCasePkg - Like the FuzzTestCasePkg?
+- UefiInstrumentTestCasePkg - Will be removed and merged into unit test or function test?
 
-- UefiInstrumentTestPkg - Like the FuzzTestPkg?  
+- UefiInstrumentTestPkg - seems like it would go to edk2-test repo and merged into *TestPkg? 
 
 - XmlSupportPkg
   - Move to edk2
