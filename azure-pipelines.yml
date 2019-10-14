@@ -54,7 +54,7 @@ steps:
               PrNumber=sys.argv[3]
               )
       print(Url)
-      PullRequest = requests.get(Url, headers=Headers).json()
+      PullRequest = requests.get(Url).json()
       if 'user' in PullRequest and 'login' in PullRequest['user']:
         User = PullRequest['user']['login']
       else:
