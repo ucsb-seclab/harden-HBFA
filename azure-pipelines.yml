@@ -55,6 +55,7 @@ steps:
               )
       print(Url)
       PullRequest = requests.get(Url).json()
+      print(PullRequest)
       if 'user' in PullRequest and 'login' in PullRequest['user']:
         User = PullRequest['user']['login']
       else:
@@ -70,6 +71,7 @@ steps:
               )
       print(Url)
       Membership = requests.get(Url, headers=Headers).json()
+      print(Membership)
       #
       # If JSON response does not contain a 'state' or 'role' field, then exit with
       # an error.
