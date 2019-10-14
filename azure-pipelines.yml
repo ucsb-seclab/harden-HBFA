@@ -1,11 +1,14 @@
-## @file  azure-pipelines.yml
+## @file
+# Azure Pipielines YML file that uses a GitHub API to check if a PR against
+# edk2-ci is from a submitter that is a member of the EDK II Maintainers team
+# in the TianoCore organization on GitHub.
 #
 # Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
-#
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 #
-#  @par Specification Reference:
-#  - https://aka.ms/yaml
+# https://developer.github.com/v3/teams/members/#get-team-membership
+# https://github.com/tianocore
+# https://github.com/orgs/tianocore/teams/edk-ii-maintainers
 #
 ##
 
@@ -18,19 +21,71 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-    echo Build Reason              = $(Build.Reason)
-    echo Build Queued By           = $(Build.QueuedBy)
-    echo Build Requested For Email = $(Build.RequestedForEmail)
-    echo Build Requested For Id    = $(Build.RequestedForId)
-    echo Build Source Branch       = $(Build.SourceBranch)
-    set
-    curl -i "https://api.github.com/user"
-    curl -i "https://api.github.com/teams/1649488/members"
-    curl -i "https://api.github.com/teams/1649488/memberships/mdkinney"
-  displayName: 'Run a multi-line script'
+- script: pip install --user requests
+  displayName: 'Install Python requests module'
+- task: PythonScript@0
+  displayName: 'Check EDK II Maintainers team membership'
+  inputs:
+    arguments: $(GitHubPAT) 1649488 $(System.PullRequest.SourceRepositoryURI)
+    scriptSource: inline
+    script: |
+      import sys
+      import requests
+      #
+      # Check number of arguments
+      #
+      if len(sys.argv) < 4:
+        print('CheckGitHubTeamMembership: Too few arguments.')
+        print('  Usage: CheckGitHubTeamMembership <Token> <Team#> <PR URI>')
+        sys.exit(1)
+      #
+      # Fill in Authorization token using Personal Access Token (PAT)
+      #
+      Headers = {
+        'Authorization': 'token ' + sys.argv[1],
+      }
+      #
+      # Parse GitHub user ID from PR URI
+      #
+      User = sys.argv[3].split('/')
+      if not sys.argv[3].startswith('https://github.com/') or len(User) < 4:
+        print('CheckGitHubTeamMembership: Can not parse PR GitHub ID from PR URI')
+        sys.exit(1)
+      User = User[3]
+      #
+      # Generate GitHub API request and parse the JSON response
+      #
+      Url = 'https://api.github.com/teams/{Team}/memberships/{User}'.format(
+              Team=sys.argv[2],
+              User=User
+              )
+      Membership = requests.get(Url, headers=Headers).json()
+      #
+      # If JSON response does not contain a 'state' or 'role' field, then exit with
+      # an error.
+      #
+      if 'state' not in Membership or 'role' not in Membership:
+        print('CheckGitHubTeamMembership: User {User} not found.'
+              .format(User=User))
+        sys.exit(1)
+      #
+      # If JSON response does not show the user as active, then exit with an error.
+      #
+      if Membership['state'] not in ['active']:
+        print('CheckGitHubTeamMembership: User {User} is not active.'
+              .format(User=User))
+        sys.exit(1)
+      #
+      # If JSON response does not show the user with a role of member or maintainer,
+      # then exit with an error
+      #
+      if Membership['role'] not in ['member', 'maintainer']:
+        print('CheckGitHubTeamMembership: User {User} is not a member/maintainer.'
+              .format(User=User))
+        sys.exit(1)
+      #
+      # JSON response indicates that user is an active member/maintainer.  Exit
+      # with success.
+      #
+      print('CheckGitHubTeamMembership: User {User} is active {Role}.'
+          .format(User=User, Role=Membership['role']))
