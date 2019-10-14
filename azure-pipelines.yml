@@ -47,6 +47,7 @@ steps:
       #
       # Parse GitHub user ID from PR URI
       #
+      print('CheckGitHubTeamMembership: {PrUri}'.format(PrUri=sys.argv[3]))
       User = sys.argv[3].split('/')
       if not sys.argv[3].startswith('https://github.com/') or len(User) < 4:
         print('CheckGitHubTeamMembership: Can not parse PR GitHub ID from PR URI')
