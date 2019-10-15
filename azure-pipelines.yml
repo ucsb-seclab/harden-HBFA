@@ -46,7 +46,7 @@ steps:
               PrNumber=sys.argv[3]
               )
       print(Url)
-      PullRequest = requests.get(Url, auth=('tianocore', sys.argv[1])).json()
+      PullRequest = requests.get(Url, auth=('mdkinney', sys.argv[1])).json()
       print(PullRequest)
       if 'user' in PullRequest and 'login' in PullRequest['user']:
         User = PullRequest['user']['login']
@@ -63,7 +63,7 @@ steps:
               User=User
               )
       print(Url)
-      Membership = requests.get(Url, auth=('tianocore', sys.argv[1])).json()
+      Membership = requests.get(Url, auth=('mdkinney', sys.argv[1])).json()
       print(Membership)
       #
       # If JSON response does not contain a 'state' or 'role' field, then exit with
