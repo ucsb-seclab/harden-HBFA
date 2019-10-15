@@ -39,20 +39,14 @@ steps:
         print('Usage: CheckGitHubTeamMembership <Token> <RepoId> <PR#> <Team#>')
         sys.exit(1)
       #
-      # Fill in Authorization token using Personal Access Token (PAT)
-      #
-      Headers = {
-        'Authorization': 'token ' + sys.argv[1],
-      }
-      #
-      # Generate GitHub API request and parse the JSON response
+      # Generate GitHub API request for PR and parse user from JSON response
       #
       Url = 'https://api.github.com/repos/{RepoId}/pulls/{PrNumber}'.format(
               RepoId=sys.argv[2],
               PrNumber=sys.argv[3]
               )
       print(Url)
-      PullRequest = requests.get(Url).json()
+      PullRequest = requests.get(Url, auth=('tianocore', sys.argv[1])).json()
       print(PullRequest)
       if 'user' in PullRequest and 'login' in PullRequest['user']:
         User = PullRequest['user']['login']
@@ -61,14 +55,15 @@ steps:
               .format(PrNumber=sys.argv[3]))
         sys.exit(1)
       #
-      # Generate GitHub API request and parse the JSON response
+      # Generate GitHub API request to check if user is a member of a team and
+      # parse the JSON response
       #
       Url = 'https://api.github.com/teams/{Team}/memberships/{User}'.format(
               Team=sys.argv[4],
               User=User
               )
       print(Url)
-      Membership = requests.get(Url, headers=Headers).json()
+      Membership = requests.get(Url, auth=('tianocore', sys.argv[1])).json()
       print(Membership)
       #
       # If JSON response does not contain a 'state' or 'role' field, then exit with
