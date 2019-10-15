@@ -1,7 +1,27 @@
 ## @file
-# Azure Pipielines YML file that uses a GitHub API to check if a PR against
-# edk2-ci is from a submitter that is a member of the EDK II Maintainers team
+# Azure Pipielines YML file that uses GitHub APIs to check if a PR against
+# branch is from a submitter that is a member of the EDK II Maintainers team
 # in the TianoCore organization on GitHub.
+#
+# * Generate a GitHub personal access token (PAT) from one of the organizations
+#   team members from the developer 'Settings' -> 'Developer Settings' ->
+#   'Personal Access Tokens' page.  Select 'Generate new token' and only enable
+#   the single checkbox for admin:org/read:org scope.
+#
+# * Configure the Azure Pipeline Build with a Variable named 'GitHubPAT' seting
+#   the value to the generated personal access token (PAT).  Configure the
+#   'GitHubPAT' variable as 'Keep this value secret'.
+#
+# * Configure the Azure Pipeline Build 'Triggers' -> 'Pull request validation'
+#   to enable both 'Build pull requests from forks of this repository' and
+#   'Make secrets available to builds of forks'.
+#
+# NOTE: This example monitors pull requests against the edk2-ci branch.  Most
+# environments would replace 'edk2-ci' with 'master'.
+#
+# NOTE: This example uses the team number 1649488 that is the EDK II Maintainers
+# team in the TianoCore organization.  This value must be updated to test user
+# membership in a different team.
 #
 # Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
 # SPDX-License-Identifier: BSD-2-Clause-Patent
