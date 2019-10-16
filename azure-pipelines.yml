@@ -41,9 +41,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- checkout: self
-  fetchDepth: 1
-  clean: true
+- checkout: none
 
 - task: UsePythonVersion@0
   inputs:
