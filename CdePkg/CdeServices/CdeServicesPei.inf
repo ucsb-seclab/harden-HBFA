@@ -1,0 +1,17 @@
+[Defines]
+	INF_VERSION         = 1.26
+	BASE_NAME           = CdeServicesPei
+	FILE_GUID           = CDE00010-0D79-4225-BFE2-203AE6D70B57
+	MODULE_TYPE         = PEIM
+	VERSION_STRING      = 0.5
+	ENTRY_POINT			= _Main
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32|X64
+#
+
+[Binaries.IA32]
+	PE32|CdeServicesPei32.efi
+	PEI_DEPEX|CdeServicesPei.depex

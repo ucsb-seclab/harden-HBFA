@@ -1,0 +1,9 @@
+.vs/
+build/
+edk2/
+edk2-non-osi/
+nasm-2.13.03/
+nasm-2.13.03-win64.zip 
+openssl-1.0.2r-x64_86-win64/
+openssl-1.0.2r-x64_86-win64.zip 
+vc140.pdb
