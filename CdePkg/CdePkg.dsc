@@ -1,3 +1,7 @@
+#
+#   Copyright (c) 2019, Kilian Kegel. All rights reserved.<BR>
+#   SPDX-License-Identifier: BSD-2-Clause-Patent
+#
 [Defines]
 	PLATFORM_NAME				= Cde
 	PLATFORM_GUID				= 30E1F56D-4E96-4DE0-86B0-EA455ACA9E92

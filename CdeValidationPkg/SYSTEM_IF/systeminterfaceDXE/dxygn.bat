@@ -1,5 +1,8 @@
-rem create the CHM/HELP file
 @echo off
+rem
+rem Copyright (c) 2019, Kilian Kegel. All rights reserved.<BR>
+rem SPDX-License-Identifier: BSD-2-Clause-Patent
+rem
 goto START
 :OPEN 
 for %%a in (*.vcxproj) do START %%~dpna.chm

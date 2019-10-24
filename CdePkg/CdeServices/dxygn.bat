@@ -1,4 +1,8 @@
 @echo off
+rem
+rem Copyright (c) 2019, Kilian Kegel. All rights reserved.<BR>
+rem SPDX-License-Identifier: BSD-2-Clause-Patent
+rem
 if exist doxygen.tmp rd /s /q doxygen.tmp
 if exist doxygen rd /s /q doxygen
 if exist doxygen.tmp pause
