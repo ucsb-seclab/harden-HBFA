@@ -20,7 +20,8 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Protocol/PciHostBridgeResourceAllocation.h>
 
 ///
-/// Reuse the existing definition to maintain backward compatibility
+/// This file is included to reuse the existing PCI Platform data structure
+/// definitions of EFI_PCI_EXECUTION_PHASE,EFI_PCI_PLATFORM_POLICY
 ///
 #include <Protocol/PciPlatform.h>
 
@@ -297,6 +298,135 @@ typedef struct {
 } EFI_PCI_PLATFORM_EXTENDED_POLICY;
 
 /**
+  The notification from the PCI bus enumerator to the platform that it is
+  about to enter a certain phase during the enumeration process.
+
+  The PlatformNotify() function can be used to notify the platform driver so that
+  it can perform platform-specific actions. No specific actions are required.
+  Eight notification points are defined at this time. More synchronization points
+  may be added as required in the future. The PCI bus driver calls the platform driver
+  twice for every Phase-once before the PCI Host Bridge Resource Allocation Protocol
+  driver is notified, and once after the PCI Host Bridge Resource Allocation Protocol
+  driver has been notified.
+  This member function may not perform any error checking on the input parameters. It
+  also does not return any error codes. If this member function detects any error condition,
+  it needs to handle those errors on its own because there is no way to surface any
+  errors to the caller.
+
+  @param[in] This           The pointer to the EFI_PCI_PLATFORM_PROTOCOL2 instance.
+  @param[in] HostBridge     The handle of the host bridge controller.
+  @param[in] Phase          The phase of the PCI bus enumeration.
+  @param[in] ExecPhase      Defines the execution phase of the PCI chipset driver.
+
+  @retval EFI_SUCCESS   The function completed successfully.
+
+**/
+typedef
+EFI_STATUS
+(EFIAPI *EFI_PCI_PLATFORM_PHASE_NOTIFY2)(
+  IN EFI_PCI_PLATFORM_PROTOCOL2                       *This,
+  IN EFI_HANDLE                                       HostBridge,
+  IN EFI_PCI_HOST_BRIDGE_RESOURCE_ALLOCATION_PHASE    Phase,
+  IN EFI_PCI_EXECUTION_PHASE                          ExecPhase
+  );
+
+/**
+  The notification from the PCI bus enumerator to the platform for each PCI
+  controller at several predefined points during PCI controller initialization.
+
+  The PlatformPrepController() function can be used to notify the platform driver so that
+  it can perform platform-specific actions. No specific actions are required.
+  Several notification points are defined at this time. More synchronization points may be
+  added as required in the future. The PCI bus driver calls the platform driver twice for
+  every PCI controller-once before the PCI Host Bridge Resource Allocation Protocol driver
+  is notified, and once after the PCI Host Bridge Resource Allocation Protocol driver has
+  been notified.
+  This member function may not perform any error checking on the input parameters. It also
+  does not return any error codes. If this member function detects any error condition, it
+  needs to handle those errors on its own because there is no way to surface any errors to
+  the caller.
+
+  @param[in] This           The pointer to the EFI_PCI_PLATFORM_PROTOCOL2 instance.
+  @param[in] HostBridge     The associated PCI host bridge handle.
+  @param[in] RootBridge     The associated PCI root bridge handle.
+  @param[in] PciAddress     The address of the PCI device on the PCI bus.
+  @param[in] Phase          The phase of the PCI controller enumeration.
+  @param[in] ExecPhase      Defines the execution phase of the PCI chipset driver.
+
+  @retval EFI_SUCCESS   The function completed successfully.
+
+**/
+typedef
+EFI_STATUS
+(EFIAPI *EFI_PCI_PLATFORM_PREPROCESS_CONTROLLER2)(
+  IN EFI_PCI_PLATFORM_PROTOCOL2                     *This,
+  IN EFI_HANDLE                                     HostBridge,
+  IN EFI_HANDLE                                     RootBridge,
+  IN EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_PCI_ADDRESS    PciAddress,
+  IN EFI_PCI_CONTROLLER_RESOURCE_ALLOCATION_PHASE   Phase,
+  IN EFI_PCI_EXECUTION_PHASE                        ExecPhase
+  );
+
+/**
+  Retrieves the platform policy regarding enumeration.
+
+  The GetPlatformPolicy() function retrieves the platform policy regarding PCI
+  enumeration. The PCI bus driver and the PCI Host Bridge Resource Allocation Protocol
+  driver can call this member function to retrieve the policy.
+
+  @param[in]  This        The pointer to the EFI_PCI_PLATFORM_PROTOCOL2 instance.
+  @param[out] PciPolicy   The platform policy with respect to VGA and ISA aliasing.
+
+  @retval EFI_SUCCESS             The function completed successfully.
+  @retval EFI_INVALID_PARAMETER   PciPolicy is NULL.
+
+**/
+typedef
+EFI_STATUS
+(EFIAPI *EFI_PCI_PLATFORM_GET_PLATFORM_POLICY2)(
+  IN  CONST EFI_PCI_PLATFORM_PROTOCOL2  *This,
+  OUT       EFI_PCI_PLATFORM_POLICY     *PciPolicy
+  );
+
+/**
+  Gets the PCI device's option ROM from a platform-specific location.
+
+  The GetPciRom() function gets the PCI device's option ROM from a platform-specific location.
+  The option ROM will be loaded into memory. This member function is used to return an image
+  that is packaged as a PCI 2.2 option ROM. The image may contain both legacy and EFI option
+  ROMs. See the UEFI 2.0 Specification for details. This member function can be used to return
+  option ROM images for embedded controllers. Option ROMs for embedded controllers are typically
+  stored in platform-specific storage, and this member function can retrieve it from that storage
+  and return it to the PCI bus driver. The PCI bus driver will call this member function before
+  scanning the ROM that is attached to any controller, which allows a platform to specify a ROM
+  image that is different from the ROM image on a PCI card.
+
+  @param[in]  This        The pointer to the EFI_PCI_PLATFORM_PROTOCOL2 instance.
+  @param[in]  PciHandle   The handle of the PCI device.
+  @param[out] RomImage    If the call succeeds, the pointer to the pointer to the option ROM image.
+                          Otherwise, this field is undefined. The memory for RomImage is allocated
+                          by EFI_PCI_PLATFORM_PROTOCOL2.GetPciRom() using the EFI Boot Service AllocatePool().
+                          It is the caller's responsibility to free the memory using the EFI Boot Service
+                          FreePool(), when the caller is done with the option ROM.
+  @param[out] RomSize     If the call succeeds, a pointer to the size of the option ROM size. Otherwise,
+                          this field is undefined.
+
+  @retval EFI_SUCCESS            The option ROM was available for this device and loaded into memory.
+  @retval EFI_NOT_FOUND          No option ROM was available for this device.
+  @retval EFI_OUT_OF_RESOURCES   No memory was available to load the option ROM.
+  @retval EFI_DEVICE_ERROR       An error occurred in obtaining the option ROM.
+
+**/
+typedef
+EFI_STATUS
+(EFIAPI *EFI_PCI_PLATFORM_GET_PCI_ROM2)(
+  IN  CONST EFI_PCI_PLATFORM_PROTOCOL2  *This,
+  IN        EFI_HANDLE                  PciHandle,
+  OUT       VOID                        **RomImage,
+  OUT       UINTN                       *RomSize
+  );
+
+/**
   Retrieves the PCI device-specific platform policy regarding enumeration.
 
   The PCI Bus driver and PCI Host Bridge Resource Allocation Protocol drivers
@@ -360,32 +490,32 @@ struct _EFI_PCI_PLATFORM_PROTOCOL2 {
   /// The notification from the PCI bus enumerator to the platform that it is about to
   /// enter a certain phase during the enumeration process.
   ///
-  EFI_PCI_PLATFORM_PHASE_NOTIFY          PlatformNotify;
+  EFI_PCI_PLATFORM_PHASE_NOTIFY2            PlatformNotify;
   ///
   /// The notification from the PCI bus enumerator to the platform for each PCI
   /// controller at several predefined points during PCI controller initialization.
   ///
-  EFI_PCI_PLATFORM_PREPROCESS_CONTROLLER PlatformPrepController;
+  EFI_PCI_PLATFORM_PREPROCESS_CONTROLLER2   PlatformPrepController;
   ///
   /// Retrieves the platform policy regarding enumeration.
   ///
-  EFI_PCI_PLATFORM_GET_PLATFORM_POLICY   GetPlatformPolicy;
+  EFI_PCI_PLATFORM_GET_PLATFORM_POLICY2     GetPlatformPolicy;
   ///
   /// Gets the PCI device's option ROM from a platform-specific location.
   ///
-  EFI_PCI_PLATFORM_GET_PCI_ROM           GetPciRom;
+  EFI_PCI_PLATFORM_GET_PCI_ROM2             GetPciRom;
   ///
   /// Retrieves the PCI device-specific platform policy regarding enumeration.
   ///
-  EFI_PCI_PLATFORM_GET_DEVICE_POLICY     GetDevicePolicy;
+  EFI_PCI_PLATFORM_GET_DEVICE_POLICY        GetDevicePolicy;
   ///
   /// The major version of this PCI Platform Protocol
   ///
-  UINT8                                  MajorVersion;
+  UINT8                                     MajorVersion;
   ///
   /// The minor version of this PCI Platform Protocol
   ///
-  UINT8                                  MinorVersion;
+  UINT8                                     MinorVersion;
 
 };
 
