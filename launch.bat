@@ -115,6 +115,6 @@ nmake all
 cd %WORKSPACE%\edk2
 
 echo.
-echo For MINNOWBOARD BUILD type: build -a IA32 -a X64 -n 5 -t VS2015x86 -b DEBUG -p Vlv2TbltDevicePkg\PlatformPkgX64.dsc
-echo For  EMULATION  BUILD type: build -p EmulatorPkg\EmulatorPkg.dsc -t VS2015x86 -a IA32
+echo For MINNOWBOARD BUILD type: build -a IA32 -a X64 -n 5 -t VS2015x86 -b DEBUG -p PlatformPkgX64.dsc
+echo For  EMULATION  BUILD type: build -p EmulatorPkg.dsc -t VS2015x86 -a IA32
 %COMSPEC% /k echo Welcome, to the jungle...

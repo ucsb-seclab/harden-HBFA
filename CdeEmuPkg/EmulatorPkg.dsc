@@ -49,7 +49,7 @@
   # Basic
   #
   #KGDebug
-  CdeLib|CdePkg/CdeLib/CdeLib.inf
+  CdeLib|CdeBinPkg/CdeLib/CdeLib.inf
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
   SynchronizationLib|MdePkg/Library/BaseSynchronizationLib/BaseSynchronizationLib.inf
   PrintLib|MdePkg/Library/BasePrintLib/BasePrintLib.inf
@@ -264,7 +264,7 @@
   MdeModulePkg/Core/Pei/PeiMain.inf
   
   #KGDebug start
-  CdePkg/CdeServices/CdeServicesPei.inf
+  CdeBinPkg/CdeServices/CdeServicesPei.inf
   #CdePkg/CdeWelcomePei/CdeWelcomePei.inf
   CdePkg/CdeLoadOptionsPei/CdeLoadOptionsPei.inf
 
@@ -301,7 +301,7 @@
       NULL|MdeModulePkg/Library/LzmaCustomDecompressLib/LzmaCustomDecompressLib.inf
   }
   #KGDebug
-  CdePkg/CdeServices/CdeServicesDxe.inf
+  CdeBinPkg/CdeServices/CdeServicesDxe.inf
   #CdePkg/CdeWelcomeDxe/CdeWelcomeDxe.inf
   CdePkg/CdeLoadOptionsDxe/CdeLoadOptionsDxe.inf
 
