@@ -3,6 +3,17 @@
 A modern, feature-rich, cross-platform firmware development environment
 for the UEFI and PI specifications from www.uefi.org.
 
+# Build Status
+
+| Host Type | Toolchain | Branch  | Build Status | Test Status | Code Coverage |
+| :-------- | :-------- | :------ | :----------- | :---------- | :------------ |
+| Windows   | VS2019    | master  | [![Build Status](https://dev.azure.com/tianocore/edk2-ci-play/_apis/build/status/edk2-staging/Windows%20VS2019%20CI?branchName=master)](https://dev.azure.com/tianocore/edk2-ci-play/_build/latest?definitionId=27&branchName=master) | [![Azure DevOps tests](https://img.shields.io/azure-devops/tests/tianocore/edk2-ci-play/14.svg)](https://dev.azure.com/tianocore/edk2-ci-play/_build/latest?definitionId=27&branchName=master) | [![Code Coverage](https://img.shields.io/badge/coverage-coming_soon-blue)](https://dev.azure.com/tianocore/edk2-ci-play/_build/latest?definitionId=27&branchName=master) |
+| Ubuntu    | GCC       | master  | [![Build Status](https://dev.azure.com/tianocore/edk2-ci-play/_apis/build/status/edk2-staging/Ubuntu%20GCC5%20CI?branchName=master)](https://dev.azure.com/tianocore/edk2-ci-play/_build/latest?definitionId=26&branchName=master)    | [![Azure DevOps tests](https://img.shields.io/azure-devops/tests/tianocore/edk2-ci-play/15.svg)](https://dev.azure.com/tianocore/edk2-ci-play/_build/latest?definitionId=26&branchName=master) | [![Code Coverage](https://img.shields.io/badge/coverage-coming_soon-blue)](https://dev.azure.com/tianocore/edk2-ci-play/_build/latest?definitionId=26&branchName=master) |
+
+[More CI Build information](.pytool/Readme.md)
+
+# License Details
+
 The majority of the content in the EDK II open source project uses a
 [BSD-2-Clause Plus Patent License](License.txt).  The EDK II open source project
 contains the following components that are covered by additional licenses:
