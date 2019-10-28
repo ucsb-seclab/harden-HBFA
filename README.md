@@ -224,5 +224,11 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
 
 ## Revision history
 
+### 20191028
+* update to meet offical EDK2-STAGING requirements
+  * remove binary driver
+  * remove binary library
+  * simplify PACKAGE_PATH related components
+
 ### 20191023
 * initial revision

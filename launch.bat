@@ -81,6 +81,7 @@ rem ### EDK2 and EDK2-NON-OSI #############################################
 rem #######################################################################
 if not exist edk2 git clone --recursive https://github.com/tianocore/edk2.git edk2
 if not exist edk2-non-osi git clone --recursive https://github.com/tianocore/edk2-non-osi.git edk2-non-osi
+if not exist CdeBinPkg git clone --recursive https://github.com/KilianKegel/CdeBinPkg.git CdeBinPkg
 
 rem #######################################################################
 rem ### set build environment #############################################
@@ -89,7 +90,8 @@ rem
 set WORKSPACE=%CD%
 set PACKAGES_PATH=%WORKSPACE%\edk2;
 set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\;
-set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\EmulatorPkg;
+set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\CdeMnwPkg
+set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\CdeEmuPkg
 set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\edk2-platforms\Silicon\Intel;
 set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\edk2-platforms\Platform\Intel;
 set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\edk2-non-osi\Silicon\Intel;
