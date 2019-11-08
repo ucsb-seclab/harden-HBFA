@@ -115,7 +115,7 @@ APRIORI DXE {
   INF  MdeModulePkg/Universal/Metronome/Metronome.inf
   }
 #KGDebug
-INF  CdePkg/CdeServices/CdeServicesPei.inf
+INF  CdeBinPkg/CdeServices/CdeServicesPei.inf
 #INF  CdePkg/CdeWelcomePei/CdeWelcomePei.inf
 INF  CdePkg/CdeLoadOptionsPei/CdeLoadOptionsPei.inf
 
@@ -142,7 +142,7 @@ INF  MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf
 #  DXE Phase modules
 #
 #KGDebug
-INF  CdePkg/CdeServices/CdeServicesDxe.inf
+INF  CdeBinPkg/CdeServices/CdeServicesDxe.inf
 #INF  CdePkg/CdeWelcomeDxe/CdeWelcomeDxe.inf
 INF  CdePkg/CdeLoadOptionsDxe/CdeLoadOptionsDxe.inf
 

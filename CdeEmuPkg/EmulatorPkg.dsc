@@ -21,7 +21,7 @@
   SUPPORTED_ARCHITECTURES        = X64|IA32
   BUILD_TARGETS                  = DEBUG|RELEASE|NOOPT
   SKUID_IDENTIFIER               = DEFAULT
-  FLASH_DEFINITION               = EmulatorPkg/EmulatorPkg.fdf
+  FLASH_DEFINITION               = EmulatorPkg.fdf
 
 
   #
