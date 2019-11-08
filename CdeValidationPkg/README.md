@@ -88,10 +88,10 @@ Each of the VS2019 projects / EDK2 components can be built in:
    [EmulatorPkg.fdf](../CdeEmuPkg/EmulatorPkg.fdf#L118)<br>
    [EmulatorPkg.fdf](../CdeEmuPkg/EmulatorPkg.fdf#L146)<br>
 
-   [PlatformPkgX64.dsc](../CdeEmuPkg/PlatformPkgX64.dsc#L745)<br>
-   [PlatformPkgX64.dsc](../CdeEmuPkg/PlatformPkgX64.dsc#L889)<br>
-   [PlatformPkg.fdf](../CdeEmuPkg/PlatformPkg.fdf#L337)<br>
-   [PlatformPkg.fdf](../CdeEmuPkg/PlatformPkg.fdf#L414)<br>
+   [PlatformPkgX64.dsc](../CdeMnwPkg/PlatformPkgX64.dsc#L745)<br>
+   [PlatformPkgX64.dsc](../CdeMnwPkg/PlatformPkgX64.dsc#L889)<br>
+   [PlatformPkg.fdf](../CdeMnwPkg/PlatformPkg.fdf#L337)<br>
+   [PlatformPkg.fdf](../CdeMnwPkg/PlatformPkg.fdf#L414)<br>
 8. Add the FILE_GUID / commandline pair to [CdeLoadOptions.h](../CdePkg/Include/CdeLoadOptions.h)
 6. build the source tree:
     * For MINNOWBOARD BUILD type:<br>`build -a IA32 -a X64 -n 5 -t VS2015x86 -b DEBUG -p Vlv2TbltDevicePkg\PlatformPkgX64.dsc`
