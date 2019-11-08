@@ -194,11 +194,11 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
 ## Howto
 1. install a build machine: https://github.com/KilianKegel/HowTo-setup-an-UEFI-Development-PC#howto-setup-an-uefi-development-pc
     * VS2015x86 tool chain is used. Make sure, that **MSVC v140 VS2015 build tools** are installed
-2. `git clone -b CdePkg https://github.com/tianocore/edk2-staging.git`
+2. `git clone -b CdePkg --recursive https://github.com/tianocore/edk2-staging.git`
 3. run **LAUNCH.BAT**, that will
     1. check build tools are installed
     2. download NASM and OPENSSL tools
-    3. download EDK2 and EDK2-NON-OSI from tianocore
+    3. download EDK2 and EDK2-NON-OSI from tianocore and CdeBinPkg
     4. setup the build environment variables
 4. build the source tree:
     * For MINNOWBOARD BUILD type:<br>`build -a IA32 -a X64 -n 5 -t VS2015x86 -b DEBUG -p Vlv2TbltDevicePkg\PlatformPkgX64.dsc`
