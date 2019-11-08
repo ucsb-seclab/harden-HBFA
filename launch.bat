@@ -13,13 +13,13 @@ rem #######################################################################
 rem 
 rem WINDDK 3790.1830 installation check...
 rem 
-if not exist c:\WINDDK\3790.1830\install.htm (
-    echo ATTENTION: DDK 3790.1830 not installed
-    echo download from  http://download.microsoft.com/download/9/0/f/90f019ac-8243-48d3-91cf-81fc4093ecfd/1830_usa_ddk.iso
-    ping 127.0.0.0 > nul
-) else (
-    echo WINDDK 3790.1830 is installed
-)
+rem if not exist c:\WINDDK\3790.1830\install.htm (
+rem     echo ATTENTION: DDK 3790.1830 not installed
+rem     echo download from  http://download.microsoft.com/download/9/0/f/90f019ac-8243-48d3-91cf-81fc4093ecfd/1830_usa_ddk.iso
+rem     ping 127.0.0.0 > nul
+rem ) else (
+rem     echo WINDDK 3790.1830 is installed
+rem )
 
 rem
 rem VS2015 installation check...
@@ -81,6 +81,7 @@ rem ### EDK2 and EDK2-NON-OSI #############################################
 rem #######################################################################
 if not exist edk2 git clone --recursive https://github.com/tianocore/edk2.git edk2
 if not exist edk2-non-osi git clone --recursive https://github.com/tianocore/edk2-non-osi.git edk2-non-osi
+if not exist edk2-platforms git clone --recursive https://github.com/tianocore/edk2-platforms.git edk2-platforms
 if not exist CdeBinPkg git clone --recursive https://github.com/KilianKegel/CdeBinPkg.git CdeBinPkg
 
 rem #######################################################################
@@ -88,13 +89,13 @@ rem ### set build environment #############################################
 rem #######################################################################
 rem 
 set WORKSPACE=%CD%
-set PACKAGES_PATH=%WORKSPACE%\edk2;
-set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\;
+set PACKAGES_PATH=%WORKSPACE%\edk2
+set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%
 set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\CdeMnwPkg
 set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\CdeEmuPkg
-set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\edk2-platforms\Silicon\Intel;
-set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\edk2-platforms\Platform\Intel;
-set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\edk2-non-osi\Silicon\Intel;
+set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\edk2-platforms\Silicon\Intel
+set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\edk2-platforms\Platform\Intel
+set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\edk2-non-osi\Silicon\Intel
 
 set EDK_TOOLS_PATH=%WORKSPACE%\edk2\BaseTools
 path=%path%;%WORKSPACE%\openssl-1.0.2r-x64_86-win64;%WORKSPACE%;
