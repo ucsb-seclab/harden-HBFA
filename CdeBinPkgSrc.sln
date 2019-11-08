@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29418.71
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CdeServicesPei", "CdeBinPkgSrc\CdeServicesPei\CdeServicesPei.vcxproj", "{4D70B347-3913-4772-BE66-BA350929D25A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8C250C8A-C234-450D-83ED-F0C898E1A739} = {8C250C8A-C234-450D-83ED-F0C898E1A739}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CdeServicesDxe", "CdeBinPkgSrc\CdeServicesDxe\CdeServicesDxe.vcxproj", "{29C88F8D-68CE-4C63-A6DD-BAB7ADEF2BBB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8C250C8A-C234-450D-83ED-F0C898E1A739} = {8C250C8A-C234-450D-83ED-F0C898E1A739}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CdeLib", "CdeBinPkgSrc\CdeLib\CdeLib.vcxproj", "{8C250C8A-C234-450D-83ED-F0C898E1A739}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4D70B347-3913-4772-BE66-BA350929D25A}.Release|x64.ActiveCfg = Release|x64
+		{4D70B347-3913-4772-BE66-BA350929D25A}.Release|x86.ActiveCfg = Release|Win32
+		{4D70B347-3913-4772-BE66-BA350929D25A}.Release|x86.Build.0 = Release|Win32
+		{29C88F8D-68CE-4C63-A6DD-BAB7ADEF2BBB}.Release|x64.ActiveCfg = Release|x64
+		{29C88F8D-68CE-4C63-A6DD-BAB7ADEF2BBB}.Release|x64.Build.0 = Release|x64
+		{29C88F8D-68CE-4C63-A6DD-BAB7ADEF2BBB}.Release|x86.ActiveCfg = Release|Win32
+		{29C88F8D-68CE-4C63-A6DD-BAB7ADEF2BBB}.Release|x86.Build.0 = Release|Win32
+		{8C250C8A-C234-450D-83ED-F0C898E1A739}.Release|x64.ActiveCfg = Release|x64
+		{8C250C8A-C234-450D-83ED-F0C898E1A739}.Release|x64.Build.0 = Release|x64
+		{8C250C8A-C234-450D-83ED-F0C898E1A739}.Release|x86.ActiveCfg = Release|Win32
+		{8C250C8A-C234-450D-83ED-F0C898E1A739}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DDB7241A-69F6-48B2-BA88-EF311F055DC3}
+	EndGlobalSection
+EndGlobal
