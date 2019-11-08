@@ -74,7 +74,6 @@ int main(int argc, char** argv) {
 
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "########################## Test clock() in %s %s\n", CDE_CONFIGURATION_STRING, CDE_PLATFORM_STRING));
-    CDEMOFINE((MFNINF(0 != _CdeGetCurrentPrivilegeLevel()) "########################## NOTE: In Emulation Mode time base is IMPRECISE\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
 
     for (i = 0; i < argc; i++) {

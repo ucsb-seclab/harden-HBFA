@@ -1,3 +1,7 @@
+#  
+#   Copyright (c) 2019, Kilian Kegel. All rights reserved.<BR>
+#   SPDX-License-Identifier: BSD-2-Clause-Patent
+#  
 [Defines]
   INF_VERSION                    = 1.26
   BASE_NAME                      = clockDxe

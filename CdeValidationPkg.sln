@@ -35,6 +35,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clock", "CdeValidationPkg\TIME_H\clock\clock.vcxproj", "{C400DDF9-651C-47F6-9413-268D1DB29CD0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B8B13122-66F1-4A15-A18F-A56DA637F528} = {B8B13122-66F1-4A15-A18F-A56DA637F528}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -130,7 +133,6 @@ Global
 		{C400DDF9-651C-47F6-9413-268D1DB29CD0}.NT(Torito C Library)|x64.ActiveCfg = NT(Torito C Library)|x64
 		{C400DDF9-651C-47F6-9413-268D1DB29CD0}.NT(Torito C Library)|x64.Build.0 = NT(Torito C Library)|x64
 		{C400DDF9-651C-47F6-9413-268D1DB29CD0}.NT(Torito C Library)|x86.ActiveCfg = NT(Torito C Library)|Win32
-		{C400DDF9-651C-47F6-9413-268D1DB29CD0}.NT(Torito C Library)|x86.Build.0 = NT(Torito C Library)|Win32
 		{C400DDF9-651C-47F6-9413-268D1DB29CD0}.UEFI DXE(CdeLib)|x64.ActiveCfg = UEFI DXE(CdeLib)|x64
 		{C400DDF9-651C-47F6-9413-268D1DB29CD0}.UEFI DXE(CdeLib)|x64.Build.0 = UEFI DXE(CdeLib)|x64
 		{C400DDF9-651C-47F6-9413-268D1DB29CD0}.UEFI DXE(CdeLib)|x86.ActiveCfg = UEFI DXE(CdeLib)|Win32
@@ -142,7 +144,6 @@ Global
 		{C400DDF9-651C-47F6-9413-268D1DB29CD0}.UEFI SHELL(Torito C Library)|x64.ActiveCfg = UEFI SHELL(Torito C Library)|x64
 		{C400DDF9-651C-47F6-9413-268D1DB29CD0}.UEFI SHELL(Torito C Library)|x64.Build.0 = UEFI SHELL(Torito C Library)|x64
 		{C400DDF9-651C-47F6-9413-268D1DB29CD0}.UEFI SHELL(Torito C Library)|x86.ActiveCfg = UEFI SHELL(Torito C Library)|Win32
-		{C400DDF9-651C-47F6-9413-268D1DB29CD0}.UEFI SHELL(Torito C Library)|x86.Build.0 = UEFI SHELL(Torito C Library)|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
