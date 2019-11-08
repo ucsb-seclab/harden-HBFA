@@ -83,8 +83,8 @@ Each of the VS2019 projects / EDK2 components can be built in:
    ![pci1](https://raw.githubusercontent.com/KilianKegel/pictures/master/Untitled6.png)
 6. Get the new project buildable in all target configurations
 7. Adjust the .DSC and .FDF files to involve the new driver into EDK2 build<br>
-   [EmulatorPkg.dsc](../EmulatorPkg/EmulatorPkg.dsc#L266)<br>
-   [EmulatorPkg.dsc](../EmulatorPkg/EmulatorPkg.dsc#L303)<br>
+   [EmulatorPkg.dsc](../CdeEmuPkg/EmulatorPkg.dsc#L267)<br>
+   [EmulatorPkg.dsc](../CdeEmuPkg/EmulatorPkg.dsc#L305)<br>
    [EmulatorPkg.fdf](../EmulatorPkg/EmulatorPkg.fdf#L117)<br>
    [EmulatorPkg.fdf](../EmulatorPkg/EmulatorPkg.fdf#L144)<br>
 
