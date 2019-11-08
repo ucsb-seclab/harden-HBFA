@@ -85,13 +85,13 @@ Each of the VS2019 projects / EDK2 components can be built in:
 7. Adjust the .DSC and .FDF files to involve the new driver into EDK2 build<br>
    [EmulatorPkg.dsc](../CdeEmuPkg/EmulatorPkg.dsc#L267)<br>
    [EmulatorPkg.dsc](../CdeEmuPkg/EmulatorPkg.dsc#L305)<br>
-   [EmulatorPkg.fdf](../EmulatorPkg/EmulatorPkg.fdf#L117)<br>
-   [EmulatorPkg.fdf](../EmulatorPkg/EmulatorPkg.fdf#L144)<br>
+   [EmulatorPkg.fdf](../CdeEmuPkg/EmulatorPkg.fdf#L118)<br>
+   [EmulatorPkg.fdf](../CdeEmuPkg/EmulatorPkg.fdf#L146)<br>
 
-   [PlatformPkgX64.dsc](../edk2-platforms/Platform/Intel/Vlv2TbltDevicePkg/PlatformPkgX64.dsc#L744)<br>
-   [PlatformPkgX64.dsc](../edk2-platforms/Platform/Intel/Vlv2TbltDevicePkg/PlatformPkgX64.dsc#L887)<br>
-   [PlatformPkg.fdf](../edk2-platforms/Platform/Intel/Vlv2TbltDevicePkg/PlatformPkg.fdf#L336)<br>
-   [PlatformPkg.fdf](../edk2-platforms/Platform/Intel/Vlv2TbltDevicePkg/PlatformPkg.fdf#L412)<br>
+   [PlatformPkgX64.dsc](../CdeEmuPkg/PlatformPkgX64.dsc#L745)<br>
+   [PlatformPkgX64.dsc](../CdeEmuPkg/PlatformPkgX64.dsc#L889)<br>
+   [PlatformPkg.fdf](../CdeEmuPkg/PlatformPkg.fdf#L337)<br>
+   [PlatformPkg.fdf](../CdeEmuPkg/PlatformPkg.fdf#L414)<br>
 8. Add the FILE_GUID / commandline pair to [CdeLoadOptions.h](../CdePkg/Include/CdeLoadOptions.h)
 6. build the source tree:
     * For MINNOWBOARD BUILD type:<br>`build -a IA32 -a X64 -n 5 -t VS2015x86 -b DEBUG -p Vlv2TbltDevicePkg\PlatformPkgX64.dsc`
