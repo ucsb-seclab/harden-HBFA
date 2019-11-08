@@ -44,50 +44,50 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{dc18fb00-1fde-499e-8ccd-897eae4c5c45}</ProjectGuid>
-    <RootNamespace>systeminterfaceDXE</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>systeminterfaceDXE</ProjectName>
+    <ProjectGuid>{C400DDF9-651C-47F6-9413-268D1DB29CD0}</ProjectGuid>
+    <RootNamespace>clockDXE</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <ProjectName>clock</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='UEFI SHELL(Torito C Library)|x64'">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='UEFI SHELL(Torito C Library)|Win32'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='UEFI PEI(CdeLib)|x64'">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='UEFI PEI(CdeLib)|Win32'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='UEFI DXE(CdeLib)|x64'">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='UEFI DXE(CdeLib)|Win32'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='NT(Torito C Library)|x64'">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='NT(Torito C Library)|Win32'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='NT(Microsoft C Library)|x64'">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='NT(Microsoft C Library)|Win32'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -176,7 +176,7 @@
       <OmitFramePointers>false</OmitFramePointers>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>_CdeMofine64.lib;legacy_stdio_definitions.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -209,7 +209,7 @@
       <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>_CdeMofine32.lib;legacy_stdio_definitions.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -250,8 +250,8 @@
       <OmitFramePointers>false</OmitFramePointers>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(SolutionDir)CdeBinPkg\ToritoC64R.lib;_CdeMofine64.lib;kernel32.lib;</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ToritoC64R.lib;_CdeMofine64.lib;kernel32.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Console</SubSystem>
@@ -284,7 +284,7 @@
       <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>ToritoC32R.lib;_CdeMofine32.lib;kernel32.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -297,12 +297,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI DXE(CdeLib)|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\x64</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI DXE(CdeLib)|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\ia32</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI DXE(CdeLib)|x64'">
@@ -326,7 +326,7 @@
       <OmitFramePointers>false</OmitFramePointers>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>CdeLib.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -360,7 +360,7 @@
       <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\ia32;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\ia32;</AdditionalLibraryDirectories>
       <AdditionalDependencies>CdeLib.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -374,12 +374,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI PEI(CdeLib)|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\x64</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI PEI(CdeLib)|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\ia32</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI PEI(CdeLib)|x64'">
@@ -403,7 +403,7 @@
       <OmitFramePointers>false</OmitFramePointers>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>CdeLib.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -437,7 +437,7 @@
       <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\ia32;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\ia32;</AdditionalLibraryDirectories>
       <AdditionalDependencies>CdeLib.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -451,12 +451,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI SHELL(Torito C Library)|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\x64</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI SHELL(Torito C Library)|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\ia32</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI SHELL(Torito C Library)|x64'">
@@ -480,8 +480,8 @@
       <OmitFramePointers>false</OmitFramePointers>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(SolutionDir)CdeBinPkg\ToritoC64R.lib;_CdeMofine64.lib;</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ToritoC64R.lib;_CdeMofine64.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>EFI Application</SubSystem>
@@ -514,7 +514,7 @@
       <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>ToritoC64R.lib;_CdeMofine.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -531,6 +531,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="buildDXE.inf" />
+    <None Include="buildPEI.inf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\CdePkg\Include\CdeLoadOptions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

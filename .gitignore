@@ -11,3 +11,6 @@ vc140.pdb
 ./Release/
 edk2-platforms 
 CdeBinPkg 
+CdeValidationPkg/library/ 
+CdeValidationPkg/_CdeMofineLibrary/x64
+CdeValidationPkg/_CdeMofineLibrary/Win32

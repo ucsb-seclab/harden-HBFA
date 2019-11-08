@@ -203,6 +203,11 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
 4. build the source tree:
     * For MINNOWBOARD BUILD type:<br>`build -a IA32 -a X64 -n 5 -t VS2015x86 -b DEBUG -p Vlv2TbltDevicePkg\PlatformPkgX64.dsc`
     * For  EMULATION  BUILD type:<br>`build -p EmulatorPkg\EmulatorPkg.dsc -t VS2015x86 -a IA32`
+4a.build the CdeBinPkg source tree:
+    * NOTE: CdeBinPkg CdeServices driver and CdeLib library are provided in binary format per default
+      but can be recreated within a VS2019 session
+      To do so, start CdeBinPkgSrc.sln with VS2019
+
 5. Emulation Build run/debug
     * run: `runemu.bat`
     * debug: `dbgemu.bat`<br>
@@ -223,6 +228,10 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
 |[Visual HWTools for UEFI Shell](https://github.com/KilianKegel/Visual-HWTools-for-UEFI-Shell#visual-hwtools-for-uefi-shell)|HWTools: PCI- and GPIOSpy for Baytrail. MemSpy for all.|
 
 ## Revision history
+
+### 20191108
+* add TIME_H\clock() function validation for EmulationMode and MinnowBoard
+* add Torito C Library sourcecode selection to build **CdePkg** driver and libraries
 
 ### 20191028
 * update to meet offical EDK2-STAGING requirements

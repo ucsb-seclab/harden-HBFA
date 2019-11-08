@@ -251,7 +251,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ToritoC64R.lib;_CdeMofine64.lib;kernel32.lib;</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)CdeBinPkg\ToritoC64R.lib;_CdeMofine64.lib;kernel32.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Console</SubSystem>
@@ -297,12 +297,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI DXE(CdeLib)|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\x64</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI DXE(CdeLib)|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\ia32</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI DXE(CdeLib)|x64'">
@@ -374,12 +374,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI PEI(CdeLib)|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\x64</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI PEI(CdeLib)|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\ia32</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI PEI(CdeLib)|x64'">
@@ -451,12 +451,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI SHELL(Torito C Library)|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\x64</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI SHELL(Torito C Library)|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\ia32</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI SHELL(Torito C Library)|x64'">
@@ -481,7 +481,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ToritoC64R.lib;_CdeMofine64.lib;</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)CdeBinPkg\ToritoC64R.lib;_CdeMofine64.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>EFI Application</SubSystem>

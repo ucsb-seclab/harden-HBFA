@@ -271,7 +271,8 @@
   CdeValidationPkg/HOSTED_ENV/argcv/buildPEI.inf
   CdeValidationPkg/SYSTEM_IF/systeminterfacePEI/buildPEI.inf
   CdeValidationPkg/template/buildPEI.inf
-  #KGDebug end
+  CdeValidationPkg/TIME_H/clock/buildPEI.inf
+#KGDebug end
   
   MdeModulePkg/Universal/PCD/Pei/Pcd.inf  {
    <LibraryClasses>
@@ -308,7 +309,8 @@
   CdeValidationPkg/HOSTED_ENV/argcv/buildDXE.inf
   CdeValidationPkg/SYSTEM_IF/systeminterfaceDXE/buildDXE.inf
   CdeValidationPkg/template/buildDXE.inf
- 
+  CdeValidationPkg/TIME_H/clock/buildDXE.inf
+
   #KGDebug
 
   MdeModulePkg/Universal/PCD/Dxe/Pcd.inf {
