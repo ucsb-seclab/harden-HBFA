@@ -201,8 +201,8 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
     3. download EDK2 and EDK2-NON-OSI from tianocore and CdeBinPkg
     4. setup the build environment variables
 4. build the source tree:
-    * For MINNOWBOARD BUILD type:<br>`build -a IA32 -a X64 -n 5 -t VS2015x86 -b DEBUG -p Vlv2TbltDevicePkg\PlatformPkgX64.dsc`
-    * For  EMULATION  BUILD type:<br>`build -p EmulatorPkg\EmulatorPkg.dsc -t VS2015x86 -a IA32`
+    * For MINNOWBOARD BUILD type:<br>`build -a IA32 -a X64 -n 5 -t VS2015x86 -b DEBUG -p PlatformPkgX64.dsc`
+    * For  EMULATION  BUILD type:<br>`build -p EmulatorPkg.dsc -t VS2015x86 -a IA32`
 5. build the CdeBinPkg source tree:
     * NOTE: CdeBinPkg CdeServices driver and CdeLib library are provided in binary format per default
       but can be recreated within a VS2019 session<br>
