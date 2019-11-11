@@ -228,6 +228,11 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
 
 ## Revision history
 
+### 20191111
+* add all remaining TIME.H function validation for EmulationMode and MinnowBoard<br>
+  difftime(), mktime(), time(), asctime(), ctime(), gmtime(), localetime(), strftime()
+* TIME.H functions are fully available for UEFI POST (PEI and DXE)
+
 ### 20191108
 * add TIME_H\clock() function validation for EmulationMode and MinnowBoard
 * add Torito C Library sourcecode selection to build **CdePkg** driver and libraries

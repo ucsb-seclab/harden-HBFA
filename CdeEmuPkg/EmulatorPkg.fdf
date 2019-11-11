@@ -122,6 +122,7 @@ INF  CdePkg/CdeLoadOptionsPei/CdeLoadOptionsPei.inf
 INF  CdeValidationPkg/HOSTED_ENV/argcv/buildPEI.inf
 INF  CdeValidationPkg/SYSTEM_IF/systeminterfacePEI/buildPEI.inf
 INF  CdeValidationPkg/template/buildPEI.inf
+INF  CdeValidationPkg/TIME_H/timehfunctions/buildPEI.inf
 INF  CdeValidationPkg/TIME_H/clock/buildPEI.inf
 #KGDebug
 
@@ -150,6 +151,7 @@ INF  CdePkg/CdeLoadOptionsDxe/CdeLoadOptionsDxe.inf
 INF  CdeValidationPkg/HOSTED_ENV/argcv/buildDXE.inf
 INF  CdeValidationPkg/SYSTEM_IF/systeminterfaceDXE/buildDXE.inf
 INF  CdeValidationPkg/template/buildDXE.inf
+INF  CdeValidationPkg/TIME_H/timehfunctions/buildDXE.inf
 INF  CdeValidationPkg/TIME_H/clock/buildDXE.inf
 #KGDebug
 

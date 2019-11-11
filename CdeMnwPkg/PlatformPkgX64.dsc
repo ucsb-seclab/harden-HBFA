@@ -750,6 +750,7 @@
   CdeValidationPkg/SYSTEM_IF/systeminterfacePEI/buildPEI.inf
   CdeValidationPkg/template/buildPEI.inf
   CdeValidationPkg/TIME_H/clock/buildPEI.inf
+  CdeValidationPkg/TIME_H/timehfunctions/buildPEI.inf
 #KGDebug end
   Vlv2SocBinPkg/$(DXE_ARCHITECTURE)$(TARGET)/IA32/SecCore.inf
 
@@ -894,6 +895,7 @@
   CdeValidationPkg/SYSTEM_IF/systeminterfaceDXE/buildDXE.inf
   CdeValidationPkg/template/buildDXE.inf
   CdeValidationPkg/TIME_H/clock/buildDXE.inf
+  CdeValidationPkg/TIME_H/timehfunctions/buildDXE.inf
 
   #KGDebug
 
