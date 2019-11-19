@@ -228,6 +228,14 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
 
 ## Revision history
 
+### 20191119
+* add STRING.H function  validation for EmulationMode and MinnowBoard<br>
+  memcpy(), memmove(), strcpy(), strncpy(), strcat(), strncat(), memcmp(), strcmp()
+  strncmp(), memchr(), strchr(), strcspn(), strpbrk(), strrchr(), strspn(), strstr()
+  strtok(), memset(), strerror() and strlen()
+* not implemented are strcoll() and  strxfrm() that are locale dependant that
+  is not yet supported
+
 ### 20191111
 * add all remaining TIME.H function validation for EmulationMode and MinnowBoard<br>
   difftime(), mktime(), time(), asctime(), ctime(), gmtime(), localetime(), strftime()

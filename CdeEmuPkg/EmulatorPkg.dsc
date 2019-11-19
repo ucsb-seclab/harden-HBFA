@@ -273,6 +273,7 @@
   CdeValidationPkg/template/buildPEI.inf
   CdeValidationPkg/TIME_H/clock/buildPEI.inf
   CdeValidationPkg/TIME_H/timehfunctions/buildPEI.inf
+  CdeValidationPkg/STRING_H/stringhfunctions/buildPEI.inf
 #KGDebug end
   
   MdeModulePkg/Universal/PCD/Pei/Pcd.inf  {
@@ -312,7 +313,7 @@
   CdeValidationPkg/template/buildDXE.inf
   CdeValidationPkg/TIME_H/clock/buildDXE.inf
   CdeValidationPkg/TIME_H/timehfunctions/buildDXE.inf
-
+  CdeValidationPkg/STRING_H/stringhfunctions/buildDXE.inf
   #KGDebug
 
   MdeModulePkg/Universal/PCD/Dxe/Pcd.inf {
