@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"char *strcpy(char *dest, const char *src)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     for (i = 0; i < 2 * sizeof(TSTRING); i += 1) {
         memset(b, 'U' /*0x55*/, sizeof(b));
         p = strcpy(&b[i], TSTRING);
@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"char *strncpy(char *dest, const char *src, size_t n)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     for (i = 0; i < 2 * sizeof(TSTRING); i += 1) {
         memset(b, 'U' /*0x55*/, sizeof(b));
         p = strncpy(&b[i], TSTRING, sizeof(TSTRING)-3);
@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"char *strcat(char *dest, const char *src)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     for (i = 0; i < 2 * sizeof(TSTRING); i += 1) {
         memset(b, 'U' /*0x55*/, sizeof(b));
         p = strcpy(&b[i], TSTRING);
@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"char *strncat(char *dest, const char *src, size_t n)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     for (i = 0; i < 2 * sizeof(TSTRING); i += 1) {
         memset(b, 'U' /*0x55*/, sizeof(b));
         p = strcpy(&b[i], TSTRING);
@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"int memcmp(const void *s1, const void *s2, size_t n)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     for (i = 0; i < sizeof("ABCDEF"); i++) {
         int r = 0;
         r = memcmp("ABCDEF", "ABCdef", i);
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"int strcmp(const char *s1, const char *s2)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     for (i = 0; i < sizeof("UVWXYZ"); i++) {
         int r = 0;
         char string[] = { "UVWXYZ" };
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"void *memchr(const void *s, int c, size_t n)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     if (1) {
         static int pat8[] = { 'a','#','\0','$' };
         for (i = 0; i < sizeof(pat8) / sizeof(pat8[0]); i++) {
@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"void *strchr(const char *s, int c)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     if (1) {
         static int pat8[] = { 'a','#','$' };
         for (i = 0; i < sizeof(pat8) / sizeof(pat8[0]); i++) {
@@ -222,7 +222,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"size_t strcspn(const char *s1, const char *s2)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     if (1) {
         static int pat8[] = { 'c','G','9','#' };
         static char* set8[] = { "abc","DEFGH","123456789","ABC" };
@@ -240,7 +240,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"char *strpbrk(const char *s1, const char *s2)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     // sample taken from https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strpbrk-wcspbrk-mbspbrk-mbspbrk-l?view=vs-2019#example
     if (1) {
         char string[100] = "The 3 men and 2 boys ate 5 pigs";
@@ -258,7 +258,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"char* strrchr(const char* s, int c)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     // sample taken from https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strchr-wcschr-mbschr-mbschr-l?view=vs-2019#example
     if (1) {
         int  ch = 'r';
@@ -296,7 +296,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"size_t strspn(const char* str, const char* strCharSet)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     // sample taken from https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strspn-wcsspn-mbsspn-mbsspn-l?view=vs-2019#example
     if (1) {
         char string[] = "cabbage";
@@ -313,7 +313,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"char* strstr(const char* str, const char* strSearch)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     // sample taken from https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strstr-wcsstr-mbsstr-mbsstr-l?view=vs-2019#example
     if (1) {
         char str[] = "lazy";
@@ -342,7 +342,7 @@ int main(int argc, char** argv) {
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
     CDEMOFINE((MFNINF(1) "### Demonstrating \"char* strtok(char* strToken, const char* strDelimit)\"\n"));
     CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     // sample taken from https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strtok-strtok-l-wcstok-wcstok-l-mbstok-mbstok-l?view=vs-2019#example
     if (1) {
         char string[] = "A string?of ,,tokens!and some  more tokens\n,!?";
@@ -369,7 +369,7 @@ int main(int argc, char** argv) {
     //CDEMOFINE((MFNINF(1) "##################################################################\n"));
     //CDEMOFINE((MFNINF(1) "### Demonstrating \"wchar_t* wcstok(wchar_t* strToken, const wchar_t* strDelimit)\"\n"));
     //CDEMOFINE((MFNINF(1) "##################################################################\n"));
-    //CDEMOFINE((MFNINF(1) "NOTE: A termination '\0', 0x00 can probably not be displayed in a terminal\n"));
+    //CDEMOFINE((MFNINF(1) "NOTE: A termination '\\0', 0x00 can probably not be displayed in a terminal program\n"));
     //// sample taken from https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strtok-strtok-l-wcstok-wcstok-l-mbstok-mbstok-l?view=vs-2019#example
     //if (1) {
     //    wchar_t string[] = L"A string?of ,,tokens!and some  more tokens\n,!?";
