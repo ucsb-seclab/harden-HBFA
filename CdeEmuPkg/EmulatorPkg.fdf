@@ -124,6 +124,7 @@ INF  CdeValidationPkg/SYSTEM_IF/systeminterfacePEI/buildPEI.inf
 INF  CdeValidationPkg/template/buildPEI.inf
 INF  CdeValidationPkg/TIME_H/timehfunctions/buildPEI.inf
 INF  CdeValidationPkg/STRING_H/stringhfunctions/buildPEI.inf
+INF  CdeValidationPkg/WCHAR_H/wcharhfunctions/buildPEI.inf
 INF  CdeValidationPkg/TIME_H/clock/buildPEI.inf
 #KGDebug
 
@@ -154,6 +155,7 @@ INF  CdeValidationPkg/SYSTEM_IF/systeminterfaceDXE/buildDXE.inf
 INF  CdeValidationPkg/template/buildDXE.inf
 INF  CdeValidationPkg/TIME_H/timehfunctions/buildDXE.inf
 INF  CdeValidationPkg/STRING_H/stringhfunctions/buildDXE.inf
+INF  CdeValidationPkg/WCHAR_H/wcharhfunctions/buildDXE.inf
 INF  CdeValidationPkg/TIME_H/clock/buildDXE.inf
 #KGDebug
 

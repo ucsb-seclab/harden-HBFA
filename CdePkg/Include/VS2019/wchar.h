@@ -75,7 +75,7 @@ size_t wcsspn( const wchar_t *s1, const wchar_t *s2 );
 wchar_t *wcsstr( const wchar_t *s1, const wchar_t *s2 );
 wchar_t *wcstok( wchar_t * s1, const wchar_t * s2, wchar_t ** ptr );
 size_t wcslen( const wchar_t *s );
-//not yet implemented wchar_t *wmemchr( const wchar_t *s, wchar_t c, size_t n );
+wchar_t *wmemchr( const wchar_t *s, wchar_t c, size_t n );
 int wmemcmp( const wchar_t *s1, const wchar_t *s2, size_t n );
 wchar_t *wmemcpy( wchar_t * s1, const wchar_t * s2, size_t n );
 wchar_t *wmemmove( wchar_t *s1, const wchar_t *s2, size_t n );
