@@ -301,6 +301,7 @@ int UniDump(UNIDUMPPARM ctrl, unsigned elmcount, unsigned long long startaddr, u
 
     return 0;
 }
+
 int main(int argc, char** argv) {
     int i;
     wchar_t b[48];

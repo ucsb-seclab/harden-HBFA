@@ -1,0 +1,4 @@
+﻿  EfiCallerBaseName.c
+  main.c
+  Generating Code...
+  stdiohfunctions.vcxproj -> B:\edk2-staging.001\CdeValidationPkg\build\x64\NT(Microsoft C Library)\stdiohfunctions.exe

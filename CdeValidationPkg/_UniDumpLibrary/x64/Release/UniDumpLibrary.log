@@ -1,0 +1,5 @@
+﻿  UniDump.c
+cl : command line warning D9025: overriding '/sdl' with '/GS-'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1448,5): warning MSB8012: TargetPath(B:\edk2-staging.001\CdeValidationPkg\library\_UniDumpLibrary.lib) does not match the Library's OutputFile property value (B:\edk2-staging.001\CdeValidationPkg\library\_UniDump64.lib). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Lib.OutputFile).
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1450,5): warning MSB8012: TargetName(_UniDumpLibrary) does not match the Library's OutputFile property value (_UniDump64). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Lib.OutputFile).
+  UniDumpLibrary.vcxproj -> B:\edk2-staging.001\CdeValidationPkg\library\_UniDumpLibrary.lib

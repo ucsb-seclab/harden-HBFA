@@ -275,6 +275,7 @@
   CdeValidationPkg/TIME_H/timehfunctions/buildPEI.inf
   CdeValidationPkg/STRING_H/stringhfunctions/buildPEI.inf
   CdeValidationPkg/WCHAR_H/wcharhfunctions/buildPEI.inf
+  CdeValidationPkg/STDIO_H/stdiohfunctions/buildPEI.inf
 #KGDebug end
   
   MdeModulePkg/Universal/PCD/Pei/Pcd.inf  {
@@ -316,6 +317,7 @@
   CdeValidationPkg/TIME_H/timehfunctions/buildDXE.inf
   CdeValidationPkg/STRING_H/stringhfunctions/buildDXE.inf
   CdeValidationPkg/WCHAR_H/wcharhfunctions/buildDXE.inf
+  CdeValidationPkg/STDIO_H/stdiohfunctions/buildDXE.inf
   #KGDebug
 
   MdeModulePkg/Universal/PCD/Dxe/Pcd.inf {
