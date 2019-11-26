@@ -228,10 +228,10 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
 
 ## Revision history
 ### 20191126
-    * add STDIO.H function validation for EmulationMode and MinnowBoard for PEI and DXE POST drivers
-    * tmpnam(), printf(), snprintf(), sprintf(), vsnprintf(), vsscanf(), sscanf(), vprintf(), vsprintf()
-    * NOTE: file access and locale dependent functions are not available for POST drivers.
-    * check https://github.com/tianocore/edk2-staging/blob/CdePkg/implemented.md
+* add STDIO.H function validation for EmulationMode and MinnowBoard for PEI and DXE POST drivers
+* tmpnam(), printf(), snprintf(), sprintf(), vsnprintf(), vsscanf(), sscanf(), vprintf(), vsprintf()
+* NOTE: file access and locale dependent functions are not available for POST drivers.
+* check https://github.com/tianocore/edk2-staging/blob/CdePkg/implemented.md
 
 ### 20191125
 * add WCHAR.H function validation for EmulationMode and MinnowBoard for PEI and DXE POST drivers
