@@ -754,6 +754,7 @@
   CdeValidationPkg/STRING_H/stringhfunctions/buildPEI.inf
   CdeValidationPkg/WCHAR_H/wcharhfunctions/buildPEI.inf
   CdeValidationPkg/STDIO_H/stdiohfunctions/buildPEI.inf
+  CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildPEI.inf
 #KGDebug end
   Vlv2SocBinPkg/$(DXE_ARCHITECTURE)$(TARGET)/IA32/SecCore.inf
 
@@ -902,7 +903,7 @@
   CdeValidationPkg/STRING_H/stringhfunctions/buildDXE.inf
   CdeValidationPkg/WCHAR_H/wcharhfunctions/buildDXE.inf
   CdeValidationPkg/STDIO_H/stdiohfunctions/buildDXE.inf
-
+  CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildDXE.inf
   #KGDebug
 
   MdeModulePkg/Core/Dxe/DxeMain.inf {
