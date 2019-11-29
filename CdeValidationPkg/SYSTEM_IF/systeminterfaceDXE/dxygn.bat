@@ -3,6 +3,8 @@ rem
 rem Copyright (c) 2019, Kilian Kegel. All rights reserved.<BR>
 rem SPDX-License-Identifier: BSD-2-Clause-Patent
 rem
+rem create the CHM/HELP file
+@echo off
 goto START
 :OPEN 
 for %%a in (*.vcxproj) do START %%~dpna.chm
@@ -21,8 +23,8 @@ for %%a in (*.vcxproj) do (
     if exist  %%~dpna.chm del  %%~dpna.chm
     if exist  %%~dpna.chm goto ERREOF
 
-    echo copy %%~dpa..\..\dxygndflt.cfg doxygen.tmp\doxygen.tmp.cfg
-    copy ..\..\dxygndflt.cfg doxygen.tmp\doxygen.tmp.cfg
+    echo copy %DXYROOT%dxygndflt.cfg doxygen.tmp\doxygen.tmp.cfg
+    copy %DXYROOT%dxygndflt.cfg doxygen.tmp\doxygen.tmp.cfg
     echo.  >> doxygen.tmp\doxygen.tmp.cfg
     echo #################################################################################### >> doxygen.tmp\doxygen.tmp.cfg
     echo ####################### project specific settings ################################## >> doxygen.tmp\doxygen.tmp.cfg
@@ -31,7 +33,7 @@ for %%a in (*.vcxproj) do (
     @echo %%~na
     echo PROJECT_NAME = "%%~na" >> doxygen.tmp\doxygen.tmp.cfg
     if exist dxygn.png echo PROJECT_LOGO = %~dp0dxygn.png >> doxygen.tmp\doxygen.tmp.cfg
-    if not exist dxygn.png echo PROJECT_LOGO = %~dp0..\..\dxygndflt.png >> doxygen.tmp\doxygen.tmp.cfg
+    if not exist dxygn.png echo PROJECT_LOGO = %~dp0%DXYROOT%dxygndflt.png >> doxygen.tmp\doxygen.tmp.cfg
     echo OUTPUT_DIRECTORY = doxygen.tmp >> doxygen.tmp\doxygen.tmp.cfg
     echo CHM_FILE = %%~dpna.chm >> doxygen.tmp\doxygen.tmp.cfg
     echo IMAGE_PATH = %~dp0  >> doxygen.tmp\doxygen.tmp.cfg

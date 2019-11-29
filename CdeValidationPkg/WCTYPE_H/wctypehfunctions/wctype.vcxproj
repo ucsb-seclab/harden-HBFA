@@ -44,10 +44,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{ee2ec26d-10c0-466f-aee7-2405b7217301}</ProjectGuid>
-    <RootNamespace>wcharhfunctions</RootNamespace>
+    <ProjectGuid>{4f8a49d5-770b-4f6b-887e-96555f4e23fa}</ProjectGuid>
+    <RootNamespace>wctypeALLDxe</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>wcharhfunctions</ProjectName>
+    <ProjectName>wctypehfunctions</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='UEFI SHELL(Torito C Library)|x64'">
@@ -176,7 +176,7 @@
       <OmitFramePointers>false</OmitFramePointers>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>_CdeMofine64.lib;legacy_stdio_definitions.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -209,7 +209,7 @@
       <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>_CdeMofine32.lib;legacy_stdio_definitions.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -231,8 +231,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='NT(Torito C Library)|x64'">
     <ClCompile>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <Optimization>Disabled</Optimization>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <Optimization>MinSpace</Optimization>
       <PreprocessorDefinitions>_NO_CRT_STDIO_INLINE;_CRT_SECURE_NO_WARNINGS;CDE_DRIVER_NAME="$(TargetName)";CDE_CONFIGURATION_STRING="NT(Torito C Library)";CDE_PLATFORM_STRING="x86-64"</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
@@ -248,10 +248,9 @@
       <UseFullPaths>true</UseFullPaths>
       <AssemblerOutput>All</AssemblerOutput>
       <OmitFramePointers>false</OmitFramePointers>
-      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>$(SolutionDir)CdeBinPkg\ToritoC64R.lib;_CdeMofine64.lib;kernel32.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -259,7 +258,7 @@
       <EntryPointSymbol>_MainEntryPointWinNT</EntryPointSymbol>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>false</DataExecutionPrevention>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='NT(Torito C Library)|Win32'">
@@ -285,7 +284,7 @@
       <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>ToritoC32R.lib;_CdeMofine32.lib;kernel32.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -298,12 +297,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI DXE(CdeLib)|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\x64</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI DXE(CdeLib)|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\ia32</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI DXE(CdeLib)|x64'">
@@ -375,12 +374,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI PEI(CdeLib)|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\x64</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI PEI(CdeLib)|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\ia32</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI PEI(CdeLib)|x64'">
@@ -452,12 +451,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI SHELL(Torito C Library)|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\x64</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI SHELL(Torito C Library)|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;$(SolutionDir)edk2\MdePkg\Include;$(SolutionDir)edk2\MdePkg\Include\ia32</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CdePkg\include;</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UEFI SHELL(Torito C Library)|x64'">
@@ -515,7 +514,7 @@
       <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdeBinPkg\CdeLib\x64;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)CdeValidationPkg\Library\;$(SolutionDir)CdePkg\CdeLib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>ToritoC64R.lib;_CdeMofine.lib;</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
@@ -533,6 +532,9 @@
   <ItemGroup>
     <None Include="buildDXE.inf" />
     <None Include="buildPEI.inf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\CdePkg\Include\CdeLoadOptions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
