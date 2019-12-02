@@ -240,13 +240,11 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
 * add STDLIB.H function validation for EmulationMode and MinnowBoard for PEI and DXE POST drivers
 * atoi(), atol(), strtol(), strtoul(), rand(), srand(), calloc(), free(), malloc(), realloc(), atexit(), exit(), qsort(), abs(), labs(), div(), ldiv()
 * not available for POST drivers: abort(), strtod(), atof(), getenv(), system(), bsearch()
-* check https://github.com/tianocore/edk2-staging/blob/CdePkg/implemented.md
 
 ### 20191126
 * add STDIO.H function validation for EmulationMode and MinnowBoard for PEI and DXE POST drivers
 * tmpnam(), printf(), snprintf(), sprintf(), vsnprintf(), vsscanf(), sscanf(), vprintf(), vsprintf()
 * NOTE: file access and locale dependent functions are not available for POST drivers.
-* check https://github.com/tianocore/edk2-staging/blob/CdePkg/implemented.md
 
 ### 20191125
 * add WCHAR.H function validation for EmulationMode and MinnowBoard for PEI and DXE POST drivers
@@ -254,7 +252,6 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
   wcschr(), wcscspn(), wcspbrk(), wcsrchr(), wcsspn(), wcsstr(), wcstok(), wcslen(), 
   wmemcmp(), wmemcpy(), wmemmove(), wmemset()
 * NOTE: file access and "locale" dependent functions are not available for POST drivers.
-* check https://github.com/tianocore/edk2-staging/blob/CdePkg/implemented.md"
 
 ### 20191119
 * add STRING.H function  validation for EmulationMode and MinnowBoard<br>
