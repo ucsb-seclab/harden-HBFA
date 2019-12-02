@@ -5,8 +5,7 @@ NOTE:
 ## Validation Status
 <table>
         <tr> <th colspan="2">Diagnostics < assert.h ></th>                                                                                                                                              <th>TCL</th>    <th>DXE</th>         <th>PEI</th> </tr>
-            <tr><td><a href="https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-macro-assert-wassert?view=vs-2019">void _assert (const char *,const char *,unsigned)</a></td><td>C90, MSFT implementation for assert macro</td><td>a</td><TD>n/a</TD><TD>n/a</TD></tr>
-            <tr><td><a href="https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-macro-assert-wassert?view=vs-2019">void _wassert (const wchar_t *,const wchar_t *,unsigned)</a></td><td>C90, MSFT implementation for assert macro</td><td>a</td><TD>n/a</TD><TD>n/a</TD></tr>
+            <tr><td><a href="https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/assert-macro-assert-wassert?view=vs-2019">void _wassert (const wchar_t *,const wchar_t *,unsigned)</a></td><td>C90, MSFT implementation for assert macro</td><td>a</td><TD>a</TD><TD>a</TD></tr>
         <tr> <th colspan="2">Character handling < ctype.h ></th><th>TCL</th><th>DXE</th> <th>PEI</th> </tr>
         <tr><td><a href="https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/isalnum-iswalnum-isalnum-l-iswalnum-l?view=vs-2019">int isalnum(int)</a></td>             <td>C90, is implemented</td>                <td>a</td><TD>a</TD><TD>a</TD></tr>
             <tr><td><a href="https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/isalpha-iswalpha-isalpha-l-iswalpha-l?view=vs-2019">int isalpha(int)</a></td>         <td>C90, is implemented</td>                <td>a</td><TD>a</TD><TD>a</TD></tr>

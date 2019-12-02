@@ -129,6 +129,8 @@ INF  CdeValidationPkg/STDIO_H/stdiohfunctions/buildPEI.inf
 INF  CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildPEI.inf
 INF  CdeValidationPkg/CTYPE_H/ctypehfunctions/buildPEI.inf
 INF  CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildPEI.inf
+INF  CdeValidationPkg/ASSERT_H/asserthfunctions/buildPEI.inf
+INF  CdeValidationPkg/LOCALE_H/localehfunctions/buildPEI.inf
 INF  CdeValidationPkg/TIME_H/clock/buildPEI.inf
 #KGDebug
 
@@ -164,6 +166,8 @@ INF  CdeValidationPkg/STDIO_H/stdiohfunctions/buildDXE.inf
 INF  CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildDXE.inf
 INF  CdeValidationPkg/CTYPE_H/ctypehfunctions/buildDXE.inf
 INF  CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildDXE.inf
+INF  CdeValidationPkg/ASSERT_H/asserthfunctions/buildDXE.inf
+INF  CdeValidationPkg/LOCALE_H/localehfunctions/buildDXE.inf
 INF  CdeValidationPkg/TIME_H/clock/buildDXE.inf
 #KGDebug
 

@@ -279,6 +279,8 @@
   CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildPEI.inf
   CdeValidationPkg/CTYPE_H/ctypehfunctions/buildPEI.inf
   CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildPEI.inf
+  CdeValidationPkg/ASSERT_H/asserthfunctions/buildPEI.inf
+  CdeValidationPkg/LOCALE_H/localehfunctions/buildPEI.inf
 #KGDebug end
   
   MdeModulePkg/Universal/PCD/Pei/Pcd.inf  {
@@ -324,6 +326,8 @@
   CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildDXE.inf
   CdeValidationPkg/CTYPE_H/ctypehfunctions/buildDXE.inf
   CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildDXE.inf
+  CdeValidationPkg/ASSERT_H/asserthfunctions/buildDXE.inf
+  CdeValidationPkg/LOCALE_H/localehfunctions/buildDXE.inf
   #KGDebug
 
   MdeModulePkg/Universal/PCD/Dxe/Pcd.inf {
