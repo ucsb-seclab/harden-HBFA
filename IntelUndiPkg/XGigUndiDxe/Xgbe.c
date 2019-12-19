@@ -106,7 +106,7 @@ IsAltMacAddrSupported (
   if (BackupMacPointer == 0xFFFF
     || BackupMacPointer == 0x0000)
   {
-  
+
     //  Alternate Mac Address not supported if 0x37 pointer is not initialized to a value
     //  other than 0x0000 or 0xffff
     return FALSE;
@@ -179,8 +179,8 @@ XgbeBlockIt (
 }
 
 /** This is the drivers copy function so it does not need to rely on the BootServices
-   copy which goes away at runtime. 
-   
+   copy which goes away at runtime.
+
    This copy function allows 64-bit or 32-bit copies
    depending on platform architecture.  On Itanium we must check that both addresses
    are naturally aligned before attempting a 64-bit copy.
@@ -207,17 +207,6 @@ XgbeMemCopy (
 
   IntsToCopy  = Count / sizeof (UINTN);
   BytesToCopy = Count % sizeof (UINTN);
-#ifdef EFI64
-  
-  // Itanium cannot handle memory accesses that are not naturally aligned.  Determine
-  // if 64-bit copy is even possible with these start addresses.
-  if (((((UINTN) Source) & 0x0007) != 0)
-    || ((((UINTN) Dest) & 0x0007) != 0))
-  {
-    IntsToCopy  = 0;
-    BytesToCopy = Count;
-  }
-#endif /* EFI64 */
 
   SourcePtr = (UINTN *) Source;
   DestPtr   = (UINTN *) Dest;
@@ -241,7 +230,7 @@ XgbeMemCopy (
 }
 
 /** Copies the stats from our local storage to the protocol storage.
-   
+
    It means it will read our read and clear numbers, so some adding is required before
    we copy it over to the protocol.
 
@@ -474,15 +463,15 @@ XgbeTransmit (
 }
 
 /** Copies the frame from our internal storage ring (As pointed to by XgbeAdapter->rx_ring)
-   to the command Block passed in as part of the cpb parameter.  
-   
+   to the command Block passed in as part of the cpb parameter.
+
    The flow:
    Ack the interrupt, setup the pointers, find where the last Block copied is, check to make
    sure we have actually received something, and if we have then we do a lot of work.
    The packet is checked for errors, size is adjusted to remove the CRC, adjust the amount
    to copy if the buffer is smaller than the packet, copy the packet to the EFI buffer,
    and then figure out if the packet was targetted at us, broadcast, multicast
-   or if we are all promiscuous.  We then put some of the more interesting information 
+   or if we are all promiscuous.  We then put some of the more interesting information
    (protocol, src and dest from the packet) into the db that is passed to us.
    Finally we clean up the frame, set the return value to _SUCCESS, and inc the cur_rx_ind, watching
    for wrapping.  Then with all the loose ends nicely wrapped up, fade to black and return.
@@ -528,12 +517,12 @@ XgbeReceive (
 
   if ((ReceiveDescriptor->status & (IXGBE_RXD_STAT_EOP | IXGBE_RXD_STAT_DD)) != 0) {
     DEBUGPRINT (RX, ("XgbeReceive Packet Data at address %0x \n", CpbReceive->BufferAddr));
-    
+
     // Just to make sure we don't try to copy a zero length, only copy a positive sized packet.
     if ((ReceiveDescriptor->length != 0)
       && (ReceiveDescriptor->errors == 0))
     {
-      
+
       // If the buffer passed us is smaller than the packet, only copy the size of the buffer.
       TempLen = ReceiveDescriptor->length;
       if (ReceiveDescriptor->length > (INT16) CpbReceive->BufferLen) {
@@ -542,8 +531,8 @@ XgbeReceive (
 
       // Copy the packet from our list to the EFI buffer.
       XgbeMemCopy (
-        (INT8 *) (UINTN) CpbReceive->BufferAddr,
-        (INT8 *) (UINTN) ReceiveDescriptor->buffer_addr,
+        (UINT8 *) (UINTN) CpbReceive->BufferAddr,
+        (UINT8 *) (UINTN) ReceiveDescriptor->buffer_addr,
         TempLen
       );
 
@@ -577,7 +566,7 @@ XgbeReceive (
         DEBUGPRINT (RX, ("Packet is for us\n"));
         PacketType = PXE_FRAME_TYPE_UNICAST;
       } else {
-        
+
         // Compare it against our broadcast node address
         for (i = 0; i < PXE_HWADDR_LEN_ETHER; i++) {
           if (EtherHeader->DestAddr[i] != XgbeAdapter->BroadcastNodeAddress[i]) {
@@ -591,7 +580,7 @@ XgbeReceive (
         if (i >= PXE_HWADDR_LEN_ETHER) {
           PacketType = PXE_FRAME_TYPE_BROADCAST;
         } else {
-          
+
           // That leaves multicast or we must be in promiscuous mode.
           // Check for the Mcast bit in the address.
           // otherwise its a promiscuous receive.
@@ -624,7 +613,7 @@ XgbeReceive (
         RX, ("ERROR: ReceiveDescriptor->length=%x, ReceiveDescriptor->errors=%x \n",
         ReceiveDescriptor->length, ReceiveDescriptor->errors)
       );
-      
+
       // Go through all the error bits - these are only valid when EOP and DD are set
       if (ReceiveDescriptor->errors & IXGBE_RXD_ERR_CE) {
         DEBUGPRINT (CRITICAL, ("CE Error\n"));
@@ -648,7 +637,7 @@ XgbeReceive (
         DEBUGPRINT (CRITICAL, ("IP Error\n"));
       }
     }
-    
+
     // Clean up the packet
     ReceiveDescriptor->status = 0;
     ReceiveDescriptor->length = 0;
@@ -746,7 +735,7 @@ XgbeReset (
   // interrupts.
   // If the hardware has already been started then don't bother with a reset.
   if (!XgbeAdapter->HwInitialized) {
-  
+
     // Now that the structures are in place, we can configure the hardware to use it all.
     Status = XgbeInitHw (XgbeAdapter);
     if (EFI_ERROR (Status)) {
@@ -854,7 +843,7 @@ XgbeLanFunction (
   XGBE_DRIVER_DATA *XgbeAdapter
   )
 {
-  XgbeAdapter->LanFunction = (IXGBE_READ_REG (&XgbeAdapter->Hw, IXGBE_STATUS) & IXGBE_STATUS_LAN_ID) 
+  XgbeAdapter->LanFunction = (IXGBE_READ_REG (&XgbeAdapter->Hw, IXGBE_STATUS) & IXGBE_STATUS_LAN_ID)
                              >> IXGBE_STATUS_LAN_ID_SHIFT;
   DEBUGPRINT (INIT, ("PCI function %d is LAN port %d \n", XgbeAdapter->Function, XgbeAdapter->LanFunction));
   DEBUGWAIT (INIT);
@@ -1114,7 +1103,6 @@ XgbeFirstTimeInit (
   // Clear the Wake-up status register in case there has been a power management event
   IXGBE_WRITE_REG (&XgbeAdapter->Hw, IXGBE_WUS, 0);
 
-
   Status = XgbeInitHw (XgbeAdapter);
   if (EFI_ERROR (Status)) {
     DEBUGPRINT (CRITICAL, ("XgbeInitHw returns %r\n", Status));
@@ -1125,6 +1113,7 @@ XgbeFirstTimeInit (
 
   return EFI_SUCCESS;
 }
+
 
 /** Initializes the hardware and sets up link.
 
@@ -1237,7 +1226,7 @@ XgbeTxRxConfigure (
 
   ZeroMem (XgbeAdapter->TxBufferMappings, sizeof (XgbeAdapter->TxBufferMappings));
 
-  RxBuffer = (LOCAL_RX_BUFFER *) XgbeAdapter->RxBufferMapping.PhysicalAddress;
+  RxBuffer = (LOCAL_RX_BUFFER *) (UINTN) XgbeAdapter->RxBufferMapping.PhysicalAddress;
 
   DEBUGPRINT (
     XGBE, ("Local Rx Buffer %X size %X\n",
@@ -1264,7 +1253,7 @@ XgbeTxRxConfigure (
   IXGBE_WRITE_REG (&XgbeAdapter->Hw, IXGBE_RDBAL (0), (UINT32) (UINTN) (XgbeAdapter->RxRing.PhysicalAddress));
 
   MemAddr = (UINT64) (UINTN) XgbeAdapter->RxRing.PhysicalAddress;
-  MemPtr  = &((UINT32) MemAddr);
+  MemPtr  = (UINT32 *) &MemAddr;
   MemPtr++;
   IXGBE_WRITE_REG (&XgbeAdapter->Hw, IXGBE_RDBAH (0), *MemPtr);
   DEBUGPRINT (XGBE, ("Rdbal0 %X\n", (UINT32) IXGBE_READ_REG (&XgbeAdapter->Hw, IXGBE_RDBAL (0))));
@@ -1337,7 +1326,7 @@ XgbeTxRxConfigure (
   XgbeAdapter->XmitDoneHead = 0;  // the last cleaned buffer
   IXGBE_WRITE_REG (&XgbeAdapter->Hw, IXGBE_TDBAL (0), (UINT32) (XgbeAdapter->TxRing.PhysicalAddress));
   MemAddr = (UINT64) XgbeAdapter->TxRing.PhysicalAddress;
-  MemPtr  = &((UINT32) MemAddr);
+  MemPtr  = (UINT32 *) &MemAddr;
   MemPtr++;
   IXGBE_WRITE_REG (&XgbeAdapter->Hw, IXGBE_TDBAH (0), *MemPtr);
   DEBUGPRINT (XGBE, ("TdBah0 %X\n", *MemPtr));
@@ -1399,25 +1388,21 @@ XgbeInitialize (
   XGBE_DRIVER_DATA *XgbeAdapter
   )
 {
-  UINT32 *     TempBar;
-  PXE_STATCODE PxeStatcode;
   EFI_STATUS   Status;
-
-  PxeStatcode = PXE_STATCODE_SUCCESS;
-  TempBar     = NULL;
+  PXE_STATCODE PxeStatcode = PXE_STATCODE_SUCCESS;
 
   ZeroMem (
-    (VOID *) XgbeAdapter->RxRing.UnmappedAddress,
+    (VOID *) (UINTN) XgbeAdapter->RxRing.UnmappedAddress,
     RX_RING_SIZE
     );
 
   ZeroMem (
-    (VOID *) XgbeAdapter->TxRing.UnmappedAddress,
+    (VOID *) (UINTN) XgbeAdapter->TxRing.UnmappedAddress,
     TX_RING_SIZE
     );
 
   ZeroMem (
-    (VOID *) XgbeAdapter->RxBufferMapping.UnmappedAddress,
+    (VOID *) (UINTN) XgbeAdapter->RxBufferMapping.UnmappedAddress,
     RX_BUFFERS_SIZE
     );
 
@@ -1525,7 +1510,7 @@ XgbeSetFilter (
   DEBUGPRINT (RXFILTER, (", RxFilter=%08x, FCTRL=%08x\n", XgbeAdapter->RxFilter, Fctrl));
 
   if (Fctrl != FctrlInitial) {
-  
+
     // Filter has changed - write the new value
     // Receiver must be disabled during write to IXGBE_FCTRL
     if (XgbeAdapter->ReceiveStarted) {
@@ -1589,7 +1574,7 @@ XgbeClearFilter (
   }
 
   if (NewFilter & PXE_OPFLAGS_RECEIVE_FILTER_ALL_MULTICAST) {
-    
+
     // add the MPE bit to the variable to be written to the RCTL
     Fctrl &= ~IXGBE_FCTRL_MPE;
     DEBUGPRINT (RXFILTER, ("IXGBE_FCTRL_MPE "));
@@ -1599,7 +1584,7 @@ XgbeClearFilter (
   DEBUGPRINT (RXFILTER, (", RxFilter=%08x, FCTRL=%08x\n", XgbeAdapter->RxFilter, Fctrl));
 
   if (Fctrl != FctrlInitial) {
-    
+
     // Filter has changed - write the new value
     // Receiver must be disabled during write to IXGBE_FCTRL
     if (XgbeAdapter->ReceiveStarted) {
@@ -1733,7 +1718,7 @@ XgbeReceiveStop (
   }
 
   ixgbe_disable_rx (&XgbeAdapter->Hw);
-  
+
   // Reset the transmit and receive descriptor rings
   IXGBE_WRITE_REG (&XgbeAdapter->Hw, IXGBE_RDH (0), 0);
   IXGBE_WRITE_REG (&XgbeAdapter->Hw, IXGBE_RDT (0), 0);
@@ -2129,7 +2114,7 @@ XgbeFreeTxBuffers (
 
 /** Checks if link is up
 
-   @param[in]   XgbeAdapter   Pointer to the NIC data structure information 
+   @param[in]   XgbeAdapter   Pointer to the NIC data structure information
                              which the UNDI driver is layering on.
 
    @retval   TRUE   Link is up
@@ -2144,9 +2129,9 @@ IsLinkUp (
   BOOLEAN          LinkUp;
 
   if (XgbeAdapter->QualificationResult != MODULE_SUPPORTED) {
-    return FALSE; 
+    return FALSE;
   }
-  
+
   ixgbe_check_link (&XgbeAdapter->Hw, &Speed, &LinkUp, FALSE);
   return LinkUp;
 }
@@ -2215,7 +2200,7 @@ BlinkLeds (
   UINT32  i = 0;
   UINT32  LedIndex = 2;
   UINT16  PhyRegVal = 0;
-  
+
   // IXGBE shared code doesn't save/restore the LEDCTL register when blinking used.
   LedCtl = IXGBE_READ_REG (&XgbeAdapter->Hw, IXGBE_LEDCTL);
 
@@ -2355,8 +2340,8 @@ IxgbeReverseDword (
                               which the UNDI driver is layering on..
 
    @retval   MODULE_SUPPORTED    Module is qualified
-   @retval   MODULE_UNSUPPORTED  Module is unqualified and module 
-                                 qualification is enabled on the port 
+   @retval   MODULE_UNSUPPORTED  Module is unqualified and module
+                                 qualification is enabled on the port
 **/
 MODULE_QUALIFICATION_STATUS
 GetModuleQualificationResult (
@@ -2377,28 +2362,3 @@ GetModuleQualificationResult (
 }
 
 
-
-/** This is only for debugging, it will pause and wait for the user to press <ENTER>.
-
-   Results AFTER this call are unpredicable. You can only be assured the code up to
-   this call is working.
-
-   @param[in]   VOID
-
-   @return   Execution of code is resumed
-**/
-VOID
-WaitForEnter (
-  VOID
-  )
-{
-  EFI_INPUT_KEY Key;
-
-  AsciiPrint ("\nPress <Enter> to continue...\n");
-
-  do {
-    gST->ConIn->ReadKeyStroke (gST->ConIn, &Key);
-  } while (Key.UnicodeChar != 0xD);
-}
-
-

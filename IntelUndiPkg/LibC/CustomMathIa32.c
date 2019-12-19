@@ -198,3 +198,226 @@ _Exit:
     ret
   }
 }
+
+UINT64
+EFIAPI
+CustomMathDivRemU64x64 (
+  IN      UINT64                    Dividend,
+  IN      UINT64                    Divisor,
+  OUT     UINT64                    *Remainder OPTIONAL
+  )
+{
+  _asm {
+    mov     edx, dword ptr [Dividend + 4]
+    mov     eax, dword ptr [Dividend + 0]   // edx:eax <- dividend
+    mov     edi, edx
+    mov     esi, eax                    // edi:esi <- dividend
+    mov     ecx, dword ptr [Divisor + 4]
+    mov     ebx, dword ptr [Divisor + 0]   // ecx:ebx <- divisor
+BitLoop:
+    shr     edx, 1
+    rcr     eax, 1
+    shrd    ebx, ecx, 1
+    shr     ecx, 1
+    jnz     BitLoop
+    div     ebx
+    mov     ebx, eax                    // ebx <- quotient
+    mov     ecx, dword ptr [Divisor + 4]
+    mul     dword ptr [Divisor]
+    imul    ecx, ebx
+    add     edx, ecx
+    mov     ecx, Remainder
+    jc      TooLarge                   // product > 2^64
+    cmp     edi, edx                    // compare high 32 bits
+    ja      Correct
+    jb      TooLarge                   // product > dividend
+    cmp     esi, eax
+    jae     Correct                    // product <= dividend
+TooLarge:
+    dec     ebx                         // adjust quotient by -1
+    jecxz   Return                     // return if Remainder == NULL
+    sub     eax, dword ptr [Divisor + 0]
+    sbb     edx, dword ptr [Divisor + 4]
+Correct:
+    jecxz   Return
+    sub     esi, eax
+    sbb     edi, edx                    // edi:esi <- remainder
+    mov     [ecx], esi
+    mov     [ecx + 4], edi
+Return:
+    mov     eax, ebx                    // eax <- quotient
+    xor     edx, edx
+  }
+}
+
+INT64
+EFIAPI
+CustomMathDivRemS64x64 (
+  IN      INT64                     Dividend,
+  IN      INT64                     Divisor,
+  OUT     INT64                     *Remainder  OPTIONAL
+  )
+{
+  INT64                             Quot;
+
+  Quot = CustomMathDivRemU64x64 (
+           (UINT64) (Dividend >= 0 ? Dividend : -Dividend),
+           (UINT64) (Divisor >= 0 ? Divisor : -Divisor),
+           (UINT64 *) Remainder
+           );
+  if (Remainder != NULL && Dividend < 0) {
+    *Remainder = -*Remainder;
+  }
+  return (Dividend ^ Divisor) >= 0 ? Quot : -Quot;
+}
+
+INT64
+EFIAPI
+CustomDivS64x64Remainder (
+  IN      INT64                     Dividend,
+  IN      INT64                     Divisor,
+  OUT     INT64                     *Remainder  OPTIONAL
+  )
+{
+  return CustomMathDivRemS64x64 (Dividend, Divisor, Remainder);
+}
+
+/*
+ * Divides a 64-bit signed value with a 64-bit signed value and returns
+ * a 64-bit signed result.
+ */
+__declspec(naked) void __cdecl _alldiv (void)
+{
+  _asm {
+
+    ;Entry:
+    ;       Arguments are passed on the stack:
+    ;               1st pushed: divisor (QWORD)
+    ;               2nd pushed: dividend (QWORD)
+    ;
+    ;Exit:
+    ;       EDX:EAX contains the quotient (dividend/divisor)
+    ;       NOTE: this routine removes the parameters from the stack.
+    ;
+    ; Original local stack when calling _alldiv
+    ;               -----------------
+    ;               |               |
+    ;               |---------------|
+    ;               |               |
+    ;               |--  Divisor  --|
+    ;               |               |
+    ;               |---------------|
+    ;               |               |
+    ;               |--  Dividend --|
+    ;               |               |
+    ;               |---------------|
+    ;               |  ReturnAddr** |
+    ;       ESP---->|---------------|
+    ;
+
+    ;
+    ; Set up the local stack for NULL Reminder pointer
+    ;
+    xor  eax, eax
+    push eax
+
+    ;
+    ; Set up the local stack for Divisor parameter
+    ;
+    mov  eax, [esp + 20]
+    push eax
+    mov  eax, [esp + 20]
+    push eax
+
+    ;
+    ; Set up the local stack for Dividend parameter
+    ;
+    mov  eax, [esp + 20]
+    push eax
+    mov  eax, [esp + 20]
+    push eax
+
+    ;
+    ; Call native DivS64x64Remainder of BaseLib
+    ;
+    call CustomDivS64x64Remainder
+
+    ;
+    ; Adjust stack
+    ;
+    add  esp, 20
+
+    ret  16
+  }
+}
+
+UINT64
+EFIAPI
+CustomDivU64x64Remainder (
+  IN      UINT64                    Dividend,
+  IN      UINT64                    Divisor,
+  OUT     UINT64                    *Remainder  OPTIONAL
+  )
+{
+  return CustomMathDivRemU64x64 (Dividend, Divisor, Remainder);
+}
+
+/*
+ * Divides a 64-bit unsigned value with a 64-bit unsigned value and returns
+ * a 64-bit unsigned result.
+ */
+__declspec(naked) void __cdecl _aulldiv (void)
+{
+  _asm {
+
+    ; Original local stack when calling _aulldiv
+    ;               -----------------
+    ;               |               |
+    ;               |---------------|
+    ;               |               |
+    ;               |--  Divisor  --|
+    ;               |               |
+    ;               |---------------|
+    ;               |               |
+    ;               |--  Dividend --|
+    ;               |               |
+    ;               |---------------|
+    ;               |  ReturnAddr** |
+    ;       ESP---->|---------------|
+    ;
+
+    ;
+    ; Set up the local stack for NULL Reminder pointer
+    ;
+    xor  eax, eax
+    push eax
+
+    ;
+    ; Set up the local stack for Divisor parameter
+    ;
+    mov  eax, [esp + 20]
+    push eax
+    mov  eax, [esp + 20]
+    push eax
+
+    ;
+    ; Set up the local stack for Dividend parameter
+    ;
+    mov  eax, [esp + 20]
+    push eax
+    mov  eax, [esp + 20]
+    push eax
+
+    ;
+    ; Call native DivU64x64Remainder of BaseLib
+    ;
+    call CustomDivU64x64Remainder
+
+    ;
+    ; Adjust stack
+    ;
+    add  esp, 20
+
+    ret  16
+  }
+}

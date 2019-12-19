@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DECODE_H_
 
 /** This is the main SW UNDI API entry using the newer NII protocol.
-   
+
    The parameter passed in is a 64 bit flat model virtual
    address of the cdb.  We then jump into the service routine pointed to by the
    Api_Table[OpCode].
@@ -40,9 +40,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    @retval   None
 **/
 VOID
+EFIAPI
 UndiApiEntry (
   IN UINT64 Cdb
   );
-  
+
 #endif /* DECODE_H_ */
-

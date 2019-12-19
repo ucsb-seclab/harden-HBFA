@@ -57,9 +57,13 @@ BRAND_STRUCT mBrandingTable[] = {
   {0x8086, 0x108E, 0x1586, 0x4857, L"Intel(R) Ethernet Controller X710 for 10GBASE-T"},
   {0x8086, 0x0000, 0x158A, 0x0000, L"Intel(R) Ethernet Controller XXV710 for 25GbE backplane"},
   {0x8086, 0x0000, 0x158B, 0x0000, L"Intel(R) Ethernet Controller XXV710 for 25GbE SFP28"},
-  {0x8086, 0x0000, 0x15FF, 0x0000, L"Intel(R) Ethernet Controller XL710-TM4"},
+  {0x8086, 0x0000, 0x15FF, 0x0000, L"Intel(R) Ethernet Controller X710 for 10GBASE-T"},
+  {0x8086, 0x0000, 0x104E, 0x0000, L"Intel(R) Ethernet Controller X710 for 10 Gigabit SFP+"},
+  {0x8086, 0x0000, 0x104F, 0x0000, L"Intel(R) Ethernet Controller X710 for 10 Gigabit backplane"},
 
   // OEM Gen adapters
+  {0x8086, 0x8086, 0x1572, 0x00A1, L"Intel(R) Ethernet Network Adapter X710-2 for OCP NIC 3.0"},
+  {0x8086, 0x8086, 0x1572, 0x00A2, L"Intel(R) Ethernet Network Adapter X710-4 for OCP NIC 3.0"},
   {0x8086, 0x8086, 0x1572, 0x0008, L"Intel(R) Ethernet Converged Network Adapter X710-2"},
   {0x8086, 0x8086, 0x1572, 0x0004, L"Intel(R) Ethernet Converged Network Adapter X710-4"},
   {0x8086, 0x8086, 0x1572, 0x0002, L"Intel(R) Ethernet Converged Network Adapter X710-4"},
@@ -73,6 +77,8 @@ BRAND_STRUCT mBrandingTable[] = {
   {0x8086, 0x8086, 0x158B, 0x0004, L"Intel(R) Ethernet Network Adapter XXV710-1"},
   {0x8086, 0x8086, 0x158B, 0x0006, L"Intel(R) Ethernet Network Adapter OCP XXV710-2"},
   {0x8086, 0x8086, 0x158B, 0x0008, L"Intel(R) Ethernet Network Adapter OCP XXV710-1"},
+  {0x8086, 0x8086, 0x15FF, 0x0002, L"Intel(R) Ethernet Network Adapter X710-T4L"},
+  {0x8086, 0x8086, 0x15FF, 0x0004, L"Intel(R) Ethernet Network Adapter X710-T2L"},
 #ifdef X722_SUPPORT
 
   // Champagne Fountain OEM Gen
@@ -81,6 +87,8 @@ BRAND_STRUCT mBrandingTable[] = {
 #endif /* X722_SUPPORT */
 
   // Retail adapters
+  {0x8086, 0x8086, 0x1572, 0x0011, L"Intel(R) Ethernet Network Adapter X710-2 for OCP NIC 3.0"},
+  {0x8086, 0x8086, 0x1572, 0x0012, L"Intel(R) Ethernet Network Adapter X710-4 for OCP NIC 3.0"},
   {0x8086, 0x8086, 0x1572, 0x0007, L"Intel(R) Ethernet Converged Network Adapter X710-2"},
   {0x8086, 0x8086, 0x1572, 0x0001, L"Intel(R) Ethernet Converged Network Adapter X710-4"},
   {0x8086, 0x8086, 0x1572, 0x000E, L"Intel(R) Ethernet Server Adapter OCP X710-2"},
@@ -93,6 +101,8 @@ BRAND_STRUCT mBrandingTable[] = {
   {0x8086, 0x8086, 0x158B, 0x0003, L"Intel(R) Ethernet Network Adapter XXV710-1"},
   {0x8086, 0x8086, 0x158B, 0x0005, L"Intel(R) Ethernet Network Adapter OCP XXV710-2"},
   {0x8086, 0x8086, 0x158B, 0x0007, L"Intel(R) Ethernet Network Adapter OCP XXV710-1"},
+  {0x8086, 0x8086, 0x15FF, 0x0001, L"Intel(R) Ethernet Network Adapter X710-T4L"},
+  {0x8086, 0x8086, 0x15FF, 0x0003, L"Intel(R) Ethernet Network Adapter X710-T2L"},
 #ifdef X722_SUPPORT
 
   // Champagne Fountain Retail
@@ -106,6 +116,7 @@ BRAND_STRUCT mBrandingTable[] = {
   {0x8086, 0x8086, 0x1583, 0x0000, L"Intel(R) Ethernet Converged Network Adapter XL710-Q2"},
   {0x8086, 0x8086, 0x158A, 0x0000, L"Intel(R) Ethernet Controller XXV710 for 25GbE backplane"},
   {0x8086, 0x8086, 0x158B, 0x0000, L"Intel(R) Ethernet Network Adapter XXV710"},
+  {0x8086, 0x8086, 0x15FF, 0x0000, L"Intel(R) Ethernet Network Adapter X710-TL"},
 
   // PCSD devices
   {0x8086, 0x8086, 0x1584, 0x0003, L"Intel(R) Ethernet I/O Module XL710-Q1"},
@@ -131,6 +142,14 @@ BRAND_STRUCT mBrandingTable[] = {
   {0x8086, 0x8086, 0x1572, 0x000B, L"Intel(R) Ethernet Server Adapter X710-DA2 for OCP"},
   {0x8086, 0x8086, 0x158A, 0x000A, L"Intel(R) Ethernet 25G 2P XXV710 Mezz"},
   {0x8086, 0x8086, 0x158B, 0x0009, L"Intel(R) Ethernet 25G 2P XXV710 Adapter"},
+  {0x8086, 0x8086, 0x158B, 0x000A, L"Intel(R) Ethernet 25G 2P XXV710 OCP"},
+  {0x8086, 0x8086, 0x1572, 0x0013, L"Intel(R) Ethernet 10G 2P X710 OCP"},
+  {0x8086, 0x8086, 0x1572, 0x0014, L"Intel(R) Ethernet 10G 4P X710 OCP"},
+  {0x8086, 0x8086, 0x1572, 0x0015, L"Intel(R) Ethernet Server Adapter X710-DA2 for OCP"},
+  {0x8086, 0x8086, 0x15FF, 0x0005, L"Intel(R) Ethernet 10G 2P X710-T2L-t Adapter"},
+  {0x8086, 0x8086, 0x15FF, 0x0006, L"Intel(R) Ethernet 10G 4P X710-T4L-t Adapter"},
+  {0x8086, 0x8086, 0x15FF, 0x0007, L"Intel(R) Ethernet 10G 2P X710-T2L-t OCP"},
+  {0x8086, 0x8086, 0x15FF, 0x0008, L"Intel(R) Ethernet 10G 4P X710-T4L-t OCP"},
 
   // IBM adapters
   {0x8086, 0x8086, 0x1572, 0x0009, L"Intel(R) Ethernet Controller X710 for 10GbE SFP+"},
@@ -159,6 +178,9 @@ BRAND_STRUCT mBrandingTable[] = {
   {0x8086, 0x17AA, 0x37CE, 0x4023, L"Intel(R) Ethernet Connection X722 for 10GbE backplane"},
   {0x8086, 0x17AA, 0x37D3, 0x4020, L"Intel(R) Ethernet Connection X722 for 10GbE SFP+"},
   {0x8086, 0x17AA, 0x37D3, 0x4021, L"Intel(R) Ethernet Connection X722 for 10GbE SFP+"},
+  {0x8086, 0x17AA, 0x37D2, 0x4025, L"Intel(R) Ethernet Connection X722 for 10GBASE-T"},
+  {0x8086, 0x17AA, 0x37D3, 0x4025, L"Intel(R) Ethernet Connection X722 for 10G SFP+"},
+  {0x8086, 0x17AA, 0x37CE, 0x4025, L"Intel(R) Ethernet Connection X722 for 10GbE backplane"},
   {0x8086, 0x17AA, 0x37D1, 0x4020, L"Intel(R) Ethernet Connection X722 for 1GbE"},
   {0x8086, 0x17AA, 0x37D1, 0x4021, L"Intel(R) Ethernet Connection X722 for 1GbE"},
   {0x8086, 0x17AA, 0x37D1, 0x4022, L"Intel(R) Ethernet Connection X722 for 1GbE"},
@@ -171,6 +193,10 @@ BRAND_STRUCT mBrandingTable[] = {
   {0x8086, 0x1137, 0x1572, 0x013B, L"Cisco(R) Ethernet Converged NIC X710-DA4"},
   {0x8086, 0x1137, 0x1572, 0x0000, L"Cisco(R) Ethernet Converged NIC X710-DA"},
   {0x8086, 0x1137, 0x1572, 0x020A, L"Cisco(R) Ethernet Converged NIC X710-DA2"},
+  {0x8086, 0x1137, 0x1589, 0x0000, L"Cisco(R) Ethernet Converged NIC X710-T4"},
+  {0x8086, 0x1137, 0x1589, 0x020B, L"Cisco(R) Ethernet Converged NIC X710-T4"},
+  {0x8086, 0x1137, 0x158B, 0x0000, L"Cisco(R) Ethernet Network Adapter XXV710"},
+  {0x8086, 0x1137, 0x158B, 0x02B4, L"Cisco(R) Ethernet Network Adapter XXV710 OCP 2.0"},
 
   // Oracle adapters
   {0x8086, 0x108E, 0x1583, 0x0000, L"Oracle 10 Gb/40 Gb Ethernet Adapter"},
@@ -210,4 +236,3 @@ BRAND_STRUCT mBrandingTable[] = {
 
 UINTN mBrandingTableSize = (sizeof (mBrandingTable) / sizeof (mBrandingTable[0]));
 
-

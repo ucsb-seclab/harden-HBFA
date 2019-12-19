@@ -167,4 +167,3 @@ u8 ixgbe_dcb_get_tc_from_up(struct ixgbe_dcb_config *, int, u8);
 s32 ixgbe_dcb_hw_config(struct ixgbe_hw *, u16 *, u16 *, u8 *, u8 *, u8 *);
 s32 ixgbe_dcb_hw_config_cee(struct ixgbe_hw *, struct ixgbe_dcb_config *);
 #endif /* _IXGBE_DCB_H_ */
-

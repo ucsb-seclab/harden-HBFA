@@ -123,9 +123,11 @@ BRAND_STRUCT mBrandingTable[] = {
     {0x8086, 0x0000, 0x1523, 0x0000, L"Intel(R) I350 Gigabit Backplane Connection"},
     {0x8086, 0x0000, 0x1524, 0x0000, L"Intel(R) I350 Gigabit Connection"},
     {0x8086, 0x8086, 0x1521, 0x0001, L"Intel(R) Ethernet Server Adapter I350-T4"},
-    {0x8086, 0x8086, 0x1521, 0x00A1, L"Intel(R) Ethernet Server Adapter I350-T4"},
     {0x8086, 0x8086, 0x1521, 0x0002, L"Intel(R) Ethernet Server Adapter I350-T2"},
+    {0x8086, 0x8086, 0x1521, 0x00A1, L"Intel(R) Ethernet Server Adapter I350-T4"},
     {0x8086, 0x8086, 0x1521, 0x00A2, L"Intel(R) Ethernet Server Adapter I350-T2"},
+    {0x8086, 0x8086, 0x1521, 0x0003, L"Intel(R) Ethernet Network Adapter I350-T4 for OCP NIC 3.0"},
+    {0x8086, 0x8086, 0x1521, 0x00A3, L"Intel(R) Ethernet Network Adapter I350-T4 for OCP NIC 3.0"},
     {0x8086, 0x8086, 0x1522, 0x0003, L"Intel(R) Ethernet Server Adapter I350-F4"},
     {0x8086, 0x8086, 0x1522, 0x00A3, L"Intel(R) Ethernet Server Adapter I350-F4"},
     {0x8086, 0x8086, 0x1522, 0x0004, L"Intel(R) Ethernet Server Adapter I350-F2"},
@@ -133,12 +135,14 @@ BRAND_STRUCT mBrandingTable[] = {
 
     {0x8086, 0x8086, 0x1521, 0x5002, L"Intel(R) Gigabit 2P I350-t Adapter"},
     {0x8086, 0x8086, 0x1521, 0x5001, L"Intel(R) Gigabit 4P I350-t Adapter"},
+    {0x8086, 0x8086, 0x1521, 0x5003, L"Intel(R) Ethernet 1G 4P I350-t OCP"},
 
     {0x8086, 0x8086, 0x1523, 0x1F52, L"Intel(R) Gigabit 4P I350-t Mezz"},
 
     {0x8086, 0x8086, 0x1522, 0x0005, L"Intel(R) Ethernet Server Adapter I350-F1"},
     {0x8086, 0x8086, 0x1521, 0x00A1, L"Intel(R) Ethernet Server Adapter I350-T4"},
     {0x8086, 0x8086, 0x1521, 0x00A2, L"Intel(R) Ethernet Server Adapter I350-T2"},
+    {0x8086, 0x8086, 0x1521, 0x00AA, L"Intel(R) Ethernet Network Adapter I350-T4 for OCP NIC 3.0"},
     {0x8086, 0x8086, 0x1521, 0x1521, L"Intel(R) I350 Gigabit Network Connection"},
 
     // Dell
@@ -185,6 +189,7 @@ BRAND_STRUCT mBrandingTable[] = {
 
     // Lenovo
     {0x8086, 0x17AA, 0x1521, 0x1074, L"Lenovo ThinkServer I350-T4 AnyFabric"},
+    {0x8086, 0x17AA, 0x1521, 0x4016, L"Intel(R) I350 Gigabit Network Connection"},
 
 
     {0x8086, 0x0000, 0x1533, 0x0000, L"Intel(R) I210 Gigabit  Network Connection"},
@@ -213,4 +218,3 @@ BRAND_STRUCT mBrandingTable[] = {
 };
 
 UINTN mBrandingTableSize = (sizeof (mBrandingTable) / sizeof (mBrandingTable[0]));
-

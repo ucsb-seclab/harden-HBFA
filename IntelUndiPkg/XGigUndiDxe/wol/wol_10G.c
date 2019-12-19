@@ -69,4 +69,3 @@ BOOLEAN _WolGetInfoFromEeprom_10G(WOL_ADAPTER_HANDLE_TYPE Handle)
   return FALSE;
 }
 
-

@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <wol.h>
 
+#ifndef WOL_HAF
   void _WolGetDeviceId(WOL_ADAPTER_HANDLE_TYPE Handle, _WOL_DEVICE_ID_t *DeviceId)
   {
     DeviceId->VendorId = Handle->NicInfo.Hw.vendor_id;
@@ -36,6 +37,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     DeviceId->SubVendorId = Handle->NicInfo.Hw.subsystem_vendor_id;
     DeviceId->SubDeviceId = Handle->NicInfo.Hw.subsystem_device_id;
   }
+#else /* HAF */
+  void _WolGetDeviceId(WOL_ADAPTER_HANDLE_TYPE Handle, _WOL_DEVICE_ID_t *DeviceId)
+  {
+    NAL_ADAPTER_VENDOR_INFO VendorInfo;
+
+
+    if (NalGetVendorInformation(Handle, &VendorInfo) == NAL_SUCCESS) {
+      DeviceId->VendorId = VendorInfo.Vendor;
+      DeviceId->DeviceId = VendorInfo.Device;
+      DeviceId->SubVendorId = VendorInfo.SubVendor;
+      DeviceId->SubDeviceId = VendorInfo.SubDevice;
+    } else {
+      DeviceId->VendorId = 0;
+      DeviceId->DeviceId = 0;
+      DeviceId->SubVendorId = 0;
+      DeviceId->SubDeviceId = 0;
+    }
+  }
+#endif
 
   UINT8 _WolGetLanPort(WOL_ADAPTER_HANDLE_TYPE Handle)
   {
@@ -74,6 +94,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   {
     return EepromUpdateChecksum(Handle);
   }
+
 
   UINT8 _WolGetFunction(WOL_ADAPTER_HANDLE_TYPE Handle)
   {

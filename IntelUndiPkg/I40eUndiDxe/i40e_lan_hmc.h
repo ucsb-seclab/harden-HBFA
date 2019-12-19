@@ -206,4 +206,3 @@ enum i40e_status_code i40e_delete_lan_hmc_object(struct i40e_hw *hw,
 				struct i40e_hmc_lan_delete_obj_info *info);
 
 #endif /* _I40E_LAN_HMC_H_ */
-

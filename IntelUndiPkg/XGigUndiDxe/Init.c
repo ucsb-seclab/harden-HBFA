@@ -42,12 +42,166 @@ VOID *             mIxgbePxeMemPtr = NULL;
 PXE_SW_UNDI *      mIxgbePxe31     = NULL;  // 3.1 entry
 UNDI_PRIVATE_DATA *mXgbeDeviceList[MAX_NIC_INTERFACES];
 NII_TABLE          mIxgbeUndiData;
-UINT8              mActiveControllers = 0;
+EFI_EVENT          gEventNotifyVirtual;
+UINT16             mActiveControllers = 0;
 UINT16             mActiveChildren    = 0;
 EFI_EVENT          gEventNotifyExitBs;
-EFI_EVENT          gEventNotifyVirtual;
+BOOLEAN            mExitBootServicesTriggered = FALSE;
 
-EFI_HANDLE        gImageHandle;
+/* mXgbeDeviceList iteration helper */
+#define FOREACH_ACTIVE_CONTROLLER(d) \
+  for ((d) = GetFirstControllerPrivateData (); \
+       (d) != NULL; \
+       (d) = GetNextControllerPrivateData ((d)))
+
+/** Gets controller private data structure
+
+   @param[in]  ControllerHandle     Controller handle
+
+   @return     UNDI_PRIVATE_DATA    Pointer to Private Data Structure.
+   @return     NULL                 Controller is not initialized
+**/
+UNDI_PRIVATE_DATA*
+GetControllerPrivateData (
+  IN  EFI_HANDLE ControllerHandle
+  )
+{
+  UINT32              i = 0;
+  UNDI_PRIVATE_DATA   *Device;
+
+  for (i = 0; i < MAX_NIC_INTERFACES; i++) {
+    Device = mXgbeDeviceList[i];
+
+    if (Device != NULL) {
+      if (Device->ControllerHandle == ControllerHandle) {
+        return Device;
+      }
+    }
+  }
+
+  return NULL;
+}
+
+/** Insert controller private data structure into mXgbeDeviceList
+    global array.
+
+   @param[in]  UndiPrivateData        Pointer to Private Data struct
+
+   @return     EFI_INVALID_PARAMETER  UndiPrivateData == NULL
+   @return     EFI_OUT_OF_RESOURCES   Array full
+   @return     EFI_SUCCESS            Insertion OK
+**/
+EFI_STATUS
+InsertControllerPrivateData (
+  IN  UNDI_PRIVATE_DATA   *UndiPrivateData
+  )
+{
+  UINTN     i;
+
+  if (UndiPrivateData == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  if (mActiveControllers >= MAX_NIC_INTERFACES) {
+    // Array full
+    return EFI_OUT_OF_RESOURCES;
+  }
+
+  // Find first free slot within mXgbeDeviceList
+  for (i = 0; i < MAX_NIC_INTERFACES; i++) {
+    if (mXgbeDeviceList[i] == NULL) {
+      UndiPrivateData->IfId   = i;
+      mXgbeDeviceList[i]    = UndiPrivateData;
+      mActiveControllers++;
+      break;
+    }
+  }
+
+  if (i == MAX_NIC_INTERFACES) {
+    // Array full
+    return EFI_OUT_OF_RESOURCES;
+  }
+
+  return EFI_SUCCESS;
+}
+
+/** Remove controller private data structure from mXgbeDeviceList
+    global array.
+
+   @param[in]  UndiPrivateData        Pointer to Private Data Structure.
+
+   @return     EFI_INVALID_PARAMETER  UndiPrivateData == NULL
+   @return     EFI_SUCCESS            Removal OK
+**/
+EFI_STATUS
+RemoveControllerPrivateData (
+  IN  UNDI_PRIVATE_DATA   *UndiPrivateData
+  )
+{
+  if (UndiPrivateData == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  // Assuming mXgbeDeviceList[UndiPrivateData->IfNum] == UndiPrivateData
+  mXgbeDeviceList[UndiPrivateData->IfId] = NULL;
+  mActiveControllers--;
+
+  return EFI_SUCCESS;
+}
+
+/** Iteration helper. Get first controller private data structure
+    within mXgbeDeviceList global array.
+
+   @return     UNDI_PRIVATE_DATA    Pointer to Private Data Structure.
+   @return     NULL                 No controllers within the array
+**/
+UNDI_PRIVATE_DATA*
+GetFirstControllerPrivateData (
+  )
+{
+  UINTN   i;
+
+  for (i = 0; i < MAX_NIC_INTERFACES; i++) {
+    if (mXgbeDeviceList[i] != NULL) {
+      return mXgbeDeviceList[i];
+    }
+  }
+
+  return NULL;
+}
+
+/** Iteration helper. Get controller private data structure standing
+    next to UndiPrivateData within mXgbeDeviceList global array.
+
+   @param[in]  UndiPrivateData        Pointer to Private Data Structure.
+
+   @return     UNDI_PRIVATE_DATA    Pointer to Private Data Structure.
+   @return     NULL                 No controllers within the array
+**/
+UNDI_PRIVATE_DATA*
+GetNextControllerPrivateData (
+  IN  UNDI_PRIVATE_DATA     *UndiPrivateData
+  )
+{
+  UINTN   i;
+
+  if (UndiPrivateData == NULL) {
+    return NULL;
+  }
+
+  if (UndiPrivateData->IfId >= MAX_NIC_INTERFACES) {
+    return NULL;
+  }
+
+  for (i = UndiPrivateData->IfId + 1; i < MAX_NIC_INTERFACES; i++) {
+    if (mXgbeDeviceList[i] != NULL) {
+      return mXgbeDeviceList[i];
+    }
+  }
+
+  return NULL;
+}
+
 EFI_SYSTEM_TABLE *gSystemTable;
 
 EFI_GUID gEfiNiiPointerGuid = EFI_NII_POINTER_PROTOCOL_GUID;
@@ -56,7 +210,7 @@ EFI_GUID gEfiNiiPointerGuid = EFI_NII_POINTER_PROTOCOL_GUID;
    configuration table for UNDI to work at runtime!
 
    @param[in]   Event     Standard Event handler (EVT_SIGNAL_EXIT_BOOT_SERVICES)
-   @param[in]   Context   Unused here 
+   @param[in]   Context   Unused here
 
    @retval   None
 **/
@@ -67,40 +221,26 @@ InitUndiNotifyExitBs (
   IN VOID *    Context
   )
 {
-  UINT32 i;
-  UINT64 Result = 0;
+  UNDI_PRIVATE_DATA *Device;
+
+  // Set the indicator to block DMA access in UNDI functions.
+  // This will also prevent functions below from calling Memory Allocation
+  // Services which should not be done at this stage.
+  mExitBootServicesTriggered = TRUE;
 
   // Divide Active interfaces by two because it tracks both the controller and
   // child handle, then shutdown the receive unit in case it did not get done
   // by the SNP
-  for (i = 0; i < mActiveControllers; i++) {
-    if (mXgbeDeviceList[i]->NicInfo.Hw.device_id != 0) {
-      if (mXgbeDeviceList[i]->IsChildInitialized) {
-        XgbeShutdown (&mXgbeDeviceList[i]->NicInfo);
-        XgbePciFlush (&mXgbeDeviceList[i]->NicInfo);
+  FOREACH_ACTIVE_CONTROLLER (Device) {
+    if (Device->NicInfo.Hw.device_id != 0) {
+      if (Device->IsChildInitialized) {
+        XgbeShutdown (&Device->NicInfo);
+        XgbePciFlush (&Device->NicInfo);
       }
 
-      if (mXgbeDeviceList[i]->NicInfo.Hw.mac.type == ixgbe_mac_X550EM_a) {
-        XgbeClearRegBits (&mXgbeDeviceList[i]->NicInfo, IXGBE_CTRL_EXT, IXGBE_CTRL_EXT_DRV_LOAD);
+      if (Device->NicInfo.Hw.mac.type == ixgbe_mac_X550EM_a) {
+        XgbeClearRegBits (&Device->NicInfo, IXGBE_CTRL_EXT, IXGBE_CTRL_EXT_DRV_LOAD);
       }
-
-      // Get the PCI Command options that are supported by this controller.
-      mXgbeDeviceList[i]->NicInfo.PciIo->Attributes (
-                                           mXgbeDeviceList[i]->NicInfo.PciIo,
-                                           EfiPciIoAttributeOperationSupported,
-                                           0,
-                                           &Result
-                                           );
-
-      mXgbeDeviceList[i]->NicInfo.PciIo->Attributes (
-                                           mXgbeDeviceList[i]->NicInfo.PciIo,
-                                           EfiPciIoAttributeOperationDisable,
-                                           Result & EFI_PCI_IO_ATTRIBUTE_BUS_MASTER,
-                                           NULL
-                                           );
-
-      // Set the indicator to block DMA access in UNDI functions
-      mXgbeDeviceList[i]->NicInfo.ExitBootServicesTriggered = TRUE;
     }
   }
 }
@@ -112,9 +252,9 @@ InitUndiNotifyExitBs (
    contain the original device path the NIC was found on (*BaseDevPtr)
    and an added MAC node.
 
-   @param[in,out]   DevPtr       Pointer which will point to the newly created 
+   @param[in,out]   DevPtr       Pointer which will point to the newly created
                                  device path with the MAC node attached.
-   @param[in]       BaseDevPtr   Pointer to the device path which the 
+   @param[in]       BaseDevPtr   Pointer to the device path which the
                                  UNDI device driver is latching on to.
    @param[in]       XgbeAdapter  Pointer to the NIC data structure information
                                  which the UNDI driver is layering on..
@@ -134,8 +274,7 @@ InitAppendMac2DevPath (
   UINT16                    i;
   UINT16                    TotalPathLen;
   UINT16                    BasePathLen;
-  EFI_STATUS                Status;
-  UINT8 *                   DevicePtr;
+  UINT8 *                   DevicePtr = NULL;
 
   DEBUGPRINT (INIT, ("XgbeAppendMac2DevPath\n"));
 
@@ -172,18 +311,13 @@ InitAppendMac2DevPath (
   }
 
   BasePathLen = (UINT16) ((UINTN) (EndNode) - (UINTN) (BaseDevPtr));
-
-  // create space for full dev path
   TotalPathLen = (UINT16) (BasePathLen + sizeof (MacAddrNode) + sizeof (EFI_DEVICE_PATH_PROTOCOL));
 
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData,  // EfiRuntimeServicesData,
-                  TotalPathLen,
-                  &DevicePtr
-                );
-
-  if (Status != EFI_SUCCESS) {
-    return Status;
+  // create space for full dev path
+  DevicePtr = AllocateZeroPool (TotalPathLen);
+  if (DevicePtr == NULL) {
+    DEBUGPRINT (CRITICAL, ("Failed to allocate DevicePtr!\n"));
+    return EFI_OUT_OF_RESOURCES;
   }
 
   // copy the base path, mac addr and end_dev_path nodes
@@ -261,7 +395,7 @@ InitUndiPxeStructInit (
                            PXE_ROMID_IMP_TX_COMPLETE_INT_SUPPORTED |
                            PXE_ROMID_IMP_PACKET_RX_INT_SUPPORTED;
 
-  PxePtr->EntryPoint    = (UINT64) UndiApiEntry;
+  PxePtr->EntryPoint    = (UINT64) (UINTN) UndiApiEntry;
   PxePtr->MinorVer      = PXE_ROMID_MINORVER_31;
 
   PxePtr->reserved2[0]  = 0;
@@ -294,7 +428,7 @@ InitUndiPxeUpdate (
   )
 {
   if (NicPtr == NULL) {
-  
+
     // IFcnt is equal to the number of NICs this undi supports - 1
     if (mActiveChildren > 0) {
       mActiveChildren--;
@@ -324,7 +458,7 @@ InitUndiPxeUpdate (
    make sure that there is space for 2 !PXE structures (old and new) and a
    32 bytes padding for alignment adjustment (in case)
 
-   @param[in]   VOID   
+   @param[in]   VOID
 
    @retval   EFI_SUCCESS            !PXE structure initialized
    @retval   EFI_OUT_OF_RESOURCES   Failed to allocate memory for !PXE structure
@@ -334,23 +468,11 @@ InitializePxeStruct (
   VOID
   )
 {
-  EFI_STATUS Status;
-
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData,  // EfiRuntimeServicesData,
-                  (sizeof (PXE_SW_UNDI) + sizeof (PXE_SW_UNDI) + 32),
-                  &mIxgbePxeMemPtr
-                );
-
-  if (EFI_ERROR (Status)) {
-    DEBUGPRINT (INIT, ("%X: AllocatePool returns %r\n", __LINE__, Status));
-    return Status;
+  mIxgbePxeMemPtr = AllocateZeroPool (sizeof (PXE_SW_UNDI) + sizeof (PXE_SW_UNDI) + 32);
+  if (mIxgbePxeMemPtr == NULL) {
+    DEBUGPRINT (INIT, ("Failed to allocate mIxgbePxeMemPtr!\n"));
+    return EFI_OUT_OF_RESOURCES;
   }
-
-  ZeroMem (
-    mIxgbePxeMemPtr,
-    sizeof (PXE_SW_UNDI) + sizeof (PXE_SW_UNDI) + 32
-  );
 
   // check for paragraph alignment here, assuming that the pointer is
   // already 8 byte aligned.
@@ -361,7 +483,7 @@ InitializePxeStruct (
   }
 
   InitUndiPxeStructInit (mIxgbePxe31, 0x31); // 3.1 entry
-  return Status;
+  return EFI_SUCCESS;
 }
 
 /** Callback to unload the GigUndi from memory.
@@ -422,7 +544,7 @@ UnloadXGigUndiDriver (
   }
 
   if (mActiveControllers == 0) {
-    
+
     // Free PXE structures since they will no longer be needed
     Status = gBS->FreePool (mIxgbePxeMemPtr);
     if (EFI_ERROR (Status)) {
@@ -502,7 +624,6 @@ InitializeXGigUndiDriver (
 {
   EFI_STATUS                 Status;
 
-  gImageHandle  = ImageHandle;
   gSystemTable  = SystemTable;
 
   Status = EfiLibInstallDriverBinding (ImageHandle, SystemTable, &gUndiDriverBinding, ImageHandle);
@@ -563,30 +684,6 @@ InitializeXGigUndiDriver (
 
 /** Checks if device path is not end of device path
 
-   @param[in]  ControllerHandle     Controller handle
-
-   @return     UNDI_PRIVATE_DATA    Pointer to Private Data Structure.
-   @return     NULL                 Controller is not initialized
-**/
-UNDI_PRIVATE_DATA*
-GetControllerPrivateData (
-  IN  EFI_HANDLE ControllerHandle
-  )
-{
-  UINT32 i = 0;
-
-  for (i = 0; i < mActiveControllers; i++) {
-    if (mXgbeDeviceList[i] != NULL) {
-      if (mXgbeDeviceList[i]->ControllerHandle == ControllerHandle) {
-        return mXgbeDeviceList[i];
-      }
-    }
-  }
-  return NULL;
-}
-
-/** Checks if device path is not end of device path
-
    @param[in]  RemainingDevicePath  Device Path
 
    @retval     TRUE                 Device path is not end of device path
@@ -603,7 +700,7 @@ IsNotEndOfDevicePathNode (
 /** Checks if remaining device path is NULL or end of device path
 
    @param[in]   RemainingDevicePath   Device Path
-   
+
    @retval   TRUE   RemainingDevicePath is NULL or end of device path
 **/
 BOOLEAN
@@ -839,15 +936,15 @@ ExitSupported:
 EFI_STATUS
 InitUndiPrivateData (
   IN  EFI_HANDLE          Controller,
-  OUT UNDI_PRIVATE_DATA **UndiPrivateData
+  OUT UNDI_PRIVATE_DATA   **UndiPrivateData
   )
 {
-  UNDI_PRIVATE_DATA *PrivateData;
+  UNDI_PRIVATE_DATA    *PrivateData;
+  EFI_STATUS           Status;
 
   PrivateData = AllocateZeroPool (sizeof (UNDI_PRIVATE_DATA));
   if (PrivateData == NULL) {
-    DEBUGPRINT (CRITICAL, ("AllocateZeroPool returns %r\n", PrivateData));
-    DEBUGWAIT (CRITICAL);
+    DEBUGPRINTWAIT (CRITICAL, ("Failed to allocate PrivateData!\n"));
     return EFI_OUT_OF_RESOURCES;
   }
 
@@ -863,12 +960,16 @@ InitUndiPrivateData (
     PrivateData->DeviceHandle)
   );
 
-  mXgbeDeviceList[mActiveControllers] = PrivateData;
-  mActiveControllers++;
+  Status = InsertControllerPrivateData (PrivateData);
 
-  *UndiPrivateData = PrivateData;
+  if (Status == EFI_SUCCESS) {
+    *UndiPrivateData = PrivateData;
+  } else {
+    *UndiPrivateData = NULL;
+    FreePool (PrivateData);
+  }
 
-  return EFI_SUCCESS;
+  return Status;
 }
 
 /** Opens controller protocols
@@ -948,7 +1049,7 @@ InitController (
   if (UndiPrivateData == NULL) {
     return EFI_INVALID_PARAMETER;
   }
-  
+
   // Initialize PCI-E Bus and read PCI related information.
   Status = XgbePciInit (&UndiPrivateData->NicInfo);
   if (EFI_ERROR (Status)) {
@@ -1101,7 +1202,7 @@ InitUndiCallbackFunctions (
   NicInfo->MapMem      = (VOID *) 0;
   NicInfo->UnMapMem    = (VOID *) 0;
   NicInfo->SyncMem     = (VOID *) 0;
-  NicInfo->UniqueId   = (UINT64) NicInfo;
+  NicInfo->UniqueId    = (UINT64) (UINTN) NicInfo;
   NicInfo->VersionFlag = 0x31;
 }
 
@@ -1179,7 +1280,7 @@ InitDevicePathProtocol (
 
    @retval          EFI_SUCCESS            Procedure returned successfully
    @retval          EFI_INVALID_PARAMETER  Invalid parameter passed
-   @retval          !EFI_SUCCESS           Failed to initialize Driver Stop Protocol 
+   @retval          !EFI_SUCCESS           Failed to initialize Driver Stop Protocol
 **/
 EFI_STATUS
 InitDriverStopProtocol (
@@ -1217,7 +1318,7 @@ InitDriverStopProtocol (
   @param[in]  This                    Protocol instance pointer
   @param[in]  UndiPrivateData         Pointer to the driver data
   @param[in]  Controller              Handle of device to work with.
-  
+
   @retval   EFI_SUCCESS            Controller partially initialized
   @retval   EFI_OUT_OF_RESOURCES   Failed to add HII packages
   @retval   !EFI_SUCCESS           Failed to install NII protocols or to open PciIo
@@ -1240,7 +1341,7 @@ InitControllerPartial (
   UndiPrivateData->NIIPointerProtocol.NiiProtocol31 = &UndiPrivateData->NiiProtocol31;
   Status = gBS->InstallMultipleProtocolInterfaces (
                   &Controller,
-                  &gEfiNiiPointerGuid, 
+                  &gEfiNiiPointerGuid,
                   &UndiPrivateData->NIIPointerProtocol,
                   NULL
                 );
@@ -1270,26 +1371,23 @@ InitControllerPartial (
 
 /** Initializes Network Interface Identifier Protocol
 
-   @param[in]       Handle           Controller/Child handle
-   @param[out]      NiiProtocol31   NII Protocol instance
-
+  @param[in]        UndiPrivateData         Pointer to the driver data
+   
    @retval          EFI_SUCCESS            Procedure returned successfully
    @retval          EFI_INVALID_PARAMETER  Invalid parameter passed
    @retval          !EFI_SUCCESS           Failed to install NII Protocol 3.1
 **/
 EFI_STATUS
 InitNiiProtocol (
-  IN   EFI_HANDLE *                               Handle,
-  OUT  EFI_NETWORK_INTERFACE_IDENTIFIER_PROTOCOL *NiiProtocol31
+  IN   UNDI_PRIVATE_DATA    *UndiPrivateData
   )
 {
-  EFI_STATUS Status;
-
-
-  NiiProtocol31->Id            = (UINT64) (mIxgbePxe31);
-
-  // IFcnt should be equal to the total number of physical ports - 1
-  NiiProtocol31->IfNum         = mIxgbePxe31->IFcnt;
+  EFI_STATUS                                Status;
+  EFI_NETWORK_INTERFACE_IDENTIFIER_PROTOCOL *NiiProtocol31;
+  
+  NiiProtocol31                = &UndiPrivateData->NiiProtocol31; 
+  NiiProtocol31->Id            = (UINT64) (UINTN) mIxgbePxe31;
+  NiiProtocol31->IfNum         = UndiPrivateData->IfId;
   NiiProtocol31->Revision      = EFI_NETWORK_INTERFACE_IDENTIFIER_PROTOCOL_REVISION;
   NiiProtocol31->Type          = EfiNetworkInterfaceUndi;
   NiiProtocol31->MajorVer      = PXE_ROMID_MAJORVER;
@@ -1305,7 +1403,7 @@ InitNiiProtocol (
 
 
   Status = gBS->InstallMultipleProtocolInterfaces (
-                  Handle,
+                  &UndiPrivateData->DeviceHandle,
                   &gEfiNetworkInterfaceIdentifierProtocolGuid_31,
                   NiiProtocol31,
                   NULL
@@ -1365,8 +1463,7 @@ InitChildProtocols (
 
   if (UndiPrivateData->NicInfo.UndiEnabled) {
     Status = InitNiiProtocol (
-               &UndiPrivateData->DeviceHandle,
-               &UndiPrivateData->NiiProtocol31
+               UndiPrivateData
              );
     if (EFI_ERROR (Status)) {
       DEBUGPRINT (CRITICAL, ("InitNiiProtocol returned %r\n", Status));
@@ -1497,7 +1594,7 @@ CloseControllerProtocols (
 
    @retval   EFI_SUCCESS         This driver is added to controller or controller
                                  and specific child is already initialized
-   @retval   !EFI_SUCCESS        Failed to initialize controller or child 
+   @retval   !EFI_SUCCESS        Failed to initialize controller or child
 **/
 EFI_STATUS
 EFIAPI
@@ -1571,7 +1668,7 @@ InitUndiDriverStart (
       }
       return Status;
     }
-    if (EFI_ERROR (Status) 
+    if (EFI_ERROR (Status)
       && (Status != EFI_ACCESS_DENIED))
     {
 
@@ -1639,16 +1736,16 @@ UndiErrorDeleteDevicePath:
   InitUndiPxeUpdate (NULL, mIxgbePxe31);
 
 UndiError:
-  mXgbeDeviceList[mActiveControllers - 1] = NULL;
-  mActiveControllers--;
-
   CloseControllerProtocols (
     Controller,
     This
   );
-  gBS->FreePool ((VOID *) XgbePrivate);
-
+  if (XgbePrivate != NULL) {
+    RemoveControllerPrivateData (XgbePrivate);
+    gBS->FreePool ((VOID **) XgbePrivate);
   DEBUGPRINT (INIT, ("XgbeUndiDriverStart - error %x\n", Status));
+  }
+
 
   return Status;
 }
@@ -1657,8 +1754,8 @@ UndiError:
 
    @param[in]       This                   Driver Binding protocol instance
    @param[in]       Controller             Controller handle
-   @param[in]       UndiPrivateData        Driver private data structure 
-   
+   @param[in]       UndiPrivateData        Driver private data structure
+
    @retval          EFI_SUCCESS            Procedure returned successfully
    @retval          EFI_INVALID_PARAMETER  Invalid parameter passed
    @retval          !EFI_SUCCESS           Failed to stop controller
@@ -1688,7 +1785,7 @@ StopController (
                 );
   if (EFI_ERROR (Status)) {
     DEBUGPRINT (CRITICAL, ("UninstallMultipleProtocolInterfaces gEfiNiiPointerGuid failed - %r\n", Status));
-    
+
     // This one should be always installed so there is real issue if we cannot uninstall
     return Status;
   }
@@ -1736,7 +1833,7 @@ StopController (
     DEBUGWAIT (INIT);
     return Status;
   }
-  
+
   // The below is commmented out because it causes a crash when SNP, MNP, and ARP drivers are loaded
   // This has not been root caused but it is probably because some driver expects IFcnt not to change
   // This should be okay because when ifCnt is set when the driver is started it is based on ActiveInterfaces
@@ -1747,7 +1844,7 @@ StopController (
              This
            );
 
-  mXgbeDeviceList[UndiPrivateData->NiiProtocol31.IfNum] = NULL;
+  RemoveControllerPrivateData (UndiPrivateData);
 
   DEBUGPRINT (INIT, ("FreePool(UndiPrivateData->Undi32DevPath)"));
   Status = gBS->FreePool (UndiPrivateData->Undi32DevPath);
@@ -1769,7 +1866,7 @@ StopController (
    @param[in]       This                   Driver Binding protocol instance
    @param[in]       Controller             Controller handle
    @param[in]       ChildHandleBuffer      Buffer with child handles
-   @param[in]       UndiPrivateData        Driver private data structure   
+   @param[in]       UndiPrivateData        Driver private data structure
 
    @retval          EFI_SUCCESS            Procedure returned successfully
    @retval          EFI_INVALID_PARAMETER  Invalid parameter passed
@@ -1888,7 +1985,7 @@ StopChild (
   return EFI_SUCCESS;
 }
 
-/** Stops driver on children and controller 
+/** Stops driver on children and controller
 
    Stop this driver on Controller by removing NetworkInterfaceIdentifier protocol and
    closing the DevicePath and PciIo protocols on Controller. Stops controller only when
@@ -1955,9 +2052,6 @@ InitUndiDriverStop (
       return EFI_DEVICE_ERROR;
     }
 
-    // Decrement the number of controllers this driver is supporting
-    mActiveControllers--;
-
     return EFI_SUCCESS;
   }
 
@@ -1982,7 +2076,7 @@ InitUndiDriverStop (
   return Status;
 }
 
-/** Return the health status of the controller. 
+/** Return the health status of the controller.
 
    If there is a message status that is related to the current
    health status it is also prepared and returned by this function
@@ -2004,7 +2098,6 @@ UndiGetControllerHealthStatus (
   OUT EFI_DRIVER_HEALTH_HII_MESSAGE **MessageList
   )
 {
-  EFI_STATUS                     Status;
   EFI_DRIVER_HEALTH_HII_MESSAGE *ErrorMessage;
   EFI_STRING_ID                  StringId;
   CHAR16                         ErrorString[MAX_DRIVER_HEALTH_ERROR_STRING];
@@ -2025,7 +2118,7 @@ UndiGetControllerHealthStatus (
 
   *DriverHealthStatus = EfiDriverHealthStatusHealthy;
   ErrorCount = 0;
-  
+
   if (ixgbe_fw_recovery_mode (&UndiPrivateData->NicInfo.Hw)) {
     *DriverHealthStatus = EfiDriverHealthStatusFailed;
     FirmwareCompatible = FALSE;
@@ -2054,21 +2147,17 @@ UndiGetControllerHealthStatus (
   if ((MessageList == NULL)
     || (UndiPrivateData->HiiHandle == NULL))
   {
-  
+
     // Text message are not requested or HII is not supported on this port
     return EFI_SUCCESS;
   }
 
-  // Need to allocate space for two message entries:
-  // the one for the message we need to pass to UEFI BIOS and
-  // one for NULL entry indicating the end of list
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData,
-                  (ErrorCount + 1) * sizeof (EFI_DRIVER_HEALTH_HII_MESSAGE),
-                  (VOID * *) MessageList
-                );
-  if (EFI_ERROR (Status)) {
-    *MessageList = NULL;
+  // Need to allocate space for error count + 1 message entries:
+  // - error count for the message we need to pass to UEFI BIOS
+  // - one for NULL entry indicating the end of list
+  *MessageList = AllocateZeroPool ((ErrorCount + 1) * sizeof (EFI_DRIVER_HEALTH_HII_MESSAGE));
+  if (*MessageList == NULL) {
+    DEBUGPRINT (CRITICAL, ("Failed to allocate MessageList!\n"));
     return EFI_OUT_OF_RESOURCES;
   }
 
@@ -2077,6 +2166,8 @@ UndiGetControllerHealthStatus (
 
   if (FirmwareCompatible == FALSE) {
     StrCpyS (ErrorString, MAX_DRIVER_HEALTH_ERROR_STRING, L"Firmware recovery mode detected. Initialization failed.");
+      ErrorMessage[ErrorCount].MessageCode = 0;
+
     StringId = HiiSetString (
                  UndiPrivateData->HiiHandle,
                  STRING_TOKEN (STR_DRIVER_HEALTH_MESSAGE),
@@ -2098,6 +2189,8 @@ UndiGetControllerHealthStatus (
       MAX_DRIVER_HEALTH_ERROR_STRING,
       L"Rx/Tx is disabled on this device because an unsupported SFP+ or QSFP module type was detected."
     );
+      ErrorMessage[ErrorCount].MessageCode = 0;
+
     StringId = HiiSetString (
                  UndiPrivateData->HiiHandle,
                  STRING_TOKEN (STR_DRIVER_HEALTH_MESSAGE),
@@ -2116,6 +2209,7 @@ UndiGetControllerHealthStatus (
   // Indicate the end of list by setting HiiHandle to NULL
   ErrorMessage[ErrorCount].HiiHandle = NULL;
   ErrorMessage[ErrorCount].StringId = 0;
+  ErrorMessage[ErrorCount].MessageCode = 0;
 
   return EFI_SUCCESS;
 }
@@ -2133,9 +2227,9 @@ UndiGetDriverHealthStatus (
   OUT EFI_DRIVER_HEALTH_STATUS *DriverHealthStatus
   )
 {
-  EFI_STATUS               Status;
-  EFI_DRIVER_HEALTH_STATUS HealthStatus;
-  UINTN                    i;
+  EFI_STATUS                Status;
+  EFI_DRIVER_HEALTH_STATUS  HealthStatus;
+  UNDI_PRIVATE_DATA         *Device;
 
   DEBUGPRINT (HEALTH, ("\n"));
 
@@ -2148,10 +2242,9 @@ UndiGetDriverHealthStatus (
 
   // Iterate through all controllers managed by this instance of driver and
   // ask them about their health status
-  for (i = 0; i < mActiveControllers; i++) {
-    if (mXgbeDeviceList[i]->NicInfo.Hw.device_id != 0) {
-      Status = UndiGetControllerHealthStatus (mXgbeDeviceList[i], &HealthStatus, NULL);
-      if (EFI_ERROR (Status)) {
+  FOREACH_ACTIVE_CONTROLLER (Device) {
+    if (Device->NicInfo.Hw.device_id != 0) {
+      Status = UndiGetControllerHealthStatus (Device, &HealthStatus, NULL);      if (EFI_ERROR (Status)) {
         DEBUGPRINT (CRITICAL, ("UndiGetHealthStatus - %r\n"));
         return EFI_DEVICE_ERROR;
       }
@@ -2173,4 +2266,3 @@ EFI_DRIVER_BINDING_PROTOCOL gUndiDriverBinding = {
   NULL,                     // ImageHandle
   NULL                      // Driver Binding Handle
 };
-

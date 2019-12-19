@@ -27,91 +27,112 @@
 # 
 # ***************************************************************************/
 
-[defines]
-INF_VERSION          = 0x00010005
-BASE_NAME            = XGigUndiDxe
-#FILE_GUID            = B1f836EA-A134-4EF8-967C-8148606FF670
-FILE_GUID            = 507df75d-7383-4ceb-a83a-60776a80d32c
+[Defines]
+  INF_VERSION          = 0x00010005
+  BASE_NAME            = XGigUndiDxe
+  FILE_GUID            = 507df75d-7383-4ceb-a83a-60776a80d32c
 
+  # UEFI_DRIVER is compliant with EFI1.10 or UEFI 2.3 specification
+  MODULE_TYPE          = UEFI_DRIVER
 
-# UEFI_DRIVER is compliant with EFI1.10 or UEFI 2.3 specification
-
-MODULE_TYPE          = UEFI_DRIVER
-
-VERSION_STRING       = 1.0
-ENTRY_POINT          = InitializeXGigUndiDriver
-UNLOAD_IMAGE         = UnloadXGigUndiDriver
+  VERSION_STRING       = 1.0
+  ENTRY_POINT          = InitializeXGigUndiDriver
+  UNLOAD_IMAGE         = UnloadXGigUndiDriver
 
 [BuildOptions.common]
+  *_*_*_CC_FLAGS = -D UNDI_10G
 
-*_*_*_CC_FLAGS = /FAcs /D MDEPKG_NDEBUG /D UNDI_10G
+  # Enable to use PciIo protocols for PCI reads/writes. (Experimental!)
+  #*_*_*_CC_FLAGS = -D CONFIG_ACCESS_TO_CSRS
+
+  # Generates extra debug info when building with Microsoft compilers.
+  MSFT:*_*_*_CC_FLAGS = /FAcs
+
+  # Disable deprecated/unsafe functions (will cause build errors on use)
+  *_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES
+
+  # Disable debug macros for RELEASE builds.
+  RELEASE_*_*_CC_FLAGS = -D MDEPKG_NDEBUG
+
+  # Disable shared code warnings on MSVC.
+  # - 4189: local variable is initialized but not referenced (-Wno-unused-value)
+  # - 4206: translation unit empty (occasionally happens in shared code)
+  # - 4244: conversion from ... to ..., possible loss of data
+  MSFT:*_*_*_CC_FLAGS = /wd4189 /wd4206 /wd4244
 
 [BuildOptions.X64]
-
-*_*_*_CC_FLAGS = /D EFIX64 
-
-[BuildOptions.IPF]
-
-*_*_*_CC_FLAGS = /D EFI64
+  *_*_*_CC_FLAGS = -D EFIX64
 
 [BuildOptions.IA32]
+  *_*_*_CC_FLAGS = -D EFI32
 
-*_*_*_CC_FLAGS = /D EFI32
+  # Disable warning 4305: truncation from ... to ... (data loss when casting to a smaller type)
+  MSFT:*_*_*_CC_FLAGS = /wd4305
 
-[sources.common]
- InventoryStrings.uni
- Inventory.vfr
- Brand.c
- AdapterInformation.c
- AdapterInformation.h
- ComponentName.c
- ComponentName.h
- DeviceSupport.c
- DeviceSupport.h
- Decode.c
- Decode.h
- Dma.c
- Dma.h
- DriverDiagnostics.c
- DriverDiagnostics.h
- Init.c
- Init.h
- ixgbe_osdep.h
- NVDataStruc.h
- Xgbe.c
- DriverHealth.c
- Xgbe.h
- StartStop.c
- StartStop.h
- EepromConfig.c
- EepromConfig.c
- ixgbe_82598.c
- ixgbe_82598.h
- ixgbe_82599.c
- ixgbe_82599.h
- ixgbe_x540.c
- ixgbe_x540.h
- ixgbe_x550.c
- ixgbe_x550.h
- ixgbe_api.c
- ixgbe_api.h
- ixgbe_common.c
- ixgbe_common.h
- ixgbe_phy.c
- ixgbe_phy.h
- ixgbe_type.h
- Hii.c
- Hii.h
- Version.h
- HiiInternalLib.c
- HiiInternalLib.h
-  wol\wol.c
-  wol\wol.h
-  wol\wolfamily.c
-  wol\wolimpl.c
-  wol\wolimpl.h
-  wol\wolinfo.c
-  wol\wol_10G.c
+[BuildOptions.ARM]
+  *_*_*_CC_FLAGS = -D ARCH_ARM
+
+[BuildOptions.AARCH64]
+  *_*_*_CC_FLAGS = -D ARCH_AARCH64
+
+[Sources.common]
+  AdapterInformation.c
+  AdapterInformation.h
+  Brand.c
+  ComponentName.c
+  ComponentName.h
+  DebugTools.c
+  DebugTools.h
+  Decode.c
+  Decode.h
+  DeviceSupport.c
+  DeviceSupport.h
+  Dma.c
+  Dma.h
+  DriverDiagnostics.c
+  DriverDiagnostics.h
+  DriverHealth.c
+  EepromConfig.c
+  EepromConfig.c
+  Hii.c
+  Hii.h
+  HiiInternalLib.c
+  HiiInternalLib.h
+  Init.c
+  Init.h
+  Inventory.vfr
+  InventoryStrings.uni
+  ixgbe_osdep.h
+  NVDataStruc.h
+  StartStop.c
+  StartStop.h
+  Version.h
+  Xgbe.c
+  Xgbe.h
+
+  ixgbe_82598.c
+  ixgbe_82598.h
+  ixgbe_82599.c
+  ixgbe_82599.h
+  ixgbe_api.c
+  ixgbe_api.h
+  ixgbe_common.c
+  ixgbe_common.h
+  ixgbe_phy.c
+  ixgbe_phy.h
+  ixgbe_type.h
+  ixgbe_x540.c
+  ixgbe_x540.h
+  ixgbe_x550.c
+  ixgbe_x550.h
+
+  wol/wol.c
+  wol/wol.h
+  wol/wolfamily.c
+  wol/wolimpl.c
+  wol/wolimpl.h
+  wol/wolinfo.c
+  wol/wol_10G.c
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -129,10 +150,6 @@ UNLOAD_IMAGE         = UnloadXGigUndiDriver
   HiiLib
   StdLibC
 
-[LibraryClasses.X64]
-  
-[LibraryClasses.IPF]
-
 [Protocols.common]
   gEfiNetworkInterfaceIdentifierProtocolGuid_31
   gEfiPciIoProtocolGuid
@@ -143,13 +160,11 @@ UNLOAD_IMAGE         = UnloadXGigUndiDriver
   gEfiHiiConfigAccessProtocolGuid               ## PRODUCES
   gEfiFormBrowser2ProtocolGuid                  ## CONSUMES
   gEfiHiiDatabaseProtocolGuid                   ## CONSUMES
-  gEfiHiiPackageListProtocolGuid    			## CONSUMES  
+  gEfiHiiPackageListProtocolGuid                ## CONSUMES
   gEfiDriverSupportedEfiVersionProtocolGuid
   gEfiDriverHealthProtocolGuid
-  
 
 [Guids]
-  gEfiIfrTianoGuid                              ## CONSUMES ## Guid
-  gEfiEventExitBootServicesGuid        			## PRODUCES ## Event
-  gEfiEventVirtualAddressChangeGuid    			## PRODUCES ## Event
-
+  gEfiIfrTianoGuid                  ## CONSUMES ## Guid
+  gEfiEventExitBootServicesGuid     ## PRODUCES ## Event
+  gEfiEventVirtualAddressChangeGuid ## PRODUCES ## Event

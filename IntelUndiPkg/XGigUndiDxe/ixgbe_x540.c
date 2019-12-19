@@ -1147,4 +1147,3 @@ s32 ixgbe_get_protected_blocks_X540(struct ixgbe_hw *hw,
 
 	return status;
 }
-

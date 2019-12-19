@@ -66,6 +66,7 @@ ComponentNameInitializeControllerName (
                                     language specified by Language.
 **/
 EFI_STATUS
+EFIAPI
 ComponentNameGetDriverName (
   IN  EFI_COMPONENT_NAME_PROTOCOL *This,
   IN  CHAR8 *                      Language,
@@ -73,4 +74,3 @@ ComponentNameGetDriverName (
   );
 
 #endif /* COMPONENT_NAME_H_ */
-

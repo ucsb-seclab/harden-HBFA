@@ -48,6 +48,8 @@ WOL_MAC_TYPE const _WOL_ICE[] = {
   WOL_MAKE_MACTYPE(WOL_ICE, ICE_MAC_FPGA),
 #endif /* FPGA_SUPPORT */
   WOL_MAKE_MACTYPE(WOL_ICE, ICE_MAC_GENERIC),
+  //3 is for ICE_MAC_DISCRETE (TODO: replace when ready)
+  WOL_MAKE_MACTYPE(WOL_ICE, 3), 
   0
 };
 #endif
@@ -66,9 +68,6 @@ _WOL_FAMILY_INFO_t const WOL_FAMILY_TABLE[] = {
 #if defined(WOL_40G)
   { _WOL_40GBE,         _WolGetOffsetBitmask_40GBE          },
 #endif /* WOL_40G */
-#if defined(WOL_ICE)
-  { _WOL_ICE,           _WolGetOffsetBitmask_40GBE          },
-#endif /* WOL_ICE */
   { 0,                  0                                   }
 };
 

@@ -144,6 +144,8 @@ BRAND_STRUCT  mBrandingTable[] = {
     {0x8086, 0x8086, 0x1563, 0x0001, L"Intel(R) Ethernet Converged Network Adapter X550-T2"},
     {0x8086, 0x8086, 0x1563, 0x0022, L"Intel(R) Ethernet Converged Network Adapter X550-T2"},
     {0x8086, 0x8086, 0x1563, 0x001B, L"Intel(R) Ethernet Server Adapter X550-T2 for OCP"},
+    {0x8086, 0x1137, 0x1563, 0x02B2, L"Cisco X550-TX 10 Gig LOM"},
+    {0x8086, 0x1137, 0x1563, 0x02B3, L"Cisco X550-TX 10 Gig LOM"},
     {0x8086, 0x8086, 0x15D1, 0x00A2, L"Intel(R) Ethernet Converged Network Adapter X550-T1"},
     {0x8086, 0x8086, 0x15D1, 0x0002, L"Intel(R) Ethernet Converged Network Adapter X550-T1"},
     {0x8086, 0x8086, 0x15D1, 0x0021, L"Intel(R) Ethernet Converged Network Adapter X550-T1"},
@@ -173,4 +175,3 @@ BRAND_STRUCT  mBrandingTable[] = {
 };
 
 UINTN mBrandingTableSize = (sizeof (mBrandingTable) / sizeof (mBrandingTable[0]));
-

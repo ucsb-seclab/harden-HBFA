@@ -67,4 +67,3 @@ s32 ixgbe_get_protected_blocks_X540(struct ixgbe_hw *hw,
 				u16 *eeprom_buffer, u32 eeprom_size);
 #endif /* _IXGBE_X540_H_ */
 
-

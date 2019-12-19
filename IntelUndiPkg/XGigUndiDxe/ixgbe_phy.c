@@ -2742,4 +2742,3 @@ s32 ixgbe_set_copper_phy_power(struct ixgbe_hw *hw, bool on)
 				       reg);
 	return status;
 }
-

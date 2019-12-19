@@ -49,7 +49,7 @@ STATIC EFI_ADAPTER_INFORMATION_TYPE_DESCRIPTOR mSupportedInformationTypes[MAX_SU
 
   @param[in]   This                  Current EFI_ADAPTER_INFORMATION_PROTOCOL instance.
   @param[out]  InformationBlock      Media state information block.
-  @param[out]  InformationBlockSize  Media state information block size. 
+  @param[out]  InformationBlockSize  Media state information block size.
 
   @retval      EFI_SUCCESS           Information block returned successfully
   @retval      EFI_OUT_OF_RESOURCES  Not enough resources to store media state info
@@ -65,12 +65,12 @@ GetMediaStateInformationBlock (
   EFI_ADAPTER_INFO_MEDIA_STATE *Buffer;
   UNDI_PRIVATE_DATA *           UndiPrivateData;
 
-  Buffer = AllocatePool (sizeof (EFI_ADAPTER_INFO_MEDIA_STATE));
-
+  Buffer = AllocateZeroPool (sizeof (EFI_ADAPTER_INFO_MEDIA_STATE));
   if (Buffer == NULL) {
-    DEBUGPRINT (ADAPTERINFO, ("AllocatePool failed\n"));
+    DEBUGPRINT (ADAPTERINFO, ("Failed to allocate Buffer!\n"));
     return EFI_OUT_OF_RESOURCES;
   }
+
   UndiPrivateData = UNDI_PRIVATE_DATA_FROM_AIP (This);
 
   if (IsLinkUp (&UndiPrivateData->NicInfo)) {
@@ -95,12 +95,12 @@ GetIpv6SupportInformationBlock (
 {
   EFI_ADAPTER_INFO_UNDI_IPV6_SUPPORT  *Buffer;
 
-  Buffer = AllocatePool (sizeof(EFI_ADAPTER_INFO_UNDI_IPV6_SUPPORT));
-
+  Buffer = AllocateZeroPool (sizeof (EFI_ADAPTER_INFO_UNDI_IPV6_SUPPORT));
   if (Buffer == NULL) {
-    DEBUGPRINT (ADAPTERINFO, ("AllocatePool failed\n"));
+    DEBUGPRINT (ADAPTERINFO, ("Failed to allocate Buffer!\n"));
     return EFI_OUT_OF_RESOURCES;
   }
+
   Buffer->Ipv6Support = TRUE;
 
   *InformationBlock = Buffer;
@@ -109,6 +109,41 @@ GetIpv6SupportInformationBlock (
   return EFI_SUCCESS;
 }
 
+
+/** Gets media type information block
+
+  @param[in]   This                  Current EFI_ADAPTER_INFORMATION_PROTOCOL instance.
+  @param[out]  InformationBlock      Media type information block.
+  @param[out]  InformationBlockSize  Media type information block size.
+
+  @retval      EFI_SUCCESS           Information block returned successfully
+  @retval      EFI_OUT_OF_RESOURCES  Not enough resources to store media type info
+**/
+STATIC
+EFI_STATUS
+GetMediaTypeInformationBlock (
+  IN  EFI_ADAPTER_INFORMATION_PROTOCOL *This,
+  OUT VOID **                           InformationBlock,
+  OUT UINTN *                           InformationBlockSize
+  )
+{
+  EFI_ADAPTER_INFO_MEDIA_TYPE   *Buffer;
+
+  Buffer = AllocateZeroPool (sizeof (EFI_ADAPTER_INFO_MEDIA_TYPE));
+  if (Buffer == NULL) {
+    DEBUGPRINT (ADAPTERINFO, ("Failed to allocate Buffer!\n"));
+    return EFI_OUT_OF_RESOURCES;
+  }
+
+  // According to UEFI 2.7 spec, section 11.12.5, 1 means
+  // "Ethernet Network Adapter"
+  Buffer->MediaType = 1;
+
+  *InformationBlock = Buffer;
+  *InformationBlockSize = sizeof (EFI_ADAPTER_INFO_MEDIA_TYPE);
+
+  return EFI_SUCCESS;
+}
 
 /** Returns the current state information for the adapter
 
@@ -120,10 +155,11 @@ GetIpv6SupportInformationBlock (
    @retval    EFI_SUCCESS              InformationBlock successfully returned
    @retval    EFI_INVALID_PARAMETER    One of the parameters is NULL
    @retval    EFI_UNSUPPORTED          GetInformationBlock function is undefined for
-                                       specified GUID or GUID is unsupported  
+                                       specified GUID or GUID is unsupported
 **/
 STATIC
 EFI_STATUS
+EFIAPI
 GetInformation (
   IN  EFI_ADAPTER_INFORMATION_PROTOCOL *This,
   IN  EFI_GUID *                        InformationType,
@@ -184,11 +220,12 @@ GetInformation (
    @retval    EFI_SUCCESS             InformationBlock successfully set
    @retval    EFI_INVALID_PARAMETER   InformationBlock is NULL
    @retval    EFI_UNSUPPORTED         Specified GUID is unsupported
-   @retval    EFI_WRITE_PROTECTED     SetInformationBlock function is undefined for 
+   @retval    EFI_WRITE_PROTECTED     SetInformationBlock function is undefined for
                                       specified GUID
 **/
 STATIC
 EFI_STATUS
+EFIAPI
 SetInformation (
   IN  EFI_ADAPTER_INFORMATION_PROTOCOL *This,
   IN  EFI_GUID *                        InformationType,
@@ -224,17 +261,18 @@ SetInformation (
 /** Get a list of supported information types for this instance of the protocol
 
    @param[in]    This             Current EFI_ADAPTER_INFORMATION_PROTOCOL instance.
-   @param[out]   InfoTypesBuffer  A pointer to the array of InformationTypeGUIDs that are 
+   @param[out]   InfoTypesBuffer  A pointer to the array of InformationTypeGUIDs that are
                                   supported by This
-   @param[out]   InfoTypesBufferCount   Number of GUIDs present in InfoTypesBuffer 
+   @param[out]   InfoTypesBufferCount   Number of GUIDs present in InfoTypesBuffer
 
    @retval    EFI_SUCCESS             InfoTypesBuffer returned successfully
    @retval    EFI_INVALID_PARAMETER   One of the input parameters is NULL
-   @retval    EFI_OUT_OF_RESOURCES    Failed to allocate memory for 
-                                      InfoTypesBuffer   
+   @retval    EFI_OUT_OF_RESOURCES    Failed to allocate memory for
+                                      InfoTypesBuffer
 **/
 STATIC
 EFI_STATUS
+EFIAPI
 GetSupportedTypes (
   IN  EFI_ADAPTER_INFORMATION_PROTOCOL *This,
   OUT EFI_GUID **                       InfoTypesBuffer,
@@ -261,11 +299,10 @@ GetSupportedTypes (
     return EFI_INVALID_PARAMETER;
   }
 
-  Buffer = AllocatePool (mInformationCount * sizeof (EFI_GUID));
-  
   // It is the responsibility of the caller to free this buffer after using it.
+  Buffer = AllocateZeroPool (mInformationCount * sizeof (EFI_GUID));
   if (Buffer == NULL) {
-    DEBUGPRINT (ADAPTERINFO, ("AllocatePool failed\n"));
+    DEBUGPRINT (ADAPTERINFO, ("Failed to allocate Buffer!\n"));
     return EFI_OUT_OF_RESOURCES;
   }
 
@@ -307,7 +344,7 @@ AddSupportedInformationType (
     if (CompareGuid (
           &InformationDescriptor->Guid,
           &mSupportedInformationTypes[i].Guid
-        )) 
+        ))
     {
       return EFI_ALREADY_STARTED;
     }
@@ -328,7 +365,7 @@ AddSupportedInformationType (
 /** Initializes and installs Adapter Info Protocol on adapter
 
    @param[in]   UndiPrivateData   Driver private data structure
-   
+
    @retval    EFI_SUCCESS   Protocol installed successfully
    @retval    !EFI_SUCCESS  Failed to install and initialize protocol
 **/
@@ -342,23 +379,30 @@ InitAdapterInformationProtocol (
 
   EFI_GUID MediaStateGuid      = EFI_ADAPTER_INFO_MEDIA_STATE_GUID;
   EFI_GUID Ipv6SupportInfoGuid = EFI_ADAPTER_INFO_UNDI_IPV6_SUPPORT_GUID;
+  EFI_GUID MediaTypeGuid       = EFI_ADAPTER_INFO_MEDIA_TYPE_GUID;
 
   DEBUGPRINT (ADAPTERINFO, ("%a, %d\n", __FUNCTION__, __LINE__));
 
   UndiPrivateData->AdapterInformation = gUndiAdapterInfo;
 
-  SetMem (&InformationType, sizeof (EFI_ADAPTER_INFORMATION_TYPE_DESCRIPTOR), 0);
+  ZeroMem (&InformationType, sizeof (EFI_ADAPTER_INFORMATION_TYPE_DESCRIPTOR));
   CopyMem (&InformationType.Guid, &MediaStateGuid, sizeof (EFI_GUID));
   InformationType.GetInformationBlock = GetMediaStateInformationBlock;
   InformationType.SetInformationBlock = NULL;
   AddSupportedInformationType (&InformationType);
 
-  SetMem (&InformationType, sizeof (EFI_ADAPTER_INFORMATION_TYPE_DESCRIPTOR), 0);
+  ZeroMem (&InformationType, sizeof (EFI_ADAPTER_INFORMATION_TYPE_DESCRIPTOR));
   CopyMem (&InformationType.Guid, &Ipv6SupportInfoGuid, sizeof (EFI_GUID));
   InformationType.GetInformationBlock = GetIpv6SupportInformationBlock;
   InformationType.SetInformationBlock = NULL;
   AddSupportedInformationType (&InformationType);
 
+
+  ZeroMem (&InformationType, sizeof (EFI_ADAPTER_INFORMATION_TYPE_DESCRIPTOR));
+  CopyMem (&InformationType.Guid, &MediaTypeGuid, sizeof (EFI_GUID));
+  InformationType.GetInformationBlock = GetMediaTypeInformationBlock;
+  InformationType.SetInformationBlock = NULL;
+  AddSupportedInformationType (&InformationType);
 
   Status = gBS->InstallProtocolInterface (
                   &UndiPrivateData->DeviceHandle,
@@ -410,4 +454,3 @@ EFI_ADAPTER_INFORMATION_PROTOCOL gUndiAdapterInfo = {
   SetInformation,
   GetSupportedTypes
 };
-

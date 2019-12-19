@@ -36,9 +36,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Defines */
 
 #define EFI_DRIVER_STOP_PROTOCOL_GUID \
-  { 0x34d59603, 0x1428, 0x4429, 0xa4, 0x14, 0xe6, 0xb3, \
-  0xb5, 0xfd, 0x7d, 0xc1 }
-  
+  { 0x34d59603, 0x1428, 0x4429, { 0xa4, 0x14, 0xe6, 0xb3, 0xb5, 0xfd, 0x7d, 0xc1 } }
+
 /* Protocol declarations */
 
 // forward declaration for prot funcs typedefs.
@@ -79,4 +78,3 @@ struct EFI_DRIVER_STOP_PROTOCOL_S {
 
 #endif /* START_STOP_H_ */
 
-

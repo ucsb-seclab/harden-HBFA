@@ -29,15 +29,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef IXGBE_OSDEP_H_
 #define IXGBE_OSDEP_H_
 
-#pragma warning(disable : 4244)
-#pragma warning(disable : 4206)
-#pragma warning(disable : 4189)
-
-#ifdef EFI32
-
-// Remove truncation warning in type cast when some 64 bit variables are converted to 32-bit pointers
-#pragma warning(disable : 4305)
-#endif /* EFI32 */
 
 #ifndef EFI_SPECIFICATION_VERSION
 #define EFI_SPECIFICATION_VERSION 0x00020000
@@ -49,8 +40,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <Uefi.h>
 #include <Base.h>
-#include <Library\BaseLib.h>
-#include <Library\BaseMemoryLib.h>
+#include <Library/BaseLib.h>
+#include <Library/BaseMemoryLib.h>
 #include <Library/PrintLib.h>
 
 #define CHAR            CHAR8
@@ -200,7 +191,7 @@ IxgbeReverseDword (
    with DelayInMicroseconds() function
 
    @param[in]   x   Time to wait in microseconds
-   
+
    @return   DelayInMicroseconds called
 **/
 #define usec_delay(x)                       DelayInMicroseconds ((XGBE_DRIVER_DATA *) (hw->back), x)
@@ -209,7 +200,7 @@ IxgbeReverseDword (
    with DelayInMicroseconds() function
 
    @param[in]   x   Time to wait in milliseconds
-   
+
    @return   DelayInMicroseconds called
 **/
 #define msec_delay(x)                       DelayInMicroseconds ((XGBE_DRIVER_DATA *) (hw->back), x * 1000)
@@ -219,7 +210,7 @@ IxgbeReverseDword (
    @param[in]    Buffer         Buffer to set its contents
    @param[in]    BufferLength   Length of the buffer
    @param[in]    Value          Value to set buffer contents to
-   
+
    @return   Buffer contents set to Value
 **/
 #define memset(Buffer, Value, BufferLength) SetMem (Buffer, BufferLength, Value)
@@ -244,7 +235,7 @@ typedef BOOLEAN boolean_t;
 /** ASSERT macro left blank
 
    @param[in]   x    Assert condition
-   
+
    @return   None
 **/
 #define ASSERT(x)
@@ -253,7 +244,7 @@ typedef BOOLEAN boolean_t;
    blank here
 
    @param[in]   s    String to display
-   
+
    @retval   None
 **/
 #define DEBUGOUT(s)
@@ -263,7 +254,7 @@ typedef BOOLEAN boolean_t;
 
    @param[in]   s    String to display
    @param[in]   a    Value to include in string
-   
+
    @retval   None
 **/
 #define DEBUGOUT1(s, a)
@@ -274,7 +265,7 @@ typedef BOOLEAN boolean_t;
    @param[in]   s    String to display
    @param[in]   a    Value to include in string
    @param[in]   b    Value to include in string
-   
+
    @retval   None
 **/
 #define DEBUGOUT2(s, a, b)
@@ -286,9 +277,9 @@ typedef BOOLEAN boolean_t;
    @param[in]   a    Value to include in string
    @param[in]   b    Value to include in string
    @param[in]   c    Value to include in string
-   
+
    @retval   None
-**/  
+**/
 #define DEBUGOUT3(s, a, b, c)
 
 /** Macro wrapper for shared code DEBUGOUT7 statement,
@@ -301,7 +292,7 @@ typedef BOOLEAN boolean_t;
    @param[in]   d    Value to include in string
    @param[in]   e    Value to include in string
    @param[in]   f    Value to include in string
-   
+
    @retval   None
 **/
 #define DEBUGOUT6(s, a, b, c, d, e, f)
@@ -317,7 +308,7 @@ typedef BOOLEAN boolean_t;
    @param[in]   e    Value to include in string
    @param[in]   f    Value to include in string
    @param[in]   g    Value to include in string
-   
+
    @retval   None
 **/
 #define DEBUGOUT7(s, a, b, c, d, e, f, g)
@@ -328,7 +319,7 @@ typedef BOOLEAN boolean_t;
 
    @param[in]   hw   Pointer to HW structure
    @param[in]   s    Value to include in string
-   
+
    @retval   None
 **/
 #define EWARN(hw, s)
@@ -339,7 +330,7 @@ typedef BOOLEAN boolean_t;
    assigned to DEBUGOUT (results in being blank)
 
    @param[in]   F,    String to display
-   
+
    @retval   None
 **/
 #define DEBUGFUNC(F)                        DEBUGOUT (F)
@@ -349,7 +340,7 @@ typedef BOOLEAN boolean_t;
    @param[in]   a        Pointer to hardware instance.
    @param[in]   Reg      Which port to write to.
    @param[in]   Value    Data to write to Port.
-   
+
    @return   XgbeOutDword called
 **/
 #define IXGBE_WRITE_REG(a, Reg, Value)      XgbeOutDword ((XGBE_DRIVER_DATA *) ((a)->back), Reg, Value)
@@ -358,7 +349,7 @@ typedef BOOLEAN boolean_t;
 
    @param[in]   a        Pointer to hardware instance.
    @param[in]   Reg      Which port to read from.
-   
+
    @return   XgbeInDword called
 **/
 #define IXGBE_READ_REG(a, Reg)              XgbeInDword ((XGBE_DRIVER_DATA *) ((a)->back), (UINT32) (Reg))
@@ -369,7 +360,7 @@ typedef BOOLEAN boolean_t;
    @param[in]   Reg      Which port to write to.
    @param[in]   Offset   Offset from Reg
    @param[in]   Value    Data to write to Port.
-   
+
    @return   XgbeOutDword called
 **/
 #define IXGBE_WRITE_REG_ARRAY(a, Reg, Offset, Value)  \
@@ -380,7 +371,7 @@ typedef BOOLEAN boolean_t;
    @param[in]   a        Pointer to hardware instance.
    @param[in]   Reg      Which port to read from.
    @param[in]   Offset   Offset from Reg
-   
+
    @return   XgbeInDword called
 **/
 #define IXGBE_READ_REG_ARRAY(a, Reg, Offset)  \
@@ -389,7 +380,7 @@ typedef BOOLEAN boolean_t;
 /** Wrapper macro for shared code IXGBE_WRITE_FLUSH statement
 
    @param[in]   a        Pointer to hardware instance.
-   
+
    @return   XgbePciFlush called
 **/
 #define IXGBE_WRITE_FLUSH(a)                XgbePciFlush ((XGBE_DRIVER_DATA *) ((a)->back));
@@ -398,7 +389,7 @@ typedef BOOLEAN boolean_t;
 
    @param[in]   a        Pointer to hardware instance.
    @param[in]   Reg      Which port to read from.
-   
+
    @return   XgbeReadPci16 called
 **/
 #define IXGBE_READ_PCIE_WORD(a, Reg)        XgbeReadPci16 (a->back, Reg)
@@ -408,7 +399,7 @@ typedef BOOLEAN boolean_t;
    @param[in]   a        Pointer to hardware instance.
    @param[in]   Reg      Which port to write to.
    @param[in]   Data     Data to write to Port.
-   
+
    @return   XgbeWritePci16 called
 **/
 #define IXGBE_WRITE_PCIE_WORD(a, Reg, Data) ; \
@@ -419,7 +410,7 @@ typedef BOOLEAN boolean_t;
 /** Macros to swap bytes in word
 
    @param[in]   Val   value to swap
-   
+
    @return  Value swapped
 **/
 #define IXGBE_NTOHS(Val) ((u16) (((u16) ((Val) & 0xFF00) >> 8) | ((u16) ((Val) & 0x00FF) << 8)))
@@ -427,7 +418,7 @@ typedef BOOLEAN boolean_t;
 /** Macros to swap bytes in Dword
 
    @param[in]   Val   value to swap
-   
+
    @return  Value swapped
 **/
 #define IXGBE_NTOHL(Val) ( \
@@ -442,7 +433,7 @@ typedef BOOLEAN boolean_t;
    to Little Endian
 
    @param[in]   a    Value to reverse
-   
+
    @return   Value is converted
 **/
 #define IXGBE_CPU_TO_LE16(a) ((UINT16) (a))
@@ -451,7 +442,7 @@ typedef BOOLEAN boolean_t;
    to Little Endian
 
    @param[in]   a    Value to reverse
-   
+
    @return   Value is converted
 **/
 #define IXGBE_CPU_TO_LE32(a) ((UINT32) (a))
@@ -460,7 +451,7 @@ typedef BOOLEAN boolean_t;
    to CPU native
 
    @param[in]   a    Value to reverse
-   
+
    @return   Value is converted
 **/
 #define IXGBE_LE32_TO_CPU(a) ((UINT32) (a))
@@ -468,7 +459,7 @@ typedef BOOLEAN boolean_t;
 /** Macro for word conversion, unused here
 
    @param[in]   a    Value to reverse
-   
+
    @return   Value is converted
 **/
 #define IXGBE_LE32_TO_CPUS(a) do {} while (0)
@@ -481,7 +472,7 @@ typedef BOOLEAN boolean_t;
 
    @retval  None
 **/
-#define ERROR_REPORT(S,A)
+#define ERROR_REPORT(S,A) UNREFERENCED_1PARAMETER(A)
 
 /** ERROR_REPORT1 wrapper macro for shared code,
    blank here
@@ -491,7 +482,7 @@ typedef BOOLEAN boolean_t;
 
    @retval  None
 **/
-#define ERROR_REPORT1(S,A)
+#define ERROR_REPORT1(S,A) UNREFERENCED_1PARAMETER(A)
 
 /** ERROR_REPORT2 wrapper macro for shared code,
    blank here
@@ -502,7 +493,7 @@ typedef BOOLEAN boolean_t;
 
    @retval  None
 **/
-#define ERROR_REPORT2(S,A,B)
+#define ERROR_REPORT2(S,A,B) UNREFERENCED_2PARAMETER(A,B)
 
 /** ERROR_REPORT3 wrapper macro for shared code,
    blank here
@@ -514,13 +505,13 @@ typedef BOOLEAN boolean_t;
 
    @retval  None
 **/
-#define ERROR_REPORT3(S,A,B,C)
+#define ERROR_REPORT3(S,A,B,C) UNREFERENCED_3PARAMETER(A,B,C)
 
 /** Macro for word conversion from CPU native
    to Big Endian
 
    @param[in]   a    Value to reverse
-   
+
    @return   Value is converted
 **/
 #define IXGBE_CPU_TO_BE16(a) IxgbeReverseWord (a)
@@ -529,7 +520,7 @@ typedef BOOLEAN boolean_t;
    to Big Endian
 
    @param[in]   a    Value to reverse
-   
+
    @return   Value is converted
 **/
 #define IXGBE_CPU_TO_BE32(a) IxgbeReverseDword (a)
@@ -538,19 +529,18 @@ typedef BOOLEAN boolean_t;
    to CPU native
 
    @param[in]   a    Value to reverse
-   
+
    @return   Value is converted
 **/
 #define IXGBE_BE32_TO_CPU(a) IxgbeReverseDword (a)
 
-/** Macro for word conversion from Big Endian 
+/** Macro for word conversion from Big Endian
    to CPU native
 
    @param[in]   a    Value to reverse
-   
+
    @return   Value is converted
 **/
 #define IXGBE_BE16_TO_CPU(a) IxgbeReverseWord (a)
 
 #endif /* IXGBE_OSDEP_H_ */
-

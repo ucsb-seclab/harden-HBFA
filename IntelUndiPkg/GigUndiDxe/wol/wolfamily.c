@@ -90,6 +90,16 @@ static WOL_MAC_TYPE const _WOL_BARTONHILLS[] = {
 
 
 
+#if defined(WOL_ICE)
+WOL_MAC_TYPE const _WOL_ICE[] = {
+  WOL_MAKE_MACTYPE(WOL_ICE, ICE_MAC_GENERIC),
+  //3 is for ICE_MAC_DISCRETE (TODO: replace when ready)
+  WOL_MAKE_MACTYPE(WOL_ICE, 3), 
+  0
+};
+#endif
+
+
 extern WOL_STATUS _WolGetOffsetBitmask_PRO100(WOL_ADAPTER_HANDLE_TYPE Handle, UINT16 *Offset, UINT16 *Bitmask);
 extern WOL_STATUS _WolGetOffsetBitmask_CORDOVA(WOL_ADAPTER_HANDLE_TYPE Handle, UINT16 *Offset, UINT16 *Bitmask);
 extern WOL_STATUS _WolGetOffsetBitmask_KENAI(WOL_ADAPTER_HANDLE_TYPE Handle, UINT16 *Offset, UINT16 *Bitmask);
@@ -163,4 +173,3 @@ WOL_MAC_TYPE const WOL_LASER_TABLE[] = {
   0
 };
 
-

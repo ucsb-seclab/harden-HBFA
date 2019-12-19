@@ -30,18 +30,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define INIT_H_
 
 #define EFI_NII_POINTER_PROTOCOL_GUID \
-  { \
-    0xE3161450, 0xAD0F, 0x11D9, \
-    { \
-      0x96, 0x69, 0x08, 0x00, 0x20, 0x0c, 0x9a, 0x66 \
-    } \
-  }
+  { 0xE3161450, 0xAD0F, 0x11D9, { 0x96, 0x69, 0x08, 0x00, 0x20, 0x0c, 0x9a, 0x66 } }
 
 #define MAC_ADDRESS_SIZE_IN_BYTES 6
 
 #define MAX_DRIVER_HEALTH_ERROR_STRING 200
 
-/** Return the health status of the controller. 
+/** Return the health status of the controller.
 
    If there is a message status that is related to the current
    health status it is also prepared and returned by this function
@@ -77,4 +72,3 @@ UndiGetDriverHealthStatus (
   );
 
 #endif /* INIT_H_ */
-

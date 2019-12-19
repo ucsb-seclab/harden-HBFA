@@ -60,4 +60,3 @@ enum i40e_status_code i40e_free_virt_mem(struct i40e_hw *hw,
 					 struct i40e_virt_mem *mem);
 
 #endif /* _I40E_ALLOC_H_ */
-

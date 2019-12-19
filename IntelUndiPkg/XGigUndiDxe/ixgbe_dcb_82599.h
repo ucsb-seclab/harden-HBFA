@@ -146,4 +146,3 @@ s32 ixgbe_dcb_config_82599(struct ixgbe_hw *,
 s32 ixgbe_dcb_hw_config_82599(struct ixgbe_hw *, int, u16 *, u16 *, u8 *,
 			      u8 *, u8 *);
 #endif /* _IXGBE_DCB_82959_H_ */
-

@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef HII_INTERNAL_LIB_H_
 #define HII_INTERNAL_LIB_H_
 
-#define BIT0     0x00000001
+#define MAC_ADDRESS_STRING_LENGTH 17
 
 
 /** Return the pointer to the section of the Request string that begins just
@@ -57,6 +57,8 @@ SkipConfigHeader (
                                 to free memory.
   @param[out]  Len              Length of the <Number>, in characters.
 
+  @retval EFI_INVALID_PARAMETER  NULL pointers to OUT or IN parameters or empty
+                                 input string.
   @retval EFI_OUT_OF_RESOURCES   Insufficient resources to store neccessary
                                  structures.
   @retval EFI_SUCCESS            Value of <Number> is outputted in Number
@@ -140,19 +142,18 @@ SetProgressString (
   OUT EFI_STRING *  OutString
   );
 
-/** Wrapper for UDK function AsciiStrToUnicodeStr(), checks whether Destination
-    points to a buffer of length greater or equal to Source string length.
+/** Wrapper for the UDK AsciiStrToUnicodeStrS() function with an additional
+    runtime check for destination address alignment.
 
-   @param[in]   Source           A pointer to a Null-terminated ASCII string.
-   @param[out]  Destination      A pointer to a Null-terminated Unicode string.
-   @param[in]   DestMax          The maximum number of Destination Unicode char,
-                                 including terminating null char.
+   @param[in]   Source        A pointer to a Null-terminated ASCII string.
+   @param[out]  Destination   A pointer to a Null-terminated Unicode string.
+   @param[in]   DestMax       The maximum number of Destination Unicode char,
+                              including the terminating null char.
 
    @retval   EFI_SUCCESS           String converted succesfully.
-   @retval   EFI_INVALID_PARAMETER If Destination is NULL
-                                   If Source is NULL
-   @retval   EFI_BUFFER_TOO_SMALL  If DestMax is NOT greater than StrLen(Source).
-   @retval   EFI_ACCESS_DENIED     If Source and Destination overlap.
+   @retval   EFI_INVALID_PARAMETER Source or Destination is NULL, or DestMax is 0.
+   @retval   EFI_BUFFER_TOO_SMALL  DestMax is NOT greater than StrLen(Source).
+   @retval   EFI_ACCESS_DENIED     Source and Destination overlap.
 **/
 EFI_STATUS
 AsciiStrToUnicodeStrWrapper (
@@ -162,4 +163,3 @@ AsciiStrToUnicodeStrWrapper (
   );
 
 #endif /* HII_INTERNAL_LIB_H_ */
-

@@ -92,11 +92,12 @@ _BuildPacket (
   }
 }
 
+#if (DBG_LVL & DIAG)
 /** Helper debug function to display Rx descriptors, and respective packet and
    header addresses
 
   @param[in]   AdapterInfo   Pointer to the NIC data structure information
-                             which the UNDI driver is layering 
+                             which the UNDI driver is layering
 
   @retval      None
 **/
@@ -106,7 +107,6 @@ _DisplayBuffersAndDescriptors (
   )
 {
   union i40e_16byte_rx_desc  *ReceiveDesc;
-  //struct i40e_tx_desc        *TransmitDesc;
 
   UINT32                    j;
 
@@ -121,11 +121,12 @@ _DisplayBuffersAndDescriptors (
     DEBUGDUMP (DIAG, ("QWORD2=%LX\n", ReceiveDesc->read.hdr_addr));
   }
 }
+#endif /* (DBG_LVL & DIAG) */
 
 /** Obtains allowed link speed on port as i40e_aq_link_speed enum value.
 
   @param[in]   AdapterInfo   Pointer to the NIC data structure information
-                             which the UNDI driver is layering 
+                             which the UNDI driver is layering
 
   @retval      I40E_LINK_SPEED_10GB     Allowed link speed is 10 GB
   @retval      I40E_LINK_SPEED_40GB     Allowed link speed is 40 GB
@@ -164,6 +165,10 @@ _I40eGetMacLoopbackSpeed (
       Speed = I40E_LINK_SPEED_10GB;
     } else if ((AllowedLinkSpeeds & I40E_LINK_SPEED_40GB) != 0) {
       Speed = I40E_LINK_SPEED_40GB;
+    } else if ((AllowedLinkSpeeds & I40E_LINK_SPEED_5GB) != 0) {
+      Speed = I40E_LINK_SPEED_5GB;
+    } else if ((AllowedLinkSpeeds & I40E_LINK_SPEED_2_5GB) != 0) {
+      Speed = I40E_LINK_SPEED_2_5GB;
     } else {
       Speed = I40E_LINK_SPEED_UNKNOWN;
     }
@@ -174,12 +179,12 @@ _I40eGetMacLoopbackSpeed (
 /** Puts adapter into the loopback mode on given port.
 
    @param[in]    AdapterInfo   Pointer to the NIC data structure information
-                               which the UNDI driver is layering 
+                               which the UNDI driver is layering
 
    @param[out]   PcsLinkCtrl   Pointer to variable that will save old link control
                                register (auto_neg, speed_sel settings etc.) value
                                between SetMacLoopback() and ClearMacLoopback() calls.
-  
+
    @retval      EFI_SUCCESS          Loopback settings successfully applied
    @retval      EFI_DEVICE_ERROR     Unsupported link speed on adapter
    @retval      EFI_DEVICE_ERROR     Error reading or writing values from/to registers
@@ -207,13 +212,15 @@ I40eSetMacLoopbackWorkaround (
   RETURN_DEVICE_ERROR_ON_ERROR_STATUS (Status);
 
   if (Speed == I40E_LINK_SPEED_1GB
-    || Speed == I40E_LINK_SPEED_10GB)
+    || Speed == I40E_LINK_SPEED_10GB
+    || Speed == I40E_LINK_SPEED_5GB
+    || Speed == I40E_LINK_SPEED_2_5GB)
   {
 
     Status = i40e_aq_debug_read_register (Hw, 0x001E2000 + (4 * Hw->port), &Reg, NULL); // I40E_PRTMAC_HLCTL
     RETURN_DEVICE_ERROR_ON_ERROR_STATUS (Status);
 
-    Reg |= (0x1ULL << 15); // I40E_PRTMAC_HLCTL_LPBK_MASK 
+    Reg |= (0x1ULL << 15); // I40E_PRTMAC_HLCTL_LPBK_MASK
     Status = i40e_aq_debug_write_register (Hw, 0x001E2000 + (4 * Hw->port), Reg, NULL);
     RETURN_DEVICE_ERROR_ON_ERROR_STATUS (Status);
 
@@ -300,7 +307,7 @@ I40eSetMacLoopbackWorkaround (
       Status = i40e_aq_debug_read_register (Hw, 0xA4038, &Reg8, NULL);
       RETURN_DEVICE_ERROR_ON_ERROR_STATUS (Status);
       WaIterNum++;
-    } while ((!((RegC & 0x06) && (Reg8 & 0x9038))) 
+    } while ((!((RegC & 0x06) && (Reg8 & 0x9038)))
       && (WaIterNum <= 5));
     break;
   case 3:
@@ -317,7 +324,7 @@ I40eSetMacLoopbackWorkaround (
       Status = i40e_aq_debug_read_register (Hw, 0xA4038, &Reg8, NULL);
       RETURN_DEVICE_ERROR_ON_ERROR_STATUS (Status);
       WaIterNum++;
-    } while ((!((RegC & 0x30) && (Reg8 & 0x9038))) 
+    } while ((!((RegC & 0x30) && (Reg8 & 0x9038)))
       && (WaIterNum <= 5));
     break;
   default:
@@ -330,12 +337,12 @@ I40eSetMacLoopbackWorkaround (
 /** Clears loopback mode settings on given port.
 
    @param[in]   AdapterInfo   Pointer to the NIC data structure information
-                              which the UNDI driver is layering 
+                              which the UNDI driver is layering
 
    @param[in]   PcsLinkCtrl   Variable where old link control
                               register (auto_neg, speed_sel settings etc.) value
                               was saved on SetMacLoopback() call.
-  
+
    @retval      EFI_SUCCESS          Loopback settings successfully cleared
    @retval      EFI_DEVICE_ERROR     Unsupported link speed on adapter
    @retval      EFI_DEVICE_ERROR     Error reading or writing values from/to registers
@@ -360,7 +367,9 @@ I40eClearMacLoopbackWorkaround (
   Hw = &AdapterInfo->Hw;
 
   if (Speed == I40E_LINK_SPEED_1GB
-    || Speed == I40E_LINK_SPEED_10GB)
+    || Speed == I40E_LINK_SPEED_10GB
+    || Speed == I40E_LINK_SPEED_5GB
+    || Speed == I40E_LINK_SPEED_2_5GB)
   {
 
     Status = i40e_aq_debug_read_register (Hw, 0x001E2000 + (4 * Hw->port), &Reg, NULL); // I40E_PRTMAC_HLCTL
@@ -433,7 +442,7 @@ I40eClearMacLoopbackWorkaround (
       Status = i40e_aq_debug_read_register (Hw, 0xA4038, &Reg8, NULL);
       GOTO_LABEL_ON_ERROR_STATUS (Status, ClearLoopBackError);
       WaIterNum++;
-    } while ((!(!(RegC & 0x06) && (Reg8 & 0x9038))) 
+    } while ((!(!(RegC & 0x06) && (Reg8 & 0x9038)))
       && (WaIterNum <= 5));
     break;
   case 3:
@@ -450,7 +459,7 @@ I40eClearMacLoopbackWorkaround (
       Status = i40e_aq_debug_read_register (Hw, 0xA4038, &Reg8, NULL);
       GOTO_LABEL_ON_ERROR_STATUS (Status, ClearLoopBackError);
       WaIterNum++;
-    } while ((!(!(RegC & 0x30) && (Reg8 & 0x9038))) 
+    } while ((!(!(RegC & 0x30) && (Reg8 & 0x9038)))
       && (WaIterNum <= 5));
     break;
   default:
@@ -603,27 +612,22 @@ I40eClearSwitchLoopback (
 
    @param[in]   AdapterInfo      Pointer to the NIC data structure.
 
-   @retval      EFI_SUCCESS         Receive queue is cleaned.
-   @retval      EFI_OUT_OF_MEMORY   No memory left to allocate Cpb receive buffer.
+   @retval    EFI_SUCCESS            Receive queue is cleaned.
+   @retval    EFI_OUT_OF_RESOURCES   No memory left to allocate Cpb receive buffer.
 **/
 EFI_STATUS
 _CleanUpReceiveQueue (
   IN  I40E_DRIVER_DATA   *AdapterInfo
   )
 {
-  PXE_CPB_RECEIVE CpbReceive;
   PXE_DB_RECEIVE  DbReceive;
-  EFI_STATUS      Status;
+  PXE_CPB_RECEIVE CpbReceive;
   UINTN           PxeStatCode;
 
   // Wait a little, then check to see if the packet has arrived
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData,
-                  I40E_RXBUFFER_2048,
-                  (VOID **) &CpbReceive.BufferAddr
-                );
-  if (EFI_ERROR (Status)) {
-    return Status;
+  CpbReceive.BufferAddr = (PXE_UINT64) (UINTN) AllocateZeroPool (I40E_RXBUFFER_2048);
+  if (CpbReceive.BufferAddr == (PXE_UINT64) (UINTN) NULL) {
+    return EFI_OUT_OF_RESOURCES;
   }
 
   CpbReceive.BufferLen = I40E_RXBUFFER_2048;
@@ -635,10 +639,10 @@ _CleanUpReceiveQueue (
                     &DbReceive
                   );
   } while (PxeStatCode != PXE_STATCODE_NO_DATA);
-  
-  gBS->FreePool ((VOID *) ((UINTN) CpbReceive.BufferAddr));
 
-  return Status;
+  FreePool ((VOID *) (UINTN) CpbReceive.BufferAddr);
+
+  return EFI_SUCCESS;
 }
 
 /** Run the PHY loopback test for N iterations.
@@ -661,24 +665,17 @@ I40eUndiRunPhyLoopback (
   IN PXE_CPB_TRANSMIT   PxeCpbTransmit
   )
 {
-  PXE_CPB_RECEIVE CpbReceive;
+  EFI_STATUS      Status = EFI_SUCCESS;
   PXE_DB_RECEIVE  DbReceive;
+  PXE_CPB_RECEIVE CpbReceive;
   UINTN           PxeStatCode;
-  EFI_STATUS      Status;
   UINT32          j;
   UINT32          i;
   UINT64         *FreeTxBuffer = NULL;
 
-
-  Status = EFI_SUCCESS;
-
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData,
-                  sizeof (*FreeTxBuffer) * AdapterInfo->TxRxDescriptorCount,
-                  (VOID * *) &FreeTxBuffer
-                );
-  if (EFI_ERROR (Status)) {
-    DEBUGPRINT (CRITICAL, ("AllocatePool returned %X\n", Status));
+  FreeTxBuffer = (UINT64 *) AllocateZeroPool (sizeof (*FreeTxBuffer) * AdapterInfo->TxRxDescriptorCount);
+  if (FreeTxBuffer == NULL) {
+    DEBUGPRINT (CRITICAL, ("AllocateZeroPool returned %X\n", Status));
     DEBUGWAIT (CRITICAL);
     return EFI_DEVICE_ERROR;
   }
@@ -691,13 +688,9 @@ I40eUndiRunPhyLoopback (
     FreeTxBuffer
   );
 
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData,
-                  I40E_RXBUFFER_2048,
-                  (VOID * *) &CpbReceive.BufferAddr
-                );
-  if (EFI_ERROR (Status)) {
-    DEBUGPRINT (CRITICAL, ("AllocatePool returned %X\n", Status));
+  CpbReceive.BufferAddr = (PXE_UINT64) (UINTN) AllocateZeroPool (I40E_RXBUFFER_2048);
+  if (CpbReceive.BufferAddr == (PXE_UINT64) (UINTN) NULL) {
+    DEBUGPRINT (CRITICAL, ("AllocateZeroPool returned %X\n", Status));
     DEBUGWAIT (CRITICAL);
     return EFI_DEVICE_ERROR;
   }
@@ -708,7 +701,7 @@ I40eUndiRunPhyLoopback (
 
     PxeStatCode = I40eTransmit (
                     AdapterInfo,
-                    (UINT64) &PxeCpbTransmit,
+                    (UINT64) (UINTN) &PxeCpbTransmit,
                     PXE_OPFLAGS_TRANSMIT_WHOLE | PXE_OPFLAGS_TRANSMIT_BLOCK
                   );
 
@@ -772,8 +765,8 @@ I40eUndiRunPhyLoopback (
 
   }
 
-  gBS->FreePool ((VOID *) ((UINTN) CpbReceive.BufferAddr));
-  gBS->FreePool ((VOID *) FreeTxBuffer);
+  FreePool ((VOID *) ((UINTN) CpbReceive.BufferAddr));
+  FreePool ((VOID *) FreeTxBuffer);
   return Status;
 }
 
@@ -940,6 +933,7 @@ I40eExecutePhyLoopbackDiagnostics (
                                          ChildHandle did not pass the diagnostic.
 **/
 EFI_STATUS
+EFIAPI
 I40eUndiDriverDiagnosticsRunDiagnostics (
   IN EFI_DRIVER_DIAGNOSTICS_PROTOCOL                         *This,
   IN EFI_HANDLE                                              ControllerHandle,
@@ -966,11 +960,11 @@ I40eUndiDriverDiagnosticsRunDiagnostics (
   // Validate input parameters
 
   // Check against invalid NULL parameters
-  if ((NULL == Language) 
+  if ((NULL == Language)
     || (NULL == ErrorType)
     || (NULL == BufferSize)
     || (NULL == Buffer)
-    || (NULL == ControllerHandle)) 
+    || (NULL == ControllerHandle))
   {
     return EFI_INVALID_PARAMETER;
   }
@@ -990,19 +984,19 @@ I40eUndiDriverDiagnosticsRunDiagnostics (
       }
       SupportedLanguages += 3;
     } else {
-      for (Index = 0; SupportedLanguages[Index] != 0 
+      for (Index = 0; SupportedLanguages[Index] != 0
         && SupportedLanguages[Index] != ';'; Index++)
       {
         ;
       }
-      if ((AsciiStrnCmp (SupportedLanguages, Language, Index) == 0) 
+      if ((AsciiStrnCmp (SupportedLanguages, Language, Index) == 0)
         && (Language[Index] == 0))
       {
         Found = TRUE;
         break;
       }
       SupportedLanguages += Index;
-      for (; *SupportedLanguages != 0 
+      for (; *SupportedLanguages != 0
         && *SupportedLanguages == ';'; SupportedLanguages++)
       {
         ;
@@ -1071,7 +1065,7 @@ I40eUndiDriverDiagnosticsRunDiagnostics (
       return Status;
     }
 
-    // Now we know the ChildHandle is a valid EFI handle. 
+    // Now we know the ChildHandle is a valid EFI handle.
     // Let's check if current ControllerHandle supports ChildHandle
     if (ChildHandle != UndiPrivateData->DeviceHandle) {
       DEBUGPRINT (CRITICAL, ("Driver Diagnostics: Unsupported Child handle: %x\n", ChildHandle));
@@ -1131,4 +1125,3 @@ EFI_DRIVER_DIAGNOSTICS2_PROTOCOL gUndiDriverDiagnostics2 = {
   "en-US"
 };
 
-

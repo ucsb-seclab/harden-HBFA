@@ -29,15 +29,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <wol.h>
 
-
-
 #define FVL_AUTOGEN_PTR_PFPM_APM_SECTION  0x1
 #define FVL_AUTOGEN_PTR_PFPM_APM_OFFSET   0x2
 #define SOFTWARE_RESERVED_WORD_2          I40E_SR_NVM_WAKE_ON_LAN
 #define SR_AUTO_GENERATED_POINTERS_PTR    I40E_SR_AUTO_GENERATED_POINTERS_PTR
 #define AUTOGEN_PTR_PFPM_APM_SECTION      FVL_AUTOGEN_PTR_PFPM_APM_SECTION
 #define AUTOGEN_PTR_PFPM_APM_OFFSET       FVL_AUTOGEN_PTR_PFPM_APM_OFFSET
-
 
 static UINT16 _WolGetFVLRegisterInitializationDataOffset(
   IN  WOL_ADAPTER_HANDLE_TYPE Handle,
@@ -47,6 +44,7 @@ static UINT16 _WolGetFVLRegisterInitializationDataOffset(
   UINT16     ModuleOffset = 0;
   UINT16     OffsetWithinModule = 0;
   WOL_STATUS Status = WOL_SUCCESS;
+
 
 
 
@@ -108,14 +106,18 @@ _WolGetOffsetBitmask_40GBE (
 {
 
   UINT8 FunctionNumber;
+#ifndef WOL_HAF
   DEBUGPRINT (WOL, ("-->_WolGetOffsetBitmask_40GBE\n"));
+#endif
   if (Handle == NULL)
   {
     return WOL_FEATURE_NOT_SUPPORTED;
   }
 
   FunctionNumber = _WolGetFunction(Handle);
+#ifndef WOL_HAF
   DEBUGPRINT (WOL, ("Function numb: %d\n", FunctionNumber));
+#endif
   if (FunctionNumber > 15)
   {
     return WOL_FEATURE_NOT_SUPPORTED;
@@ -133,7 +135,9 @@ _WolGetOffsetBitmask_40GBE (
     return WOL_FEATURE_NOT_SUPPORTED;
   }
 
+#ifndef WOL_HAF
   DEBUGPRINT (WOL, ("GetOffsetBitmask fun: %d, offset: %x", FunctionNumber, *Offset));
+#endif
 
   /* return offset based on _PF */
   /* skip attributes word and get offset for PF */
@@ -158,7 +162,9 @@ BOOLEAN _WolGetInfoFromEeprom_40G(WOL_ADAPTER_HANDLE_TYPE Handle)
 
   if (Status != WOL_SUCCESS)
   {
+#ifndef WOL_HAF
     DEBUGPRINT (WOL, ("Read Eeprom failed \n"));
+#endif
     return FALSE;
   }
   else
@@ -168,7 +174,9 @@ BOOLEAN _WolGetInfoFromEeprom_40G(WOL_ADAPTER_HANDLE_TYPE Handle)
     /* WolSupportMask: 1b = unsupported, 0b = supported */
     WolSupport = ((~WolSupportMask) & (1 << LanPort));
 
+#ifndef WOL_HAF
     DEBUGPRINT(WOL, ("SW rsv word 2: %x LanPort: %d WolSupport: %d\n", WolSupportMask, LanPort, WolSupport));
+#endif
     return (BOOLEAN)WolSupport;
   }
 }

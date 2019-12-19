@@ -1610,4 +1610,3 @@ enum i40e_status_code i40e_set_lan_rx_queue_context_directly(struct i40e_hw *hw,
 	return i40e_write_queue_context_directly(hw, queue, context_bytes,
 						 I40E_HMC_LAN_RX);
 }
-

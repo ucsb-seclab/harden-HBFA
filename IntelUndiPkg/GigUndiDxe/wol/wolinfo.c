@@ -319,6 +319,14 @@ _WOL_DEVICE_INFO_t const WOL_DEVICE_INFO_TABLE[] = {
  { 0x8086, 0x15D7, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Connection (4) I219-LM */
  { 0x8086, 0x15D8, 0x8086, 0x0000, 0xF }, /* Intel(R) Ethernet Connection (4) I219-V */
  { 0x8086, 0x15D8, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Connection (4) I219-V */
+ { 0x8086, 0x15DF, 0x8086, 0x0000, 0xF }, /* Intel(R) Ethernet Connection (8) I219-LM */
+ { 0x8086, 0x15DF, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Connection (8) I219-LM */
+ { 0x8086, 0x15E0, 0x8086, 0x0000, 0xF }, /* Intel(R) Ethernet Connection (8) I219-V */
+ { 0x8086, 0x15E0, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Connection (8) I219-V */
+ { 0x8086, 0x15E1, 0x8086, 0x0000, 0xF }, /* Intel(R) Ethernet Connection (9) I219-LM */
+ { 0x8086, 0x15E1, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Connection (9) I219-LM */
+ { 0x8086, 0x15E2, 0x8086, 0x0000, 0xF }, /* Intel(R) Ethernet Connection (9) I219-V */
+ { 0x8086, 0x15E2, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Connection (9) I219-V */
  { 0x8086, 0x15E3, 0x8086, 0x0000, 0xF }, /* Intel(R) Ethernet Connection (5) I219-LM */
  { 0x8086, 0x15E3, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Connection (5) I219-LM */
  { 0x8086, 0x1F40, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Connection I354 1.0 GbE Backplane */
@@ -334,4 +342,3 @@ _WOL_DEVICE_INFO_t const WOL_DEVICE_INFO_TABLE[] = {
  {      0,      0,      0,      0,   0 }  /* Last entry */
 };
 
-

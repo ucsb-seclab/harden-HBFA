@@ -193,4 +193,3 @@ enum i40e_status_code i40e_diag_fw_alive_test(struct i40e_hw *hw)
 	UNREFERENCED_1PARAMETER(hw);
 	return I40E_SUCCESS;
 }
-

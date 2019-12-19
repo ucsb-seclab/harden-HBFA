@@ -54,7 +54,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Protocol/HiiString.h>
 #include <Protocol/HiiConfigRouting.h>
 
-
 #include <Library/UefiDriverEntryPoint.h>
 #include <Library/UefiRuntimeLib.h>
 #include <Library/DebugLib.h>
@@ -67,6 +66,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Library/PrintLib.h>
 
 #include <IndustryStandard/Pci.h>
+
+// Debug macros are located here.
+#include "DebugTools.h"
 
 #include "i40e_type.h"
 #include "i40e_prototype.h"
@@ -83,155 +85,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define I40E_INTEL_VENDOR_ID INTEL_VENDOR_ID
 #endif /* I40E_INTEL_VENDOR_ID */
 #define INTEL_VENDOR_ID      0x8086
-
-// Debug levels for driver DEBUG_PRINT statements
-#define NONE      0
-#define INIT      (1 << 0)
-#define DECODE    (1 << 1)
-#define I40E      (1 << 2)
-#define SHARED    (1 << 3)
-#define DIAG      (1 << 4)
-#define CFG       (1 << 5)
-#define IO        (1 << 6)
-#define IMAGE     (1 << 7)
-#define RX        (1 << 8)
-#define TX        (1 << 9)
-#define CRITICAL  (1 << 10)
-#define HII       (1 << 11)
-#define RXFILTER  (1 << 12)
-#define WAIT      (1 << 13)
-#define FLASH     (1 << 14)
-#define SUPPORTED (1 << 15)
-#define HEALTH    (1 << 16)
-#define ADAPTERINFO (1 << 17)
-
-#define DMA       (1 << 22)
-#define WOL       (1 << 23)
-// DEBUG Defines are located here
-#define DBG_LVL (NONE)
-
-
-
-#if DBG_LVL
-#if defined(SERIAL_DEBUG) && !defined(EFI64)
-
-/** Wrapper for variadic arguments
-
-  @param[in]   ...   variadic arguments
-
-  @return   None
-**/
-#define NO_PARENTH(...) __VA_ARGS__
-
-/** When specific debug level is currently set this macro
-   prints debug message.
-
-   @param[in]   Lvl   Debug level
-   @param[in]   Msg   Debug message
-
-   @return    Message printed or not according to Lvl
-**/
-#define DEBUGPRINT(Lvl, Msg) \
-          if ((DBG_LVL & Lvl) != 0) { \
-            DebugPrint (0x2, NO_PARENTH Msg); \
-          }
-
-/** When specific debug level is currently set this macro
-   prints debug message.
-
-   @param[in]   Lvl   Debug level
-   @param[in]   Msg   Debug message
-
-   @return    Message printed or not according to Lvl
-**/
-#define DEBUGDUMP(Lvl, Msg) DEBUGPRINT (Lvl, Msg)
-#else /* !defined(SERIAL_DEBUG) || defined(EFI64) */
-
-/** When specific debug level is currently set this macro
-   prints debug message.
-
-   @param[in]   Lvl   Debug level
-   @param[in]   Msg   Debug message
-
-   @return    Message printed or not according to Lvl
-**/
-#define DEBUGPRINT(Lvl, Msg) \
-          if ((DBG_LVL & Lvl) != 0) { \
-            AsciiPrint ("%a[%d]: ", __FUNCTION__, __LINE__); \
-            AsciiPrint Msg; \
-          }
-
-/** When specific debug level is currently set this macro
-   prints debug message.
-
-   @param[in]   Lvl   Debug level
-   @param[in]   Msg   Debug message
-
-   @return    Message printed or not according to Lvl
-**/
-#define DEBUGDUMP(Lvl, Msg) \
-          if ((DBG_LVL & Lvl) != 0) { \
-            AsciiPrint Msg; \
-          }
-#endif /* defined(SERIAL_DEBUG) && !defined(EFI64) */
-
-/** When specific debug level is currently set this macro
-   waits for user to press ENTER.
-
-   @param[in]   Lvl   Debug level
-
-   @return    Wait or not according to Lvl
-**/
-#define DEBUGWAIT(Lvl) \
-          if ((DBG_LVL & Lvl) != 0) { \
-            WaitForEnter (); \
-          }
-
-/** When specific debug level is currently set this macro
-   prints current timestamp.
-
-   @param[in]   Lvl   Debug level
-   @param[in]   Msg   Debug message
-
-   @return    Timestamp printed or not according to Lvl
-**/
-#define DEBUGPRINTTIME(Lvl) \
-          if ((DBG_LVL & Lvl) != 0) { \
-            gRT->GetTime (&gTime, NULL); \
-          }; \
-          DEBUGPRINT ( \
-            Lvl, ("Timestamp - %dH:%dM:%dS:%dNS\n", \
-            gTime.Hour, gTime.Minute, gTime.Second, gTime.Nanosecond) \
-          );
-#else /* NOT DBG_LVL */
-
-/** When DBG_LVL is not defined leave occurences of DEBUGPRINT blank
-
-   @param[in]   Lvl   Debug level
-   @param[in]   Msg   Debug message
-
-   @return  None
-**/
-#define DEBUGPRINT(Lvl, Msg)
-
-/** When DBG_LVL is not defined leave occurences of DEBUGWAIT blank
-
-   @param[in]   Lvl   Debug level
-
-   @return   None
-**/
-#define DEBUGWAIT(Lvl)
-
-/** When DBG_LVL is not defined leave occurences of DEBUGPRINT blank
-
-   @param[in]   Lvl   Debug level
-   @param[in]   Msg   Debug message
-
-   @return  None
-**/
-#define DEBUGDUMP(Lvl, Msg)
-#endif /* DBG_LVL */
-
 
 /* HMC context dump related defines
    Each context sub-line consists of 128 bits (16 bytes) of data */
@@ -267,7 +120,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    @return   Descriptor retrieved
 **/
 #define I40E_RX_DESC(R, i)          \
-          (&(((union i40e_16byte_rx_desc *) ((R)->Mapping.UnmappedAddress))[i]))
+          (&(((union i40e_16byte_rx_desc *) (UINTN) ((R)->Mapping.UnmappedAddress))[i]))
 
 /** Retrieves TX descriptor from TX ring structure
 
@@ -277,7 +130,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    @return   Descriptor retrieved
 **/
 #define I40E_TX_DESC(R, i)          \
-          (&(((struct i40e_tx_desc *) ((R)->Mapping.UnmappedAddress))[i]))
+          (&(((struct i40e_tx_desc *) (UINTN) ((R)->Mapping.UnmappedAddress))[i]))
 
 #define I40E_MAX_PF_NUMBER   16
 
@@ -353,12 +206,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define STRUCT_OFFSET(Structure, Member)     ((UINTN) &(((Structure *) 0)->Member))
 
 // PCI Base Address Register Bits
-#define PCI_BAR_IO_MASK   0x00000003
-#define PCI_BAR_IO_MODE   0x00000001
+#define PCI_BAR_IO_MASK         0x00000003
+#define PCI_BAR_IO_MODE         0x00000001
 
-#define PCI_BAR_MEM_MASK  0x0000000F
-#define PCI_BAR_MEM_MODE  0x00000000
-#define PCI_BAR_MEM_64BIT 0x00000004
+#define PCI_BAR_MEM_MASK        0x0000000F
+#define PCI_BAR_MEM_MODE        0x00000000
+#define PCI_BAR_MEM_64BIT       0x00000004
+#define PCI_BAR_MEM_BASE_ADDR_M 0xFFFFFFF0
 
 #define ETHER_MAC_ADDR_LEN  6
 
@@ -553,32 +407,32 @@ typedef struct {
 /* UNDI callback functions typedefs */
 typedef
 VOID
-(* PTR) (
+(EFIAPI * PTR) (
   VOID
   );
 
 typedef
 VOID
-(* BS_PTR_30) (
+(EFIAPI * BS_PTR_30) (
   UINTN   MicroSeconds
   );
 
 typedef
 VOID
-(* VIRT_PHYS_30) (
+(EFIAPI * VIRT_PHYS_30) (
   UINT64   VirtualAddr,
   UINT64   PhysicalPtr
   );
 
 typedef
 VOID
-(* BLOCK_30) (
+(EFIAPI * BLOCK_30) (
   UINT32   Enable
   );
 
 typedef
 VOID
-(* MEM_IO_30) (
+(EFIAPI * MEM_IO_30) (
   UINT8   ReadWrite,
   UINT8   Len,
   UINT64  Port,
@@ -587,14 +441,14 @@ VOID
 
 typedef
 VOID
-(* BS_PTR) (
+(EFIAPI * BS_PTR) (
   UINT64  UnqId,
   UINTN   MicroSeconds
   );
 
 typedef
 VOID
-(* VIRT_PHYS) (
+(EFIAPI * VIRT_PHYS) (
   UINT64  UnqId,
   UINT64  VirtualAddr,
   UINT64  PhysicalPtr
@@ -602,14 +456,14 @@ VOID
 
 typedef
 VOID
-(* BLOCK) (
+(EFIAPI * BLOCK) (
   UINT64  UnqId,
   UINT32  Enable
   );
 
 typedef
 VOID
-(* MEM_IO) (
+(EFIAPI * MEM_IO) (
   UINT64  UnqId,
   UINT8   ReadWrite,
   UINT8   Len,
@@ -619,7 +473,7 @@ VOID
 
 typedef
 VOID
-(* MAP_MEM) (
+(EFIAPI * MAP_MEM) (
   UINT64  UnqId,
   UINT64  VirtualAddr,
   UINT32  Size,
@@ -629,7 +483,7 @@ VOID
 
 typedef
 VOID
-(* UNMAP_MEM) (
+(EFIAPI * UNMAP_MEM) (
   UINT64  UnqId,
   UINT64  VirtualAddr,
   UINT32  Size,
@@ -639,7 +493,7 @@ VOID
 
 typedef
 VOID
-(* SYNC_MEM) (
+(EFIAPI * SYNC_MEM) (
   UINT64  UnqId,
   UINT64  VirtualAddr,
   UINT32  Size,
@@ -677,6 +531,7 @@ extern EFI_GUID                    gEfiNiiPointerGuid;
 
 extern PXE_SW_UNDI            *mPxe31;
 extern UNDI_PRIVATE_DATA      *mUndi32DeviceList[MAX_NIC_INTERFACES];
+extern BOOLEAN                mExitBootServicesTriggered;
 
 #pragma pack(1)
 typedef struct {
@@ -691,8 +546,10 @@ typedef struct {
   UINT16 DeviceId;
   UINT16 Command;
   UINT16 Status;
-  UINT16 RevId;
-  UINT16 ClassId;
+  UINT8  RevId;
+  UINT8  ClassIdProgIf;
+  UINT8  ClassIdSubclass;
+  UINT8  ClassIdMain;
   UINT8  CacheLineSize;
   UINT8  LatencyTimer;
   UINT8  HeaderType;
@@ -828,6 +685,7 @@ typedef struct DRIVER_DATA_S {
 
   UINT8                     PciClass;
   UINT8                     PciSubClass;
+  UINT8                     PciClassProgIf;
 
   UINTN                     PhysicalPortNumber;
   UINT8                     PfPerPortMaxNumber;
@@ -846,7 +704,7 @@ typedef struct DRIVER_DATA_S {
   UINT8                     CableDetect;    // 1 to detect and 0 not to detect the cable
   UINT8                     LoopBack;
 
-  UINT8                     UndiEnabled;        // When false only configuration protocols are avaliable 
+  UINT8                     UndiEnabled;        // When false only configuration protocols are avaliable
                                                 // (e.g. iSCSI driver loaded on port)
   UINT8                     FwSupported; // FW is not supported, AQ operations are prohibited
   MODULE_QUALIFICATION_STATUS QualificationResult;
@@ -859,7 +717,7 @@ typedef struct DRIVER_DATA_S {
   UINT64                    UniqueId;
   EFI_PCI_IO_PROTOCOL      *PciIo;
   UINT64                    OriginalPciAttributes;
-  BOOLEAN                   AriCapabilityEnabled;
+
 
   BOOLEAN                   NvmAcquired; // Field specific for NUL semaphore management.
 
@@ -898,7 +756,6 @@ typedef struct DRIVER_DATA_S {
 
   UINT16             XmitDoneHead;
   BOOLEAN            MacAddrOverride;
-  BOOLEAN            ExitBootServicesTriggered;
   UINTN              VersionFlag; // Indicates UNDI version 3.0 or 3.1
   UINT16 TxRxDescriptorCount;
 
@@ -906,6 +763,7 @@ typedef struct DRIVER_DATA_S {
 
 typedef struct UNDI_PRIVATE_DATA_S {
   UINTN                                     Signature;
+  UINTN                                     IfId;
   EFI_NETWORK_INTERFACE_IDENTIFIER_PROTOCOL NiiProtocol31;
   EFI_NII_POINTER_PROTOCOL                  NiiPointerProtocol;
   EFI_HANDLE                                ControllerHandle;
@@ -1032,10 +890,10 @@ I40eShutdown (
 /** Performs HW reset by reinitialization
 
    @param[in]   AdapterInfo   Pointer to the NIC data structure information
-                              the UNDI driver is layering on   
-   
+                              the UNDI driver is layering on
+
    @retval   PXE_STATCODE_SUCCESS      Successfull HW reset
-   @retval   PXE_STATCODE_NOT_STARTED  Failed to initialize HW   
+   @retval   PXE_STATCODE_NOT_STARTED  Failed to initialize HW
 **/
 PXE_STATCODE
 I40eReset (
@@ -1207,7 +1065,7 @@ I40eTransmit (
   @param[in]  AdapterInfo  Pointer to the adapter structure
   @param[in]  NewFilter    A PXE_OPFLAGS bit field indicating what filters to use.
 
-  @return     Broad/Multicast and promiscous settings are set according to NewFilter 
+  @return     Broad/Multicast and promiscous settings are set according to NewFilter
 **/
 VOID
 I40eSetFilter (
@@ -1232,7 +1090,7 @@ I40eClearFilter (
 
    @param[in]   AdapterInfo   Pointer to the NIC data structure information
                               the UNDI driver is layering on
-   
+
    @return  MAC/VLAN elements from adapter VSI structure are added to list
 **/
 VOID
@@ -1271,8 +1129,8 @@ IsLinkUp (
 
    @param[in]   AdapterInfo  Pointer to the NIC data structure information which
                              the UNDI driver is layering on
-       
-   @retval   LINK_SPEED_UNKNOWN     Link speed is unknown      
+
+   @retval   LINK_SPEED_UNKNOWN     Link speed is unknown
    @retval   I40E_LINK_SPEED_100MB  Link speed is 100 MB
    @retval   I40E_LINK_SPEED_1GB    Link speed is 1 GB
    @retval   I40E_LINK_SPEED_10GB   Link speed is 10 GB
@@ -1288,7 +1146,7 @@ GetLinkSpeed (
 
    @param[in]    AdapterInfo        Pointer to the NIC data structure information which
                                     the UNDI driver is layering on
-   @param[out]   AllowedLinkSpeeds  Pointer to resulting link spedd capability  
+   @param[out]   AllowedLinkSpeeds  Pointer to resulting link spedd capability
 
    @retval    EFI_SUCCESS       Link speed capability setting successfully read
    @retval    EFI_DEVICE_ERROR  Get phy capabilities AQ cmd failed
@@ -1321,10 +1179,10 @@ GetEeeCapability (
    @retval   MODULE_UNSUPPORTED Get link info AQ cmd failed
    @retval   MODULE_SUPPORTED   Link is up - module is qualified
    @retval   MODULE_THERMAL_UNSUPPORTED   Link is down - module is thermal unqualified
-   @retval   MODULE_UNSUPPORTED  Link is down - module is unqualified and module 
+   @retval   MODULE_UNSUPPORTED  Link is down - module is unqualified and module
                                  qualification is enabled on the port
-   @retval   MODULE_SUPPORTED   Link is down - module is qualified, or qualification 
-                                process is not available   
+   @retval   MODULE_SUPPORTED   Link is down - module is qualified, or qualification
+                                process is not available
 **/
 MODULE_QUALIFICATION_STATUS
 GetModuleQualificationResult (
@@ -1398,7 +1256,7 @@ I40eCheckResetDone (
 
 /** This function checks if any  other instance of driver is loaded on this PF by
    reading PFGEN_DRUN register.
-   
+
    If not it writes the bit in the register to let know other components that
    the PF is in use.
 
@@ -1417,7 +1275,7 @@ I40eAquireControllerHw (
 
    @param[in]   AdapterInfo   Pointer to the NIC data structure information
                              the UNDI driver is layering on
-                             
+
    @return   PFGEN_DRUN driver unload bit is cleared
 **/
 VOID
@@ -1478,20 +1336,6 @@ StartStopRemainingPFsOnAdapter (
   BOOLEAN            StartDrivers
   );
 
-/** This is only for debugging, it will pause and wait for the user to press <ENTER>
-  
-   Results AFTER this call are unpredicable. You can only be assured the code up to
-   this call is working.
-
-   @param[in]       NicInfo         Pointer to the Adapter Structure
-
-   @return       Execution of code is resumed
-**/
-VOID
-WaitForEnter (
-  VOID
-  );
-
 /** Get supported Tx/Rx descriptor count for a given device.
 
    @param[in]    Hw         Pointer to the HW Structure
@@ -1504,4 +1348,3 @@ I40eGetTxRxDescriptorsCount (
   );
 
 #endif /* I40E_H_ */
-

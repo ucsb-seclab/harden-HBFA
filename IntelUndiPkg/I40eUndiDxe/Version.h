@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-#define MAJORVERSION 4 /* I40eUndi major version */ 
+#define MAJORVERSION 3 /* I40eUndi major version */ 
 #define MINORVERSION 9 /* I40eUndi minor version */ 
-#define BUILDNUMBER 99 /* I40eUndi build version */ 
-
+#define BUILDNUMBER 11 /* I40eUndi build version */ 

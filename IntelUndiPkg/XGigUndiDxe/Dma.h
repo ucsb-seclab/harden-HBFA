@@ -40,17 +40,6 @@ typedef struct _UNDI_DMA_MAPPING {
   VOID                    *Mapping;
 } UNDI_DMA_MAPPING;
 
-/** Convert bytes to pages
-
-    @param[in]  Bytes         Number of bytes
-
-    @retval                   Number of pages fitting the given number of bytes
-**/
-UINTN
-BytesToPages (
-  UINTN       Bytes
-  );
-
 /** Allocate DMA common buffer (aligned to the page)
 
     @param[in]  PciIo         Pointer to PCI IO protocol installed on controller
@@ -132,4 +121,3 @@ UndiDmaUnmapMemory (
   );
 
 #endif /* _DMA_H_ */
-

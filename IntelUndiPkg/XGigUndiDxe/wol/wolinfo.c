@@ -34,7 +34,6 @@ _WOL_DEVICE_INFO_t const WOL_DEVICE_INFO_TABLE[] = {
 
 
 #if defined(WOL_10G)
- { 0x8086, 0x10A6, 0xFFFF, 0xFFFF, 0x0 }, /* Intel(R) 82598EB Multi-Function Network Device */
  { 0x8086, 0x10B6, 0xFFFF, 0xFFFF, 0x0 }, /* Intel(R) 82598EB 10 Gigabit KX4 Network Connection */
  { 0x8086, 0x10C6, 0x8086, 0xA05F, 0x0 }, /* Intel(R) 10 Gigabit XF SR Dual Port Server Adapter */
  { 0x8086, 0x10C6, 0x8086, 0xA15F, 0x0 }, /* Intel(R) 10 Gigabit XF SR Dual Port Server Adapter */
@@ -175,4 +174,3 @@ _WOL_DEVICE_INFO_t const WOL_DEVICE_INFO_TABLE[] = {
  {      0,      0,      0,      0,   0 }  /* Last entry */
 };
 
-

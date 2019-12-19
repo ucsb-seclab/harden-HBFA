@@ -1536,4 +1536,3 @@ s32 ixgbe_enable_rx_dma_82598(struct ixgbe_hw *hw, u32 regval)
 
 	return IXGBE_SUCCESS;
 }
-

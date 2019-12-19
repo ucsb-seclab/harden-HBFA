@@ -366,4 +366,3 @@ enum i40e_status_code i40e_remove_pd_page_new(struct i40e_hw *hw,
 
 	return i40e_free_dma_mem(hw, &(sd_entry->u.pd_table.pd_page_addr));
 }
-

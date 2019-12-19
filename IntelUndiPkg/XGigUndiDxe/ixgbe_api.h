@@ -130,6 +130,7 @@ s32 ixgbe_set_vfta(struct ixgbe_hw *hw, u32 vlan,
 s32 ixgbe_set_vlvf(struct ixgbe_hw *hw, u32 vlan, u32 vind,
 		   bool vlan_on, u32 *vfta_delta, u32 vfta,
 		   bool vlvf_bypass);
+s32 ixgbe_toggle_txdctl(struct ixgbe_hw *hw, u32 vind);
 s32 ixgbe_fc_enable(struct ixgbe_hw *hw);
 s32 ixgbe_setup_fc(struct ixgbe_hw *hw);
 #ifndef NO_X540_SUPPORT
@@ -242,4 +243,3 @@ s32 ixgbe_negotiate_fc(struct ixgbe_hw *hw, u32 adv_reg, u32 lp_reg,
 			u32 adv_sym, u32 adv_asm, u32 lp_sym, u32 lp_asm);
 
 #endif /* _IXGBE_API_H_ */
-

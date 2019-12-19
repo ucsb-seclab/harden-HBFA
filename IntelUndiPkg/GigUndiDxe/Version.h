@@ -26,7 +26,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
-#define MAJORVERSION 4 /* GigUndi major version */ 
-#define MINORVERSION 9 /* GigUndi minor version */ 
-#define BUILDNUMBER 99 /* GigUndi build version */ 
-
+#define MAJORVERSION 9 /* GigUndi major version */ 
+#define MINORVERSION 0 /* GigUndi minor version */ 
+#define BUILDNUMBER 3 /* GigUndi build version */ 

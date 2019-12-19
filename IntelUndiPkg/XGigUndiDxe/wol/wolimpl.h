@@ -32,11 +32,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Xgbe.h>
 #define WOL_10G   3
 
+#ifndef WOL_HAF
 typedef UNDI_PRIVATE_DATA *WOL_ADAPTER_HANDLE_TYPE;
 typedef EFI_STATUS WOL_STATUS;
 
 #define WOL_SUCCESS               EFI_SUCCESS
 #define WOL_FEATURE_NOT_SUPPORTED EFI_UNSUPPORTED
+#else /* HAF */
+typedef NAL_ADAPTER_HANDLE const WOL_ADAPTER_HANDLE_TYPE;
+typedef HAF_STATUS WOL_STATUS;
+
+#define WOL_SUCCESS               HAF_SUCCESS
+#define WOL_FEATURE_NOT_SUPPORTED HAF_FEATURE_NOT_SUPPORTED
+#endif
 
 
 #define WOL_MAC_TYPE                          UINT32
@@ -71,9 +79,18 @@ BOOLEAN _WolIsFirstController(WOL_ADAPTER_HANDLE_TYPE Handle);
 WOL_MAC_TYPE _WolGetMacType(WOL_ADAPTER_HANDLE_TYPE Handle);
 UINT8 _WolGetFunction(WOL_ADAPTER_HANDLE_TYPE Handle);
 
+#ifndef WOL_HAF
 WOL_STATUS _WolEepromRead16(WOL_ADAPTER_HANDLE_TYPE Handle, UINT16 Offset, UINT16 *Data);
 WOL_STATUS _WolEepromWrite16(WOL_ADAPTER_HANDLE_TYPE Handle, UINT16 Offset, UINT16 Data);
 WOL_STATUS _WolEepromUpdateChecksum(WOL_ADAPTER_HANDLE_TYPE Handle);
+WOL_STATUS _WolReadNvmFeatureConfig(WOL_ADAPTER_HANDLE_TYPE Handle, UINT32 FcId, UINT8* ConfigData, UINT16 BufferSize, UINT16* ItemCount);
+WOL_STATUS _WolWriteNvmFeatureConfig(WOL_ADAPTER_HANDLE_TYPE Handle, UINT8* ConfigData, UINT16 BufferSize, UINT16 ItemCount);
+#else /* HAF */
+#define _WolEepromRead16 NalReadEeprom16
+#define _WolEepromWrite16 NalWriteEeprom16
+#define _WolEepromUpdateChecksum NalUpdateEepromChecksum
+#define _WolReadNvmFeatureConfig NalReadNvmFeatureConfig
+#define _WolWriteNvmFeatureConfig NalWriteNvmFeatureConfig
+#endif
 
 #endif /* __WOLIMPL_H */
-

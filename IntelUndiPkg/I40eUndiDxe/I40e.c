@@ -96,17 +96,6 @@ I40eMemCopy (
 
   IntsToCopy  = Count / sizeof (UINTN);
   BytesToCopy = Count % sizeof (UINTN);
-#ifdef EFI64
-  
-  // Itanium cannot handle memory accesses that are not naturally aligned.  Determine
-  // if 64-bit copy is even possible with these start addresses.
-  if (((((UINTN) Source) & 0x0007) != 0)
-    || ((((UINTN) Dest) & 0x0007) != 0))
-  {
-    IntsToCopy  = 0;
-    BytesToCopy = Count;
-  }
-#endif /* EFI64 */
 
   SourcePtr = (UINTN *) Source;
   DestPtr   = (UINTN *) Dest;
@@ -266,17 +255,17 @@ I40eReceive (
     RxPType        = (UINT16) ((DescQWord & I40E_RXD_QW1_PTYPE_MASK) >> I40E_RXD_QW1_PTYPE_SHIFT);
 
     // Just to make sure we don't try to copy a zero length, only copy a positive sized packet.
-    if ((RxPacketLength != 0) 
+    if ((RxPacketLength != 0)
       && (RxError == 0))
     {
       // If the buffer passed us is smaller than the packet, only copy the size of the buffer.
       TempLen = RxPacketLength;
       if (RxPacketLength > (INT16) CpbReceive->BufferLen)
         TempLen = (UINT16) CpbReceive->BufferLen;
-      
+
       // Copy the packet from our list to the EFI buffer.
       I40eMemCopy (
-        (INT8 *) (UINTN) CpbReceive->BufferAddr,
+        (UINT8 *) (UINTN) CpbReceive->BufferAddr,
         AdapterInfo->Vsi.RxRing.BufferAddresses[AdapterInfo->Vsi.RxRing.NextToUse],
         TempLen
       );
@@ -308,7 +297,7 @@ I40eReceive (
       if (i >= PXE_HWADDR_LEN_ETHER) {
         PacketType = PXE_FRAME_TYPE_UNICAST;
       } else {
-      
+
         // Compare it against our broadcast node address
         for (i = 0; i < PXE_HWADDR_LEN_ETHER; i++) {
           if (EtherHeader->DestAddr[i] != AdapterInfo->BroadcastNodeAddress[i]) {
@@ -316,12 +305,12 @@ I40eReceive (
           }
         }
 
-        // If we went the whole length of the header without breaking out 
+        // If we went the whole length of the header without breaking out
         // then the packet is directed at us via broadcast
         if (i >= PXE_HWADDR_LEN_ETHER) {
           PacketType = PXE_FRAME_TYPE_BROADCAST;
         } else {
-        
+
           // That leaves multicast or we must be in promiscuous mode. Check for the
           // Mcast bit in the address. Otherwise its a promiscuous receive.
           if ((EtherHeader->DestAddr[0] & 1) == 1) {
@@ -354,10 +343,10 @@ I40eReceive (
     } else {
       DEBUGPRINT (CRITICAL, ("ERROR: RxPacketLength: %x, RxError: %x \n", RxPacketLength, RxError));
     }
-    
+
     // Clean up the packet and restore the buffer address
     ReceiveDescriptor->wb.qword1.status_error_len = 0;
-    ReceiveDescriptor->read.pkt_addr = (UINT64) 
+    ReceiveDescriptor->read.pkt_addr = (UINT64)
                                        (AdapterInfo->Vsi.RxRing.BufferAddresses[AdapterInfo->Vsi.RxRing.NextToUse]);
 
     // Move the current cleaned buffer pointer, being careful to wrap it as needed.  Then update the hardware,
@@ -370,8 +359,7 @@ I40eReceive (
     }
   }
   return StatCode;
-};
-
+}
 
 /** Takes a command block pointer (cpb) and sends the frame.
 
@@ -398,7 +386,6 @@ I40eTransmit (
 {
   PXE_CPB_TRANSMIT_FRAGMENTS  *TxFrags;
   PXE_CPB_TRANSMIT            *TxBuffer;
-  UINT8                       *PacketPtr;
   I40E_RING                   *TxRing;
   EFI_STATUS                  Status;
 
@@ -506,13 +493,15 @@ I40eTransmit (
       TransmitDescriptor->cmd_type_offset_bsz)
     );
 
-    PacketPtr = (UINT8 *) (UINTN) TransmitDescriptor->buffer_addr;
+#if (DBG_LVL & TX)
+    UINT8 * PacketPtr = (UINT8 *) (UINTN) TransmitDescriptor->buffer_addr;
     DEBUGDUMP (
       TX, ("%02x:%02x:%02x:%02x:%02x:%02x %02x:%02x:%02x:%02x:%02x:%02x %02x%02x %02x %02x\n",
       PacketPtr[0x0], PacketPtr[0x1], PacketPtr[0x2], PacketPtr[0x3], PacketPtr[0x4], PacketPtr[0x5],
       PacketPtr[0x6], PacketPtr[0x7], PacketPtr[0x8], PacketPtr[0x9], PacketPtr[0xA], PacketPtr[0xB],
       PacketPtr[0xC], PacketPtr[0xD], PacketPtr[0xE], PacketPtr[0xF])
     );
+#endif /* (DBG_LVL & TX) */
   }
 
   // Turn on the blocking function so we don't get swapped out
@@ -543,7 +532,7 @@ I40eTransmit (
   }
 
   return PXE_STATCODE_SUCCESS;
-};
+}
 
 /** Free TX buffers that have been transmitted by the hardware.
 
@@ -619,7 +608,7 @@ I40eFreeTxBuffers (
       break;
     }
   } while (TxRing->NextToUse != TxRing->NextToClean);
-  
+
   return i;
 }
 
@@ -628,7 +617,7 @@ I40eFreeTxBuffers (
   @param[in]  AdapterInfo  Pointer to the adapter structure
   @param[in]  NewFilter    A PXE_OPFLAGS bit field indicating what filters to use.
 
-  @return     Broad/Multicast and promiscous settings are set according to NewFilter 
+  @return     Broad/Multicast and promiscous settings are set according to NewFilter
 **/
 VOID
 I40eSetFilter (
@@ -646,7 +635,7 @@ I40eSetFilter (
   ChangedPromiscuousFlag = FALSE;
   ChangedMulticastPromiscuousFlag = FALSE;
   ChangedBroadcastFlag = FALSE;
-  
+
   if (NewFilter & PXE_OPFLAGS_RECEIVE_FILTER_PROMISCUOUS) {
     if (!AdapterInfo->Vsi.EnablePromiscuous) {
       ChangedPromiscuousFlag = TRUE;
@@ -661,7 +650,7 @@ I40eSetFilter (
     }
     AdapterInfo->Vsi.EnableBroadcast = TRUE;
     DEBUGPRINT (RXFILTER, ("  Broadcast\n"));
-  } 
+  }
 
   if (NewFilter & PXE_OPFLAGS_RECEIVE_FILTER_ALL_MULTICAST) {
     if (!AdapterInfo->Vsi.EnableMulticastPromiscuous) {
@@ -672,8 +661,8 @@ I40eSetFilter (
   }
 
   if (!AdapterInfo->DriverBusy) {
-    if (ChangedPromiscuousFlag 
-      || ChangedMulticastPromiscuousFlag 
+    if (ChangedPromiscuousFlag
+      || ChangedMulticastPromiscuousFlag
       || ChangedBroadcastFlag)
     {
       I40eStatus = i40e_aq_set_vsi_unicast_promiscuous(
@@ -685,7 +674,7 @@ I40eSetFilter (
       if (I40eStatus != I40E_SUCCESS) {
         DEBUGPRINT (CRITICAL, ("i40e_aq_set_vsi_unicast_promiscuous returned %d\n", I40eStatus));
       }
-      
+
       I40eStatus = i40e_aq_set_vsi_multicast_promiscuous(
                      &AdapterInfo->Hw, AdapterInfo->Vsi.Seid,
                      AdapterInfo->Vsi.EnablePromiscuous || AdapterInfo->Vsi.EnableMulticastPromiscuous,
@@ -706,7 +695,7 @@ I40eSetFilter (
       }
     }
   }
-  
+
   AdapterInfo->RxFilter |= NewFilter;
 }
 
@@ -731,7 +720,7 @@ I40eClearFilter (
   ChangedPromiscuousFlag = FALSE;
   ChangedMulticastPromiscuousFlag = FALSE;
   ChangedBroadcastFlag = FALSE;
-  
+
   DEBUGPRINT (RXFILTER, ("NewFilter %x= \n", NewFilter));
 
   if (NewFilter & PXE_OPFLAGS_RECEIVE_FILTER_PROMISCUOUS) {
@@ -759,8 +748,8 @@ I40eClearFilter (
   }
 
   if (!AdapterInfo->DriverBusy) {
-    if (ChangedPromiscuousFlag 
-      || ChangedMulticastPromiscuousFlag 
+    if (ChangedPromiscuousFlag
+      || ChangedMulticastPromiscuousFlag
       || ChangedBroadcastFlag)
     {
       I40eStatus = i40e_aq_set_vsi_unicast_promiscuous(
@@ -801,7 +790,7 @@ I40eClearFilter (
 
    @param[in]   AdapterInfo   Pointer to the NIC data structure information
                               the UNDI driver is layering on
-   
+
    @return  MAC/VLAN elements from adapter VSI structure are added to list
 **/
 VOID
@@ -814,20 +803,20 @@ I40eSetMcastList (
   enum i40e_status_code                       I40eStatus = I40E_SUCCESS;
   UINTN                                       i;
   UINT32                                      Reg = 0;
-  
+
   DEBUGDUMP(
     INIT, ("SM(%d,%d):",
     AdapterInfo->Vsi.McastListToProgram.Length, AdapterInfo->Vsi.CurrentMcastList.Length)
   );
 
   DEBUGPRINT (
-    RXFILTER, ("McastListToProgram.Length = %d\n", 
+    RXFILTER, ("McastListToProgram.Length = %d\n",
     AdapterInfo->Vsi.McastListToProgram.Length)
-  );  
+  );
   DEBUGPRINT (
-    RXFILTER, ("CurrentMcastList.Length = %d\n", 
+    RXFILTER, ("CurrentMcastList.Length = %d\n",
     AdapterInfo->Vsi.CurrentMcastList.Length)
-  );  
+  );
 
   if (!AdapterInfo->DriverBusy) {
 
@@ -835,15 +824,15 @@ I40eSetMcastList (
     if (AdapterInfo->Vsi.CurrentMcastList.Length > 0) {
       for (i = 0; i < AdapterInfo->Vsi.CurrentMcastList.Length; i++) {
         DEBUGPRINT (
-          RXFILTER, ("Remove MAC %d, %x:%x:%x:%x:%x:%x\n", 
-          i, 
+          RXFILTER, ("Remove MAC %d, %x:%x:%x:%x:%x:%x\n",
+          i,
           AdapterInfo->Vsi.CurrentMcastList.McAddr[i][0],
           AdapterInfo->Vsi.CurrentMcastList.McAddr[i][1],
           AdapterInfo->Vsi.CurrentMcastList.McAddr[i][2],
           AdapterInfo->Vsi.CurrentMcastList.McAddr[i][3],
           AdapterInfo->Vsi.CurrentMcastList.McAddr[i][4],
           AdapterInfo->Vsi.CurrentMcastList.McAddr[i][5])
-        );        
+        );
         CopyMem(
           MacVlanElementsToRemove[i].mac_addr,
           &AdapterInfo->Vsi.CurrentMcastList.McAddr[i],
@@ -852,7 +841,7 @@ I40eSetMcastList (
         MacVlanElementsToRemove[i].vlan_tag = 0;
         MacVlanElementsToRemove[i].flags = I40E_AQC_MACVLAN_DEL_IGNORE_VLAN | I40E_AQC_MACVLAN_DEL_PERFECT_MATCH;
       }
-      
+
       // For FPK - switch Rx drop policy when removing macvlan filter
       if (AdapterInfo->Hw.mac.type == I40E_MAC_X722) {
         Reg = I40eRead32 (AdapterInfo, I40E_PRTDCB_TC2PFC_RCB);
@@ -873,28 +862,28 @@ I40eSetMcastList (
 
       if (I40eStatus != I40E_SUCCESS) {
         DEBUGPRINT (
-          CRITICAL, ("i40e_aq_remove_macvlan returned %d, aq error = %d\n", 
+          CRITICAL, ("i40e_aq_remove_macvlan returned %d, aq error = %d\n",
           I40eStatus,
           AdapterInfo->Hw.aq.asq_last_status)
-        );  
+        );
         for (i = 0; i < AdapterInfo->Vsi.CurrentMcastList.Length; i++) {
-          DEBUGPRINT (CRITICAL, ("i40e_aq_remove_macvlan %d, %d\n", i, MacVlanElementsToRemove[i].error_code));  
-        }       
+          DEBUGPRINT (CRITICAL, ("i40e_aq_remove_macvlan %d, %d\n", i, MacVlanElementsToRemove[i].error_code));
+        }
       }
     }
 
     // Add new elements to the Forwarding Table
     if (AdapterInfo->Vsi.McastListToProgram.Length > 0) {
       for (i = 0; i < AdapterInfo->Vsi.McastListToProgram.Length; i++) {
-        DEBUGPRINT (RXFILTER, ("Add MAC %d, %x:%x:%x:%x:%x:%x\n", 
-          i, 
+        DEBUGPRINT (RXFILTER, ("Add MAC %d, %x:%x:%x:%x:%x:%x\n",
+          i,
           AdapterInfo->Vsi.McastListToProgram.McAddr[i][0],
           AdapterInfo->Vsi.McastListToProgram.McAddr[i][1],
           AdapterInfo->Vsi.McastListToProgram.McAddr[i][2],
           AdapterInfo->Vsi.McastListToProgram.McAddr[i][3],
           AdapterInfo->Vsi.McastListToProgram.McAddr[i][4],
           AdapterInfo->Vsi.McastListToProgram.McAddr[i][5])
-        );              
+        );
         CopyMem(
           MacVlanElementsToAdd[i].mac_addr,
           &AdapterInfo->Vsi.McastListToProgram.McAddr[i],
@@ -916,9 +905,9 @@ I40eSetMcastList (
           CRITICAL, ("i40e_aq_add_macvlan returned %d, aq error = %d\n",
           I40eStatus,
           AdapterInfo->Hw.aq.asq_last_status)
-        );      
+        );
         for (i = 0; i < AdapterInfo->Vsi.McastListToProgram.Length; i++) {
-          DEBUGPRINT (RXFILTER, ("i40e_aq_add_macvlan %d, %d\n", i, MacVlanElementsToAdd[i].match_method ));  
+          DEBUGPRINT (RXFILTER, ("i40e_aq_add_macvlan %d, %d\n", i, MacVlanElementsToAdd[i].match_method ));
         }
       }
     }
@@ -1071,7 +1060,7 @@ I40eReceiveStop (
   gBS->Stall (50000);
 
   AdapterInfo->ReceiveStarted = FALSE;
-  
+
   Status = I40E_SUCCESS;
 
 ON_EXIT:
@@ -1096,17 +1085,19 @@ I40eSetupPfQueues (
 {
   UINT32 Reg;
   UINT16 FirstQueue;
+#if (DBG_LVL & INIT)
   UINT16 LastQueue;
+#endif /* (DBG_LVL & INIT) */
 
   Reg = i40e_read_rx_ctl (&AdapterInfo->Hw, I40E_PFLAN_QALLOC);
-
   FirstQueue = (Reg & I40E_PFLAN_QALLOC_FIRSTQ_MASK) >> I40E_PFLAN_QALLOC_FIRSTQ_SHIFT;
-  LastQueue = (Reg & I40E_PFLAN_QALLOC_LASTQ_MASK) >> I40E_PFLAN_QALLOC_LASTQ_SHIFT;
 
+#if (DBG_LVL & INIT)
+  LastQueue = (Reg & I40E_PFLAN_QALLOC_LASTQ_MASK) >> I40E_PFLAN_QALLOC_LASTQ_SHIFT;
   DEBUGPRINT (INIT, ("PF Queues - first: %x, last: %x\n", FirstQueue, LastQueue));
+#endif /* (DBG_LVL & INIT) */
 
   AdapterInfo->Vsi.BaseQueue = FirstQueue;
-
   return EFI_SUCCESS;
 }
 
@@ -1134,7 +1125,6 @@ I40eConfigureTxRxQueues (
   UINT32                     QTxCtrl;
   union i40e_16byte_rx_desc *ReceiveDescriptor;
   UINTN                      i;
-  UINT32                     QRxTail;
   EFI_STATUS                 Status;
   I40E_RING                  *RxRing;
   I40E_RING                  *TxRing;
@@ -1152,7 +1142,7 @@ I40eConfigureTxRxQueues (
 
   // Now associate the queue with the PCI function
   QTxCtrl = I40E_QTX_CTL_PF_QUEUE;
-  QTxCtrl |= ((Hw->bus.func << I40E_QTX_CTL_PF_INDX_SHIFT) & I40E_QTX_CTL_PF_INDX_MASK);
+  QTxCtrl |= ((Hw->pf_id << I40E_QTX_CTL_PF_INDX_SHIFT) & I40E_QTX_CTL_PF_INDX_MASK);
   wr32 (Hw, I40E_QTX_CTL (0), QTxCtrl);
 
   // Prepare LAN context structures for our tx and rx queues and setup the HMC
@@ -1163,7 +1153,7 @@ I40eConfigureTxRxQueues (
   TxHmcContext.new_context = 1;
   TxHmcContext.base = (UINT64) TxRing->Mapping.PhysicalAddress / 128;
   TxHmcContext.qlen = TxRing->Count;
-  
+
   // Disable FCoE
   TxHmcContext.fc_ena = 0;
 
@@ -1208,7 +1198,7 @@ I40eConfigureTxRxQueues (
   ZeroMem (&RxHmcContext, sizeof (struct i40e_hmc_obj_rxq));
 
   RxRing->RxBufLen = I40E_RXBUFFER_2048;
-  
+
   // No packet split
   RxRing->RxHdrLen = 0;
 
@@ -1220,7 +1210,7 @@ I40eConfigureTxRxQueues (
 
   RxHmcContext.base = (UINT64) RxRing->Mapping.PhysicalAddress / 128;
   RxHmcContext.qlen = RxRing->Count;
-  
+
   // 16 byte descriptors in use
   RxHmcContext.dsize = 0;
 
@@ -1234,7 +1224,7 @@ I40eConfigureTxRxQueues (
   RxHmcContext.tphhead_ena = 0;
   RxHmcContext.lrxqthresh = 0;
   RxHmcContext.crcstrip = 1;
-  
+
   // No FCoE
   RxHmcContext.fc_ena = 0;
 
@@ -1273,8 +1263,10 @@ I40eConfigureTxRxQueues (
   I40eWrite32 (AdapterInfo, I40E_QRX_TAIL (0), RxRing->Count - 1);
   RxRing->NextToUse = 0;
 
-  QRxTail = I40eRead32 (AdapterInfo, I40E_QRX_TAIL (0));
+#if (DBG_LVL & RX)
+  UINT32 QRxTail = I40eRead32 (AdapterInfo, I40E_QRX_TAIL (0));
   DEBUGPRINT (INIT, ("QRXTail %d\n", QRxTail));
+#endif /* (DBG_LVL & RX) */
 
   // Determine the overall size of memory needed for receive buffers and allocate memory
   RxBufferMapping->Size = ALIGN (RxRing->Count * RxRing->RxBufLen, 4096);
@@ -1288,7 +1280,7 @@ I40eConfigureTxRxQueues (
     DEBUGPRINT (CRITICAL, ("Failed to allocate memory for Rx buffers: %r\n", Status));
     return Status;
   }
-  
+
   // Link the RX Descriptors to the receive buffers and cleanup descriptors
   for (i = 0; i < RxRing->Count; i++) {
     ReceiveDescriptor = I40E_RX_DESC (RxRing, i);
@@ -1417,7 +1409,7 @@ I40eSetupTxRxResources (
   //  This block is for Rx descriptors
   //  Use 16 byte descriptors as we are in PXE MODE.
 
-  // Round up to nearest 4K 
+  // Round up to nearest 4K
   RxRing->Size = ALIGN (RxRing->Count * sizeof (union i40e_16byte_rx_desc), 4096);
   RxRing->Mapping.Size = RxRing->Size;
 
@@ -1557,7 +1549,7 @@ I40eReadSwitchConfiguration (
       AdapterInfo->PfSeid = SwitchConfig->element[i].downlink_seid;
       AdapterInfo->MacSeid = SwitchConfig->element[i].uplink_seid;
       break;
-      
+
     // ignore these for now
     case I40E_SWITCH_ELEMENT_TYPE_VF:
     case I40E_SWITCH_ELEMENT_TYPE_EMP:
@@ -1597,7 +1589,7 @@ I40eDisableVlanStripping (
 
   ZeroMem (&VsiContext, sizeof (VsiContext));
 
-  
+
   if ((AdapterInfo->Vsi.Info.valid_sections & I40E_AQ_VSI_PROP_VLAN_VALID) == I40E_AQ_VSI_PROP_VLAN_VALID) {
     if ((AdapterInfo->Vsi.Info.port_vlan_flags & I40E_AQ_VSI_PVLAN_EMOD_MASK) == I40E_AQ_VSI_PVLAN_EMOD_MASK) {
       DEBUGPRINT (INIT, ("VLAN stripping already disabled\n"));
@@ -1632,7 +1624,7 @@ I40eDisableVlanStripping (
 
    @param[in]   AdapterInfo   Pointer to the NIC data structure information
                              the UNDI driver is layering on
-   
+
    @retval  EFI_SUCCESS        Successfull LAN and VMDq setup
    @retval  EFI_DEVICE_ERROR   Failed to get VSI params
    @retval  EFI_DEVICE_ERROR   VSI has not enough queue pairs
@@ -1718,7 +1710,7 @@ I40eSetupPFSwitch (
       return EFI_DEVICE_ERROR;
     }
   }
-  
+
   SetMem (&MacVlan, sizeof (struct i40e_aqc_add_macvlan_element_data), 0);
   MacVlan.flags = I40E_AQC_MACVLAN_ADD_IGNORE_VLAN | I40E_AQC_MACVLAN_ADD_PERFECT_MATCH;
   CopyMem (MacVlan.mac_addr, &AdapterInfo->Hw.mac.addr, sizeof (MacVlan.mac_addr));
@@ -1733,12 +1725,12 @@ I40eSetupPFSwitch (
   if (I40eStatus != I40E_SUCCESS) {
     DEBUGPRINT (
       CRITICAL, ("i40e_aq_add_macvlan returned %d, aq_err %d\n",
-      I40eStatus, 
+      I40eStatus,
       AdapterInfo->Hw.aq.asq_last_status)
     );
     return EFI_DEVICE_ERROR;
   }
-  
+
   // Configure VLAN stripping on Rx packets
   Status = I40eDisableVlanStripping (AdapterInfo);
   if (EFI_ERROR (Status)) {
@@ -1773,7 +1765,7 @@ I40ePciInit (
   Result = 0;
 
   PciAttributesSaved = FALSE;
-  
+
   // Save original PCI attributes
   Status = AdapterInfo->PciIo->Attributes (
                                  AdapterInfo->PciIo,
@@ -1798,7 +1790,7 @@ I40ePciInit (
   DEBUGPRINT (INIT, ("Attributes supported %x\n", Result));
 
   if (!EFI_ERROR (Status)) {
-    
+
     // Set the PCI Command options to enable device memory mapped IO,
     // port IO, and bus mastering.
     Status = AdapterInfo->PciIo->Attributes (
@@ -1820,7 +1812,7 @@ I40ePciInit (
                         &AdapterInfo->Device,
                         &AdapterInfo->Function
                       );
-                      
+
   // Read all the registers from the device's PCI Configuration space
   AdapterInfo->PciIo->Pci.Read (
                             AdapterInfo->PciIo,
@@ -1833,7 +1825,7 @@ I40ePciInit (
 
 Error:
   if (PciAttributesSaved) {
-    
+
     // Restore original PCI attributes
     AdapterInfo->PciIo->Attributes (
                           AdapterInfo->PciIo,
@@ -1916,11 +1908,11 @@ I40eInitHw (
 
   Hw = &AdapterInfo->Hw;
 
-  
+
   //  Initialize HMC structure for this Lan function. We need 1 Tx and 1 Rx queue.
   //  FCoE parameters are zeroed
 #ifdef DIRECT_QUEUE_CTX_PROGRAMMING
-  UNREFERENCED_1PARAMETER (I40eStatus)
+  UNREFERENCED_1PARAMETER (I40eStatus);
 #else /* NOT DIRECT_QUEUE_CTX_PROGRAMMING */
   I40eStatus = i40e_init_lan_hmc (Hw, 1, 1, 0, 0);
   if (I40eStatus != I40E_SUCCESS) {
@@ -1962,9 +1954,9 @@ I40eInitHw (
     TmpReg0 = I40eRead32 (AdapterInfo, I40E_PRTDCB_TC2PFC_RCB);
     I40eWrite32 (AdapterInfo, I40E_PRTDCB_TC2PFC_RCB, 0);
   }
-  
+
   I40eReceiveStart (AdapterInfo);
-  
+
   if (AdapterInfo->Hw.mac.type == I40E_MAC_X722) {
     I40eWrite32 (AdapterInfo, I40E_PRTDCB_TC2PFC_RCB, TmpReg0);
   }
@@ -2078,10 +2070,10 @@ I40eShutdown (
 /** Performs HW reset by reinitialization
 
    @param[in]   AdapterInfo   Pointer to the NIC data structure information
-                              the UNDI driver is layering on   
-   
+                              the UNDI driver is layering on
+
    @retval   PXE_STATCODE_SUCCESS      Successfull HW reset
-   @retval   PXE_STATCODE_NOT_STARTED  Failed to initialize HW   
+   @retval   PXE_STATCODE_NOT_STARTED  Failed to initialize HW
 **/
 PXE_STATCODE
 I40eReset (
@@ -2184,24 +2176,22 @@ I40eDiscoverCapabilities (
   I40E_DRIVER_DATA *AdapterInfo
   )
 {
-  struct i40e_aqc_list_capabilities_element_resp *CapabilitiesBuffer;
   enum i40e_status_code                           I40eStatus;
   UINT16                                          BufferSize;
   UINT16                                          BufferSizeNeeded;
-  EFI_STATUS                                      Status;
+  struct i40e_aqc_list_capabilities_element_resp *CapabilitiesBuffer;
+  UINT32                                          i = 0;
 
   BufferSize = 40 * sizeof (struct i40e_aqc_list_capabilities_element_resp);
 
   do {
-    Status = gBS->AllocatePool (
-                    EfiBootServicesData,
-                    BufferSize,
-                    (VOID **) &CapabilitiesBuffer
-                  );
-    if (EFI_ERROR (Status)) {
-      return Status;
+    i++;
+
+    CapabilitiesBuffer = AllocateZeroPool (BufferSize);
+    if (CapabilitiesBuffer == NULL) {
+      return EFI_OUT_OF_RESOURCES;
     }
-    
+
     I40eStatus = i40e_aq_discover_capabilities (
                    &AdapterInfo->Hw,
                    CapabilitiesBuffer,
@@ -2210,29 +2200,32 @@ I40eDiscoverCapabilities (
                    i40e_aqc_opc_list_func_capabilities,
                    NULL
                  );
-                 
+
     // Free memory that was required only internally
     // in i40e_aq_discover_capabilities
     gBS->FreePool (CapabilitiesBuffer);
 
     if (AdapterInfo->Hw.aq.asq_last_status == I40E_AQ_RC_ENOMEM) {
-    
+
       // Buffer passed was to small, use buffer size returned by the function
       BufferSize = BufferSizeNeeded;
     } else if (AdapterInfo->Hw.aq.asq_last_status != I40E_AQ_RC_OK) {
-      Status = EFI_DEVICE_ERROR;
-      return Status;
+      return EFI_DEVICE_ERROR;
+    }
+
+    // Infinite loop protection
+    if (i > 100) {
+      DEBUGPRINT (CRITICAL, ("i40e_aq_discover_capabilities returns %x\n", I40eStatus));
+      return EFI_DEVICE_ERROR;
     }
   } while (I40eStatus != I40E_SUCCESS);
 
+  i = 0;
   do {
-      Status = gBS->AllocatePool (
-                      EfiBootServicesData,
-                      BufferSize,
-                      (VOID **) &CapabilitiesBuffer
-                    );
-      if (EFI_ERROR (Status)) {
-        return Status;
+      i++;
+      CapabilitiesBuffer = AllocateZeroPool (BufferSize);
+      if (CapabilitiesBuffer == NULL) {
+        return EFI_OUT_OF_RESOURCES;
       }
 
       I40eStatus = i40e_aq_discover_capabilities (
@@ -2253,12 +2246,17 @@ I40eDiscoverCapabilities (
         // Buffer passed was to small, use buffer size returned by the function
         BufferSize = BufferSizeNeeded;
       } else if (AdapterInfo->Hw.aq.asq_last_status != I40E_AQ_RC_OK) {
-        Status = EFI_DEVICE_ERROR;
-        return Status;
+        return EFI_DEVICE_ERROR;
+      }
+
+      // Endless loop protection
+      if (i > 100) {
+        DEBUGPRINT (CRITICAL, ("i40e_aq_discover_capabilities returns %x\n", I40eStatus));
+        return EFI_DEVICE_ERROR;
       }
     } while (I40eStatus != I40E_SUCCESS);
 
-  return Status;
+  return EFI_SUCCESS;
 }
 
 /** Checks if reset is done.
@@ -2324,7 +2322,7 @@ I40eCheckResetDone (
 
    @param[in]   AdapterInfo   Pointer to the NIC data structure information
                               the UNDI driver is layering on
-                              
+
    @retval   EFI_SUCCESS   Reset triggered successfully
 **/
 EFI_STATUS
@@ -2347,7 +2345,7 @@ I40eTriggerGlobalReset (
 
 /** This function checks if any  other instance of driver is loaded on this PF by
    reading PFGEN_DRUN register.
-   
+
    If not it writes the bit in the register to let know other components that
    the PF is in use.
 
@@ -2365,13 +2363,13 @@ I40eAquireControllerHw (
   UINT32 RegValue;
 
   RegValue = rd32 (&AdapterInfo->Hw, I40E_PFGEN_DRUN);
-  
+
   if (RegValue & I40E_PFGEN_DRUN_DRVUNLD_MASK) {
-    
+
     // bit set means other driver is loaded on this pf
     return FALSE;
   }
-  
+
   RegValue |= I40E_PFGEN_DRUN_DRVUNLD_MASK;
   wr32 (&AdapterInfo->Hw, I40E_PFGEN_DRUN, RegValue);
   return TRUE;
@@ -2381,7 +2379,7 @@ I40eAquireControllerHw (
 
    @param[in]   AdapterInfo   Pointer to the NIC data structure information
                              the UNDI driver is layering on
-                             
+
    @return   PFGEN_DRUN driver unload bit is cleared
 **/
 VOID
@@ -2422,35 +2420,46 @@ I40eFirstTimeInit (
   )
 {
   PCI_CONFIG_HEADER     *PciConfigHeader;
+  UINT8                  PciBarConfiguration;
+  BOOLEAN                Pci64Bit;
   enum  i40e_status_code I40eStatus;
   EFI_STATUS             Status;
+  UINT32                 Reg;
   struct  i40e_hw       *Hw;
-  UINT32                Reg = 0;
+  UINTN                  AllocationSize = 0;
 
   Hw = &AdapterInfo->Hw;
-
-  Hw->back                   = AdapterInfo;
+  Hw->back = AdapterInfo;
 
   AdapterInfo->DriverBusy = FALSE;
-  if (rd32 (Hw, I40E_GLPCI_CAPSUP) & I40E_GLPCI_CAPSUP_ARI_EN_MASK) {
-    DEBUGPRINT (INIT, ("ARI Enabled\n"));
-    AdapterInfo->AriCapabilityEnabled = TRUE;
-  }
-
-  if (AdapterInfo->AriCapabilityEnabled) {
-  
-    // Reinterpret PCI Function and Device when ARI is enabled
-    AdapterInfo->Function = (8 * AdapterInfo->Device) + AdapterInfo->Function;
-    AdapterInfo->Device = 0;
-  }
-
-  AdapterInfo->MediaStatusChecked = FALSE;
   AdapterInfo->LastMediaStatus = FALSE;
+  AdapterInfo->MediaStatusChecked = FALSE;
+
 
   Hw->bus.device = (UINT16) AdapterInfo->Device;
   Hw->bus.func =   (UINT16) AdapterInfo->Function;
 
-  PciConfigHeader = (PCI_CONFIG_HEADER *) &AdapterInfo->PciConfig[0];
+  PciConfigHeader     = (PCI_CONFIG_HEADER *) &AdapterInfo->PciConfig[0];
+  PciBarConfiguration = PciConfigHeader->BaseAddressReg0 & PCI_BAR_MEM_MASK;
+  Pci64Bit            = (PciBarConfiguration & 0x6) == PCI_BAR_MEM_64BIT;
+
+  if (Pci64Bit) {
+    // On 64-bit BAR, device address claims two slots in the PCI header.
+    Hw->hw_addr = (UINT8 *) (UINTN) ((UINT64) (PciConfigHeader->BaseAddressReg0 & PCI_BAR_MEM_BASE_ADDR_M) +
+                                    (((UINT64) PciConfigHeader->BaseAddressReg1) << 32));
+    DEBUGPRINT (INIT, ("PCI Base Address Register (64-bit) = %8X:%8X\n",
+                       PciConfigHeader->BaseAddressReg1,
+                       PciConfigHeader->BaseAddressReg0));
+  } else {
+    Hw->hw_addr = (UINT8 *) (UINTN) (PciConfigHeader->BaseAddressReg0 & PCI_BAR_MEM_BASE_ADDR_M);
+    DEBUGPRINT (INIT, ("PCI Base Address Register (32-bit) = %8X\n", PciConfigHeader->BaseAddressReg0));
+  }
+
+  if (Hw->hw_addr == NULL) {
+    DEBUGPRINT (CRITICAL, ("NIC Hardware Address is NULL - expect issues!\n"));
+    DEBUGPRINT (CRITICAL, ("Basic networking should work, advanced features will fail.\n"));
+    DEBUGWAIT (CRITICAL);
+  }
 
   DEBUGPRINT (INIT, ("PCI Command Register = %X\n", PciConfigHeader->Command));
   DEBUGPRINT (INIT, ("PCI Status Register = %X\n", PciConfigHeader->Status));
@@ -2468,21 +2477,19 @@ I40eFirstTimeInit (
   ZeroMem (&AdapterInfo->Vsi.CurrentMcastList, sizeof (AdapterInfo->Vsi.CurrentMcastList));
 
   // Initialize all parameters needed for the shared code
-  Hw->hw_addr                = (UINT8 *) (UINTN) PciConfigHeader->BaseAddressReg0;
   Hw->vendor_id              = PciConfigHeader->VendorId;
   Hw->device_id              = PciConfigHeader->DeviceId;
-  Hw->revision_id            = (UINT8) PciConfigHeader->RevId;
   Hw->subsystem_vendor_id    = PciConfigHeader->SubVendorId;
   Hw->subsystem_device_id    = PciConfigHeader->SubSystemId;
-  Hw->revision_id            = (UINT8) PciConfigHeader->RevId;
+  Hw->revision_id            = PciConfigHeader->RevId;
 
   Hw->adapter_stopped        = TRUE;
 
-  AdapterInfo->PciClass    = (UINT8) ((PciConfigHeader->ClassId & PCI_CLASS_MASK) >> 8);
-  AdapterInfo->PciSubClass = (UINT8) (PciConfigHeader->ClassId) & PCI_SUBCLASS_MASK;
+  AdapterInfo->PciClass       = PciConfigHeader->ClassIdMain;
+  AdapterInfo->PciSubClass    = PciConfigHeader->ClassIdSubclass;
+  AdapterInfo->PciClassProgIf = PciConfigHeader->ClassIdProgIf;
 
   if (Hw->subsystem_device_id == 0) {
-    
     // Read Subsystem ID from PFPCI_SUBSYSID
     Hw->subsystem_device_id = (UINT16) (rd32 (Hw, 0x000BE100) & 0xFFFF);
   }
@@ -2505,7 +2512,7 @@ I40eFirstTimeInit (
     goto ErrorReleaseController;
   }
 
-  DEBUGPRINT (INIT, ("Initializing PF %d\n", Hw->bus.func));
+  DEBUGPRINT (INIT, ("Initializing PF %d, PCI Func %d\n", Hw->pf_id, Hw->bus.func));
 
   AdapterInfo->FwSupported = TRUE;
 
@@ -2539,7 +2546,7 @@ I40eFirstTimeInit (
 
   I40eStatus = i40e_init_adminq (Hw);
   if (I40eStatus == I40E_ERR_FIRMWARE_API_VERSION) {
-  
+
     // Firmware version is newer then expected. Refrain from further initialization
     // and report error status thru the Driver Health Protocol
     AdapterInfo->FwSupported = FALSE;
@@ -2555,41 +2562,34 @@ I40eFirstTimeInit (
 
   Status = I40eDiscoverCapabilities (AdapterInfo);
   if (EFI_ERROR (Status)) {
-    DEBUGPRINT (CRITICAL, ("I40eDiscoverCapabilities(func) returned %r\n", Status));
+    DEBUGPRINT (CRITICAL, ("I40eDiscoverCapabilities failed: %r\n", Status));
     goto ErrorReleaseController;
   }
 
   AdapterInfo->TxRxDescriptorCount = I40eGetTxRxDescriptorsCount (Hw);
+  DEBUGPRINT (INIT, ("I40eGetTxRxDescriptorsCount: %d\n", AdapterInfo->TxRxDescriptorCount));
 
-  DEBUGPRINT (INIT, ("I40eGetTxRxDescriptorsCount returned %d\n", AdapterInfo->TxRxDescriptorCount));
-
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData,
-                  sizeof (*AdapterInfo->Vsi.TxRing.BufferAddresses) * AdapterInfo->TxRxDescriptorCount,
-                  (VOID **) &AdapterInfo->Vsi.TxRing.BufferAddresses
-                );
-  if (EFI_ERROR (Status)) {
-    DEBUGPRINT (CRITICAL, ("AllocatePool Tx BufferAddresses %r\n", Status));
+  AllocationSize = sizeof (*AdapterInfo->Vsi.TxRing.BufferAddresses) * AdapterInfo->TxRxDescriptorCount;
+  AdapterInfo->Vsi.TxRing.BufferAddresses = AllocateZeroPool (AllocationSize);
+  if (AdapterInfo->Vsi.TxRing.BufferAddresses == NULL) {
+    DEBUGPRINT (CRITICAL, ("AllocateZeroPool failed to allocate TxRing.BufferAddresses!\n"));
+    Status = EFI_OUT_OF_RESOURCES;
     goto ErrorReleaseController;
   }
 
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData,
-                  sizeof (*AdapterInfo->Vsi.RxRing.BufferAddresses) * AdapterInfo->TxRxDescriptorCount,
-                  (VOID **) &AdapterInfo->Vsi.RxRing.BufferAddresses
-                );
-  if (EFI_ERROR (Status)) {
-    DEBUGPRINT (CRITICAL, ("AllocatePool Rx BufferAddresses %r\n", Status));
+  AllocationSize = sizeof (*AdapterInfo->Vsi.RxRing.BufferAddresses) * AdapterInfo->TxRxDescriptorCount;
+  AdapterInfo->Vsi.RxRing.BufferAddresses = AllocateZeroPool (AllocationSize);
+  if (AdapterInfo->Vsi.RxRing.BufferAddresses == NULL) {
+    DEBUGPRINT (CRITICAL, ("AllocateZeroPool failed to allocate RxRing.BufferAddresses!\n"));
+    Status = EFI_OUT_OF_RESOURCES;
     goto ErrorReleaseController;
   }
 
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData,
-                  sizeof (*AdapterInfo->Vsi.TxRing.TxBufferMappings) * AdapterInfo->TxRxDescriptorCount,
-                  (VOID **) &AdapterInfo->Vsi.TxRing.TxBufferMappings
-                );
-  if (EFI_ERROR (Status)) {
-    DEBUGPRINT (CRITICAL, ("AllocatePool TxBufferMappings returned %r\n", Status));
+  AllocationSize = sizeof (*AdapterInfo->Vsi.TxRing.TxBufferMappings) * AdapterInfo->TxRxDescriptorCount;
+  AdapterInfo->Vsi.TxRing.TxBufferMappings = AllocateZeroPool (AllocationSize);
+  if (AdapterInfo->Vsi.TxRing.TxBufferMappings == NULL) {
+    DEBUGPRINT (CRITICAL, ("AllocateZeroPool failed to allocate TxRing.TxBufferMappings!\n"));
+    Status = EFI_OUT_OF_RESOURCES;
     goto ErrorReleaseController;
   }
 
@@ -2631,7 +2631,7 @@ ErrorReleaseController:
 
   I40eReleaseControllerHw (AdapterInfo);
   return Status;
-};
+}
 
 
 /** This function calls the MemIo callback to read a dword from the device's
@@ -2797,32 +2797,18 @@ I40eAllocateMem (
   UINT32                   Size
   )
 {
-  EFI_STATUS Status;
-
   if (Mem == NULL) {
     return I40E_ERR_PARAM;
   }
 
   Mem->size = Size;
-  Mem->va = NULL;
-
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData,
-                  Size,
-                  (VOID * *) &Mem->va
-                );
-
-  if ((Mem->va != NULL) 
-    && (Status == EFI_SUCCESS))
-  {
-    //DEBUGPRINT(INIT, ("%a: Requested: %d, Allocated size: %d\n",
-    //                   __FUNCTION__, size, Mem->size));
-    ZeroMem (Mem->va, Size);
-    return I40E_SUCCESS;
-  } else {
+  Mem->va = AllocateZeroPool (Size);
+  if (Mem->va == NULL) {
     DEBUGPRINT (CRITICAL, ("Error: Requested: %d, Allocated size: %d\n", Size, Mem->size));
     return I40E_ERR_NO_MEMORY;
   }
+
+  return I40E_SUCCESS;
 }
 
 /** OS specific memory free for shared code
@@ -2840,28 +2826,27 @@ I40eFreeMem (
   struct i40e_virt_mem *Mem
   )
 {
-  EFI_STATUS Status;
-
   if (Mem == NULL) {
     return I40E_ERR_PARAM;
   }
 
   if (Mem->va == NULL) {
-    
-    //  Nothing to free
+    // Nothing to free
     return I40E_SUCCESS;
   }
 
-  Status = gBS->FreePool ((VOID *) Mem->va);
+  if (!mExitBootServicesTriggered) {
+    gBS->FreePool ((VOID *) Mem->va);
+  }
 
   // Always return I40E_SUCCESS, no need for enhanced error handling here
   return I40E_SUCCESS;
 }
 
 /** OS specific spinlock init for shared code
-   
+
    @param[in]   Sp   pointer to a spinlock declared in driver space
-   
+
    @return    Spinlock pointed by Sp is initialized
 **/
 VOID
@@ -2871,7 +2856,7 @@ I40eInitSpinLock (struct i40e_spinlock *Sp)
 }
 
 /** OS specific spinlock acquire for shared code
-   
+
    @param[in]   Sp   pointer to a spinlock declared in driver space
 
    @return    Spinlock pointed by Sp is acquired
@@ -2883,7 +2868,7 @@ I40eAcquireSpinLock (struct i40e_spinlock *Sp)
 }
 
 /** OS specific spinlock release for shared code
-   
+
    @param[in]   Sp   pointer to a spinlock declared in driver space
 
    @return    Spinlock pointed by Sp is released
@@ -2895,7 +2880,7 @@ I40eReleaseSpinLock (struct i40e_spinlock *Sp)
 }
 
 /** OS specific spinlock destroy for shared code
-   
+
    @param[in]   Sp   pointer to a spinlock declared in driver space
 
    @return    Nothing is done
@@ -3042,7 +3027,7 @@ IsLinkUp (
 
    @param[in]    AdapterInfo        Pointer to the NIC data structure information which
                                     the UNDI driver is layering on
-   @param[out]   AllowedLinkSpeeds  Pointer to resulting link spedd capability  
+   @param[out]   AllowedLinkSpeeds  Pointer to resulting link spedd capability
 
    @retval    EFI_SUCCESS       Link speed capability setting successfully read
    @retval    EFI_DEVICE_ERROR  Get phy capabilities AQ cmd failed
@@ -3080,8 +3065,8 @@ GetLinkSpeedCapability (
 
    @param[in]   AdapterInfo  Pointer to the NIC data structure information which
                              the UNDI driver is layering on
-       
-   @retval   LINK_SPEED_UNKNOWN     Link speed is unknown      
+
+   @retval   LINK_SPEED_UNKNOWN     Link speed is unknown
    @retval   I40E_LINK_SPEED_100MB  Link speed is 100 MB
    @retval   I40E_LINK_SPEED_1GB    Link speed is 1 GB
    @retval   I40E_LINK_SPEED_10GB   Link speed is 10 GB
@@ -3106,6 +3091,12 @@ GetLinkSpeed (
     break;
   case I40E_LINK_SPEED_1GB:
     LinkSpeed = LINK_SPEED_1000FULL;
+    break;
+  case I40E_LINK_SPEED_2_5GB:
+    LinkSpeed = LINK_SPEED_2500;
+    break;
+  case I40E_LINK_SPEED_5GB:
+    LinkSpeed = LINK_SPEED_5000;
     break;
   case I40E_LINK_SPEED_10GB:
     LinkSpeed = LINK_SPEED_10000FULL;
@@ -3142,15 +3133,18 @@ I40eGetFortvilleChipType (
   )
 {
   switch (AdapterInfo->Hw.device_id) {
-  
+
   // X710 10 Gig devices
   case I40E_DEV_ID_SFP_XL710:
   case I40E_DEV_ID_KX_C:
+  case I40E_DEV_ID_10G_BASE_T_BC:
+  case I40E_DEV_ID_10G_B:
+  case I40E_DEV_ID_10G_SFP:
   case I40E_DEV_ID_10G_BASE_T:
   case I40E_DEV_ID_10G_BASE_T4:
     return I40E_CHIP_X710;
     break;
-  
+
   // XL710 40 Gig devices
   case I40E_DEV_ID_25G_SFP28:
   case I40E_DEV_ID_KX_B:
@@ -3215,10 +3209,10 @@ GetEeeCapability (
    @retval   MODULE_UNSUPPORTED Get link info AQ cmd failed
    @retval   MODULE_SUPPORTED   Link is up - module is qualified
    @retval   MODULE_THERMAL_UNSUPPORTED   Link is down - module is thermal unqualified
-   @retval   MODULE_UNSUPPORTED  Link is down - module is unqualified and module 
+   @retval   MODULE_UNSUPPORTED  Link is down - module is unqualified and module
                                  qualification is enabled on the port
-   @retval   MODULE_SUPPORTED   Link is down - module is qualified, or qualification 
-                                process is not available   
+   @retval   MODULE_SUPPORTED   Link is down - module is qualified, or qualification
+                                process is not available
 **/
 MODULE_QUALIFICATION_STATUS
 GetModuleQualificationResult (
@@ -3280,11 +3274,11 @@ BlinkLeds (
   UINT32 led_status;
 
   if (AdapterInfo->Hw.device_id == I40E_DEV_ID_10G_BASE_T
-    || AdapterInfo->Hw.device_id == I40E_DEV_ID_10G_BASE_T4) 
+    || AdapterInfo->Hw.device_id == I40E_DEV_ID_10G_BASE_T4)
   {
     i40e_blink_phy_link_led (&AdapterInfo->Hw, Time, 500);
   } else {
-    
+
     // Get current LED state
     led_status = i40e_led_get (&AdapterInfo->Hw);
 
@@ -3356,7 +3350,7 @@ ReadMfpConfiguration (
     }
 
     if (PortNum == PortNumber) {
-   
+
       // Partition is connected to the same port as the base partition
       // Save information on the status of this partition
       if (FunctionStatus != 0) {
@@ -3364,7 +3358,7 @@ ReadMfpConfiguration (
       } else {
         AdapterInfo->PartitionEnabled[PartitionCount] = FALSE;
       }
-      
+
       // Save PCI function number
       AdapterInfo->PartitionPfNumber[PartitionCount] = i;
       DEBUGPRINT (
@@ -3419,29 +3413,6 @@ I40eGetVsiParams (
 
 
 
-/** This is only for debugging, it will pause and wait for the user to press <ENTER>
-  
-   Results AFTER this call are unpredicable. You can only be assured the code up to
-   this call is working.
-
-   @param[in]       NicInfo         Pointer to the Adapter Structure
-
-   @return       Execution of code is resumed
-**/
-VOID
-WaitForEnter (
-  VOID
-  )
-{
-  EFI_INPUT_KEY Key;
-
-  DEBUGPRINT(INIT, ("\nPress <Enter> to continue...\n"));
-
-  do {
-    gST->ConIn->ReadKeyStroke (gST->ConIn, &Key);
-  } while (Key.UnicodeChar != 0xD);
-}
-
 /** Get supported Tx/Rx descriptor count for a given device
 
    @param[in]    Hw         Pointer to the HW Structure
@@ -3461,4 +3432,3 @@ I40eGetTxRxDescriptorsCount (
     return I40E_DEF_NUM_TX_RX_DESCRIPTORS;
   }
 }
-

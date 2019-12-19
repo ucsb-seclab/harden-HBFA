@@ -1369,6 +1369,7 @@ s32 e1000_copper_link_setup_m88_gen2(struct e1000_hw *hw)
 		phy_data |= M88E1000_PSCR_POLARITY_REVERSAL;
 
 	/* Enable downshift and setting it to X6 */
+#ifndef NO_82580_SUPPORT
 	if (phy->id == M88E1543_E_PHY_ID) {
 		phy_data &= ~I347AT4_PSCR_DOWNSHIFT_ENABLE;
 		ret_val =
@@ -1383,6 +1384,7 @@ s32 e1000_copper_link_setup_m88_gen2(struct e1000_hw *hw)
 		}
 	}
 
+#endif /* !NO_82580_SUPPORT */
 	phy_data &= ~I347AT4_PSCR_DOWNSHIFT_MASK;
 	phy_data |= I347AT4_PSCR_DOWNSHIFT_6X;
 	phy_data |= I347AT4_PSCR_DOWNSHIFT_ENABLE;
@@ -3213,6 +3215,7 @@ s32 e1000_determine_phy_address(struct e1000_hw *hw)
 /**
  *  e1000_get_phy_addr_for_bm_page - Retrieve PHY page address
  *  @page: page to access
+ *  @reg: register to access
  *
  *  Returns the phy address for the page requested.
  **/
@@ -3658,6 +3661,7 @@ void e1000_power_down_phy_copper(struct e1000_hw *hw)
  *  @offset: register offset to be read
  *  @data: pointer to the read data
  *  @locked: semaphore has already been acquired or not
+ *  @page_set: BM_WUC_PAGE already set and access enabled
  *
  *  Acquires semaphore, if necessary, then reads the PHY register at offset
  *  and stores the retrieved information in data.  Release any acquired
@@ -3768,6 +3772,7 @@ s32 e1000_read_phy_reg_page_hv(struct e1000_hw *hw, u32 offset, u16 *data)
  *  @offset: register offset to write to
  *  @data: data to write at register offset
  *  @locked: semaphore has already been acquired or not
+ *  @page_set: BM_WUC_PAGE already set and access enabled
  *
  *  Acquires semaphore, if necessary, then writes the data to PHY register
  *  at the offset.  Release any acquired semaphores before exiting.
@@ -4465,4 +4470,3 @@ s32 e1000_write_xmdio_reg(struct e1000_hw *hw, u16 addr, u8 dev_addr, u16 data)
 						false);
 }
 #endif /* NO_XMDIO_SUPPORT */
-

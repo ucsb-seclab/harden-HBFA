@@ -56,4 +56,3 @@ enum i40e_status_code i40e_diag_reg_test(struct i40e_hw *hw);
 enum i40e_status_code i40e_diag_eeprom_test(struct i40e_hw *hw);
 
 #endif /* _I40E_DIAG_H_ */
-

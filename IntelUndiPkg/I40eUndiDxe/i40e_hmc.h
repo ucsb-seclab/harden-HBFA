@@ -240,4 +240,3 @@ enum i40e_status_code i40e_remove_pd_page_new(struct i40e_hw *hw,
 					      u32 idx, bool is_pf);
 
 #endif /* _I40E_HMC_H_ */
-

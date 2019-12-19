@@ -75,9 +75,8 @@ typedef struct {
   UINT8 DestAddr[6];
   UINT8 SourceAddr[6];
   UINT8 Length[2];
-} ETHERNET_HDR; 
+} ETHERNET_HDR;
 #pragma pack()
 
 #endif /* DRIVER_DIAGNOSTICS_H_ */
 
-

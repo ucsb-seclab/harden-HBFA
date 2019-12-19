@@ -214,4 +214,3 @@ s32 ixgbe_read_i2c_combined_generic_int(struct ixgbe_hw *, u8 addr, u16 reg,
 s32 ixgbe_write_i2c_combined_generic_int(struct ixgbe_hw *, u8 addr, u16 reg,
 					 u16 val, bool lock);
 #endif /* _IXGBE_PHY_H_ */
-

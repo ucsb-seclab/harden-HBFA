@@ -36,8 +36,9 @@ _WOL_DEVICE_INFO_t const WOL_DEVICE_INFO_TABLE[] = {
 
 
 #if defined(WOL_40G)
- { 0x8086, 0x154C, 0xFFFF, 0xFFFF, 0x0 }, /* Intel(R) Ethernet Virtual Function 700 Series */
- { 0x8086, 0x1571, 0xFFFF, 0xFFFF, 0x0 }, /* Intel(R) Ethernet Virtual Function 700 Series */
+ { 0x8086, 0x104E, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Controller X710 for 10 Gigabit SFP+ */
+ { 0x8086, 0x104F, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Controller X710 for 10 Gigabit backplane */
+ { 0x8086, 0x10A6, 0xFFFF, 0xFFFF, 0x0 }, /* Intel(R) X710 Multi-Function Network Device */
  { 0x8086, 0x1572, 0x1028, 0x0000, 0xF }, /* Intel(R) Ethernet 10G X710 rNDC */
  { 0x8086, 0x1572, 0x1028, 0x1F99, 0xF }, /* Intel(R) Ethernet 10G 4P X710/I350 rNDC */
  { 0x8086, 0x1572, 0x1028, 0x1F9C, 0xF }, /* Intel(R) Ethernet 10G 4P X710 SFP+ rNDC */
@@ -63,6 +64,8 @@ _WOL_DEVICE_INFO_t const WOL_DEVICE_INFO_TABLE[] = {
  { 0x8086, 0x1572, 0x8086, 0x000B, 0xF }, /* Intel(R) Ethernet Server Adapter X710-DA2 for OCP */
  { 0x8086, 0x1572, 0x8086, 0x000D, 0xF }, /* Intel(R) Ethernet Controller X710 for 10GbE SFP+ */
  { 0x8086, 0x1572, 0x8086, 0x000E, 0xF }, /* Intel(R) Ethernet Server Adapter OCP X710-2 */
+ { 0x8086, 0x1572, 0x8086, 0x0013, 0xF }, /* Intel(R) Ethernet 10G 2P X710 OCP */
+ { 0x8086, 0x1572, 0x8086, 0x0014, 0xF }, /* Intel(R) Ethernet 10G 4P X710 OCP */
  { 0x8086, 0x1572, 0x8086, 0x4005, 0xF }, /* Intel(R) Ethernet Controller X710 for 10GbE SFP+ */
  { 0x8086, 0x1572, 0x8086, 0x4006, 0xF }, /* Intel(R) Ethernet Controller X710 for 10GbE SFP+ */
  { 0x8086, 0x1572, 0x8086, 0x4007, 0xF }, /* Intel(R) Ethernet Controller X710 for 10GbE SFP+ */
@@ -104,6 +107,8 @@ _WOL_DEVICE_INFO_t const WOL_DEVICE_INFO_TABLE[] = {
  { 0x8086, 0x1589, 0x8086, 0x0003, 0xF }, /* Intel(R) Ethernet Converged Network Adapter X710-T */
  { 0x8086, 0x1589, 0x8086, 0x00A0, 0xF }, /* Intel(R) Ethernet Converged Network Adapter X710-T4 */
  { 0x8086, 0x1589, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Controller X710/X557-AT 10GBASE-T */
+ { 0x8086, 0x158A, 0x1590, 0x0000, 0xF }, /* HPE 10/25Gb Ethernet Adapter */
+ { 0x8086, 0x158A, 0x1590, 0x0286, 0xF }, /* HPE Synergy 4610C 10/25Gb Ethernet Adapter */
  { 0x8086, 0x158A, 0x8086, 0x0000, 0xF }, /* Intel(R) Ethernet Controller XXV710 for 25GbE backplane */
  { 0x8086, 0x158A, 0x8086, 0x000A, 0xF }, /* Intel(R) Ethernet 25G 2P XXV710 Mezz */
  { 0x8086, 0x158A, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Controller XXV710 for 25GbE backplane */
@@ -121,13 +126,8 @@ _WOL_DEVICE_INFO_t const WOL_DEVICE_INFO_TABLE[] = {
  { 0x8086, 0x158B, 0x8086, 0x0009, 0xF }, /* Intel(R) Ethernet 25G 2P XXV710 Adapter */
  { 0x8086, 0x158B, 0x8086, 0x4001, 0xF }, /* Intel(R) Ethernet Network Adapter XXV710-2 */
  { 0x8086, 0x158B, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Controller XXV710 for 25GbE SFP28 */
- { 0x8086, 0x1889, 0x8086, 0x0001, 0x0 }, /* Intel (R) Ethernet Adaptive Virtual Function */
- { 0x8086, 0x1889, 0xFFFF, 0xFFFF, 0x0 }, /* Intel (R) Ethernet Adaptive Virtual Function */
- { 0x8086, 0x374D, 0xFFFF, 0xFFFF, 0x0 }, /* Intel(R) X722 Virtual Function */
- { 0x8086, 0x3759, 0xFFFF, 0xFFFF, 0x0 }, /* Intel(R) X722 Virtual Function */
+ { 0x8086, 0x15FF, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Controller X710 for 10GBASE-T */
  { 0x8086, 0x37CC, 0xFFFF, 0xFFFF, 0x0 }, /* Intel(R) Ethernet Connection X722 */
- { 0x8086, 0x37CD, 0x8086, 0x0001, 0x0 }, /* Intel(R) Ethernet Virtual Function 700 Series */
- { 0x8086, 0x37CD, 0xFFFF, 0xFFFF, 0x0 }, /* Intel(R) Ethernet Virtual Function 700 Series */
  { 0x8086, 0x37CE, 0x1590, 0x0215, 0xF }, /* HPE Ethernet 10Gb 2-port 568i Adapter */
  { 0x8086, 0x37CE, 0x17AA, 0x4023, 0xF }, /* Intel(R) Ethernet Connection X722 for 10GbE backplane */
  { 0x8086, 0x37CE, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Connection X722 for 10GbE backplane */
@@ -154,8 +154,6 @@ _WOL_DEVICE_INFO_t const WOL_DEVICE_INFO_TABLE[] = {
  { 0x8086, 0x37D3, 0x17AA, 0x4020, 0xF }, /* Intel(R) Ethernet Connection X722 for 10GbE SFP+ */
  { 0x8086, 0x37D3, 0x17AA, 0x4021, 0xF }, /* Intel(R) Ethernet Connection X722 for 10GbE SFP+ */
  { 0x8086, 0x37D3, 0xFFFF, 0xFFFF, 0xF }, /* Intel(R) Ethernet Connection X722 for 10GbE SFP+ */
- { 0x8086, 0xF0A3, 0xFFFF, 0xFFFF, 0x0 }, /* Intel(R) X722 FPGA Virtual Function */
- { 0x8086, 0xF0A4, 0xFFFF, 0xFFFF, 0x0 }, /* Intel(R) X722 FPGA Virtual Function */
 #endif /* WOL_40G */
 
  {      0,      0,      0,      0,   0 }  /* Last entry */

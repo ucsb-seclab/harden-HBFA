@@ -49,6 +49,8 @@ WOL_MAC_TYPE const _WOL_IXGBE[] = {
 WOL_MAC_TYPE const _WOL_ICE[] = {
   WOL_MAKE_MACTYPE(WOL_ICE, ICE_MAC_FPGA),
   WOL_MAKE_MACTYPE(WOL_ICE, ICE_MAC_GENERIC),
+  //3 is for ICE_MAC_DISCRETE (TODO: replace when ready)
+  WOL_MAKE_MACTYPE(WOL_ICE, 3), 
   0
 };
 #endif
@@ -67,9 +69,6 @@ _WOL_FAMILY_INFO_t const WOL_FAMILY_TABLE[] = {
 #if defined(WOL_10G)
   { _WOL_IXGBE,         _WolGetOffsetBitmask_IXGBE          },
 #endif /* WOL_10G */
-#if defined(WOL_ICE)
-  { _WOL_ICE,           _WolGetOffsetBitmask_40GBE          },
-#endif /* WOL_ICE */
   { 0,                  0                                   }
 };
 
@@ -81,4 +80,3 @@ WOL_MAC_TYPE const WOL_LASER_TABLE[] = {
   0
 };
 
-

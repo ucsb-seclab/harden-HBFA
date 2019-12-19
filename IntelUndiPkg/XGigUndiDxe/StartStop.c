@@ -38,6 +38,7 @@ EFI_GUID gEfiStartStopProtocolGuid = EFI_DRIVER_STOP_PROTOCOL_GUID;
    @retval   EFI_SUCCESS   Driver is stopped successfully
 **/
 EFI_STATUS
+EFIAPI
 StopDriver (
   IN EFI_DRIVER_STOP_PROTOCOL *This
   )
@@ -63,6 +64,7 @@ StopDriver (
    @retval   EFI_DEVICE_ERROR  Failed to initialize hardware
 **/
 EFI_STATUS
+EFIAPI
 StartDriver (
   IN EFI_DRIVER_STOP_PROTOCOL *This
   )
@@ -93,7 +95,7 @@ StartDriver (
       XgbeSetFilter (&XgbePrivate->NicInfo, XgbePrivate->NicInfo.RxFilter);
     }
   } else {
-    
+
     // If the driver is not in the state INITIALIZED, we will still re-init the hardware
     // and bring link up so the device is ready to use.
     Status = XgbeInitHw (&XgbePrivate->NicInfo);
@@ -113,4 +115,3 @@ EFI_DRIVER_STOP_PROTOCOL gUndiDriverStop = {
   StopDriver,
   StartDriver
 };
-

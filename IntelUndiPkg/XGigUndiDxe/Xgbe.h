@@ -69,9 +69,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Library/UefiLib.h>
 #include <Library/BaseLib.h>
 #include <Library/DevicePathLib.h>
-#include <Library\PrintLib.h>
+#include <Library/PrintLib.h>
 
 #include <IndustryStandard/Pci.h>
+
+// Debug macros are located here.
+#include "DebugTools.h"
 
 #include "ixgbe_api.h"
 #include "ixgbe_type.h"
@@ -89,36 +92,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef IXGBE_INTEL_VENDOR_ID
 #define IXGBE_INTEL_VENDOR_ID INTEL_VENDOR_ID
 #endif /* IXGBE_INTEL_VENDOR_ID */
-
-// Debug levels for driver DEBUG_PRINT statements
-#define NONE      0
-#define INIT      (1 << 0)
-#define DECODE    (1 << 1)
-#define XGBE      (1 << 2)
-#define SHARED    (1 << 3)
-#define DIAG      (1 << 4)
-#define CFG       (1 << 5)
-#define IO        (1 << 6)
-#define IMAGE     (1 << 7)
-#define VPDUPD    (1 << 8)
-#define RX        (1 << 9)
-#define TX        (1 << 10)
-#define CRITICAL  (1 << 11)
-#define HII       (1 << 12)
-#define CLP       (1 << 13)
-#define RXFILTER  (1 << 14)
-#define WAIT      (1 << 15)
-#define FLASH     (1 << 16)
-#define VPD_DBG   (1 << 18)
-#define SUPPORTED (1 << 19)
-#define HEALTH    (1 << 20)
-#define ADAPTERINFO (1 << 21)
-#define HOSTIF    (1 << 22)
-#define DMA       (1 << 23)
-#define WOL       (1 << 24)
-
-// DEBUG Defines are located here
-#define DBG_LVL (NONE)
 
 /** Macro to return the offset of a member within a struct.  This
    looks like it dereferences a null pointer, but it doesn't really.
@@ -221,7 +194,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    @return   Descriptor retrieved
 **/
 #define XGBE_RX_DESC(R, i)          \
-          (&(((struct ixgbe_legacy_rx_desc *) ((R)->UnmappedAddress))[i]))
+          (&(((struct ixgbe_legacy_rx_desc *) (UINTN) ((R)->UnmappedAddress))[i]))
 
 /** Retrieves TX descriptor from TX ring structure
 
@@ -231,7 +204,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    @return   Descriptor retrieved
 **/
 #define XGBE_TX_DESC(R, i)          \
-          (&(((struct ixgbe_legacy_tx_desc *) ((R)->UnmappedAddress))[i]))
+          (&(((struct ixgbe_legacy_tx_desc *) (UINTN) ((R)->UnmappedAddress))[i]))
 
 /** Retrieves UNDI_PRIVATE_DATA structure using NII Protocol 3.1 instance
 
@@ -317,6 +290,7 @@ extern EFI_GUID gEfiNiiPointerGuid;
 
 extern PXE_SW_UNDI *      mIxgbePxe31;
 extern UNDI_PRIVATE_DATA *mXgbeDeviceList[MAX_NIC_INTERFACES];
+extern BOOLEAN                mExitBootServicesTriggered;
 
 #pragma pack(1)
 typedef struct {
@@ -376,65 +350,65 @@ typedef struct {
 
 
 /* UNDI callback functions typedefs */
-typedef 
+typedef
 VOID
-(* PTR) (
+(EFIAPI * PTR) (
   VOID
   );
-  
-typedef 
-VOID 
-(* BS_PTR_30) (
+
+typedef
+VOID
+(EFIAPI * BS_PTR_30) (
   UINTN   MicroSeconds
   );
-  
-typedef 
-VOID 
-(* VIRT_PHYS_30) (
+
+typedef
+VOID
+(EFIAPI * VIRT_PHYS_30) (
   UINT64   VirtualAddr,
   UINT64   PhysicalPtr
   );
 
 typedef
-VOID 
-(* BLOCK_30) (
+VOID
+(EFIAPI * BLOCK_30) (
   UINT32   Enable
   );
 
 typedef
 VOID
-(* MEM_IO_30) (
+(EFIAPI * MEM_IO_30) (
   UINT8   ReadWrite,
   UINT8   Len,
   UINT64  Port,
   UINT64  BufAddr
   );
 
-typedef 
+typedef
 VOID
-(* BS_PTR) (
+(EFIAPI * BS_PTR) (
   UINT64  UnqId,
   UINTN   MicroSeconds
   );
-  
-typedef 
-VOID 
-(* VIRT_PHYS) (
+
+typedef
+VOID
+(EFIAPI * VIRT_PHYS) (
   UINT64  UnqId,
   UINT64  VirtualAddr,
   UINT64  PhysicalPtr
   );
 
-typedef 
+typedef
 VOID
-(* BLOCK) (
+(EFIAPI * BLOCK) (
   UINT64  UnqId,
   UINT32  Enable
   );
 
 typedef
 VOID
-(* MEM_IO) (
+(EFIAPI * MEM_IO) (
   UINT64  UnqId,
   UINT8   ReadWrite,
   UINT8   Len,
@@ -444,7 +418,7 @@ VOID
 
 typedef
 VOID
-(* MAP_MEM) (
+(EFIAPI * MAP_MEM) (
   UINT64  UnqId,
   UINT64  VirtualAddr,
   UINT32  Size,
@@ -454,7 +428,7 @@ VOID
 
 typedef
 VOID
-(* UNMAP_MEM) (
+(EFIAPI * UNMAP_MEM) (
   UINT64  UnqId,
   UINT64  VirtualAddr,
   UINT32  Size,
@@ -464,7 +438,7 @@ VOID
 
 typedef
 VOID
-(* SYNC_MEM) (
+(EFIAPI * SYNC_MEM) (
   UINT64  UnqId,
   UINT64  VirtualAddr,
   UINT32  Size,
@@ -488,7 +462,7 @@ typedef struct DRIVER_DATA_S {
   UINT8                 PciClass;
   UINT8                 PciSubClass;
 
-  UINTN                 LanFunction; // LAN function to determine port 0 or port 1 
+  UINTN                 LanFunction; // LAN function to determine port 0 or port 1
                                      // when LAN function select is enabled
   UINT8                 BroadcastNodeAddress[PXE_MAC_LENGTH];
 
@@ -504,7 +478,7 @@ typedef struct DRIVER_DATA_S {
   UINT8                       CableDetect; // 1 to detect and 0 not to detect the cable
   UINT8                       LoopBack;
 
-  UINT8                 UndiEnabled; // When 0 only HII and FMP are avaliable, NII 
+  UINT8                 UndiEnabled; // When 0 only HII and FMP are avaliable, NII
                                      // is not installed on ControllerHandle
                                      // (e.g. in case iSCSI driver loaded on port)
 
@@ -542,13 +516,13 @@ typedef struct DRIVER_DATA_S {
   UINT16                       XmitDoneHead;
   UNDI_DMA_MAPPING             TxBufferMappings[DEFAULT_TX_DESCRIPTORS];
   BOOLEAN                      MacAddrOverride;
-  BOOLEAN                      ExitBootServicesTriggered;
   UINTN                        VersionFlag;  // Indicates UNDI version 3.0 or 3.1
 } XGBE_DRIVER_DATA, *PADAPTER_STRUCT;
 
 
 typedef struct UNDI_PRIVATE_DATA_S {
   UINTN                                     Signature;
+  UINTN                                     IfId;
   EFI_NETWORK_INTERFACE_IDENTIFIER_PROTOCOL NiiProtocol31;
   EFI_NII_POINTER_PROTOCOL                  NIIPointerProtocol;
   EFI_HANDLE                                ControllerHandle;
@@ -727,15 +701,15 @@ XgbeReceiveStop (
   );
 
 /** Copies the frame from our internal storage ring (As pointed to by XgbeAdapter->rx_ring)
-   to the command Block passed in as part of the cpb parameter.  
-   
+   to the command Block passed in as part of the cpb parameter.
+
    The flow:
    Ack the interrupt, setup the pointers, find where the last Block copied is, check to make
    sure we have actually received something, and if we have then we do a lot of work.
    The packet is checked for errors, size is adjusted to remove the CRC, adjust the amount
    to copy if the buffer is smaller than the packet, copy the packet to the EFI buffer,
    and then figure out if the packet was targetted at us, broadcast, multicast
-   or if we are all promiscuous.  We then put some of the more interesting information 
+   or if we are all promiscuous.  We then put some of the more interesting information
    (protocol, src and dest from the packet) into the db that is passed to us.
    Finally we clean up the frame, set the return value to _SUCCESS, and inc the cur_rx_ind, watching
    for wrapping.  Then with all the loose ends nicely wrapped up, fade to black and return.
@@ -877,7 +851,7 @@ XgbeSetMcastList (
   } while (0)
 
 /** Copies the stats from our local storage to the protocol storage.
-   
+
    It means it will read our read and clear numbers, so some adding is required before
    we copy it over to the protocol.
 
@@ -992,8 +966,8 @@ XgbeFreeTxBuffers (
   );
 
 /** This is the drivers copy function so it does not need to rely on the BootServices
-   copy which goes away at runtime. 
-   
+   copy which goes away at runtime.
+
    This copy function allows 64-bit or 32-bit copies
    depending on platform architecture.  On Itanium we must check that both addresses
    are naturally aligned before attempting a 64-bit copy.
@@ -1013,7 +987,7 @@ XgbeMemCopy (
 
 /** Checks if link is up
 
-   @param[in]   XgbeAdapter   Pointer to the NIC data structure information 
+   @param[in]   XgbeAdapter   Pointer to the NIC data structure information
                              which the UNDI driver is layering on.
 
    @retval   TRUE   Link is up
@@ -1075,8 +1049,8 @@ ReadPbaString (
                               which the UNDI driver is layering on..
 
    @retval   MODULE_SUPPORTED    Module is qualified
-   @retval   MODULE_UNSUPPORTED  Module is unqualified and module 
-                                 qualification is enabled on the port 
+   @retval   MODULE_UNSUPPORTED  Module is unqualified and module
+                                 qualification is enabled on the port
 **/
 MODULE_QUALIFICATION_STATUS
 GetModuleQualificationResult (
@@ -1097,67 +1071,6 @@ DelayInMicroseconds (
   IN UINT32            MicroSeconds
   );
 
-/** This is only for debugging, it will pause and wait for the user to press <ENTER>.
-
-   Results AFTER this call are unpredicable. You can only be assured the code up to
-   this call is working.
-
-   @param[in]   VOID
-
-   @return   Execution of code is resumed
-**/
-VOID
-WaitForEnter (
-  VOID
-  );
-
-// This is the Macro Section
-#if DBG_LVL
-/** When specific debug level is currently set this macro
-   prints debug message.
-
-   @param[in]   Lvl   Debug level
-   @param[in]   Msg   Debug message
-
-   @param[in]   Msg printed or not according to Lvl
-**/
-#define DEBUGPRINT(Lvl, Msg) \
-  if ((DBG_LVL & Lvl) != 0) { \
-    AsciiPrint Msg; \
-  }
-
-/** When specific debug level is currently set this macro
-   stops execution and waits until user presses ENTER.
-
-   @param[in]   Lvl   Debug level
-
-   @return   Execution of code resumed after ENTER is pressed
-**/
-#define DEBUGWAIT(Lvl) \
-  if ((DBG_LVL & Lvl) != 0) { \
-    WaitForEnter (); \
-  }
-#else /* NOT DBG_LVL */
-
-// Comment out the debug stuff
-/** When DBG_LVL is not defined leave occurences of DEBUGPRINT blank
-
-   @param[in]   Lvl   Debug level
-   @param[in]   Msg   Debug message
-
-   @return   None
-**/
-#define DEBUGPRINT(Lvl, Msg)
-
-/** When DBG_LVL is not defined leave occurences of DEBUGWAIT blank
-
-   @param[in]   Lvl   Debug level
-
-   @return   None
-**/
-#define DEBUGWAIT(Lvl)
-#endif /* DBG_LVL */
-
 /** Delays code execution for specified time in milliseconds
 
    @param[in]   x   Time in milliseconds
@@ -1172,4 +1085,3 @@ WaitForEnter (
                         (BUILDNUMBER / 10 << 12) + (BUILDNUMBER % 10 << 8))
 
 #endif /* XGBE_H_ */
-

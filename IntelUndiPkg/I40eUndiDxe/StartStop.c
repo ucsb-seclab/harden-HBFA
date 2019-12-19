@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "I40e.h"
 #include "StartStop.h"
 
-/* Global variables */ 
+/* Global variables */
 
 EFI_GUID gEfiStartStopProtocolGuid = EFI_DRIVER_STOP_PROTOCOL_GUID;
 
@@ -43,6 +43,7 @@ EFI_GUID gEfiStartStopProtocolGuid = EFI_DRIVER_STOP_PROTOCOL_GUID;
    @retval      EFI_SUCCESS   driver is stopped successfully
 **/
 EFI_STATUS
+EFIAPI
 StopDriver (
   IN EFI_DRIVER_STOP_PROTOCOL *This
   )
@@ -78,6 +79,7 @@ StopDriver (
    @retval      EFI_DEVICE_ERROR  PF reset failed
 **/
 EFI_STATUS
+EFIAPI
 StartDriver (
   IN EFI_DRIVER_STOP_PROTOCOL *This
   )
@@ -151,7 +153,7 @@ StartDriver (
     if (I40eStatus != I40E_SUCCESS) {
       DEBUGPRINT (CRITICAL, ("i40e_aq_set_vsi_broadcast returned %d\n", I40eStatus));
     }
-    
+
     I40eSetMcastList (&UndiPrivateData->NicInfo);
   }
 
@@ -169,4 +171,3 @@ EFI_DRIVER_STOP_PROTOCOL gUndiDriverStop = {
   StartDriver
 };
 
-

@@ -103,4 +103,3 @@ enum i40e_status_code {
 };
 
 #endif /* _I40E_STATUS_H_ */
-

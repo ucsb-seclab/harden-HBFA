@@ -42,7 +42,6 @@ extern void e1000_init_function_pointers_ich8lan(struct e1000_hw *hw);
 #endif
 #ifndef NO_82575_SUPPORT
 extern void e1000_init_function_pointers_82575(struct e1000_hw *hw);
-extern void e1000_rx_fifo_flush_82575(struct e1000_hw *hw);
 extern void e1000_init_function_pointers_vf(struct e1000_hw *hw);
 extern void e1000_power_up_fiber_serdes_link(struct e1000_hw *hw);
 extern void e1000_shutdown_fiber_serdes_link(struct e1000_hw *hw);
@@ -176,4 +175,3 @@ s32 e1000_mng_write_dhcp_info(struct e1000_hw *hw, u8 *buffer, u16 length);
 #define E1000_DIVIDE_ROUND_UP(a, b)	(((a) + (b) - 1) / (b)) /* ceil(a/b) */
 #endif
 #endif /* _E1000_API_H_ */
-

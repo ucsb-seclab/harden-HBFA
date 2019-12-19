@@ -126,4 +126,3 @@ s32 ixgbe_get_protected_blocks_X550(struct ixgbe_hw *hw,
 				u16 *blocks_size, u32 block_type_mask,
 				u16 *eeprom_buffer, u32 eeprom_size);
 #endif /* _IXGBE_X550_H_ */
-

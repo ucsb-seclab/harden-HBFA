@@ -112,12 +112,21 @@ ComponentNameInitializeControllerName (
                                     language specified by Language.
 **/
 EFI_STATUS
+EFIAPI
 ComponentNameGetDriverName (
   IN  EFI_COMPONENT_NAME_PROTOCOL *This,
   IN  CHAR8 *                      Language,
   OUT CHAR16 **                    DriverName
   )
 {
+  if (DriverName == NULL) {
+    // Other vars:
+    // - This can be NULL, handled as a special case below.
+    // - Language can be NULL, not used for the special case.
+    DEBUGPRINT (INIT, ("DriverName is NULL!\n"));
+    return EFI_INVALID_PARAMETER;
+  }
+
   UnicodeSPrint (
     DriverNameString,
     sizeof (DriverNameString),
@@ -128,7 +137,6 @@ ComponentNameGetDriverName (
   );
 
   if (This == NULL) {
-  
     // This is a special case when function is being called by driver itself
     *DriverName = DriverNameString;
     return EFI_SUCCESS;
@@ -155,7 +163,7 @@ ComponentNameGetDriverName (
                               will be NULL for device drivers.  It will also be NULL
                               for a bus drivers that wish to retrieve the name of the
                               bus controller.  It will not be NULL for a bus driver
-                              that wishes to retrieve the name of a child controller. 
+                              that wishes to retrieve the name of a child controller.
    @param[in]   Language  A pointer to a three character ISO 639-2 language
                           identifier.  This is the language of the controller name
                           that that the caller is requesting, and it must match one
@@ -182,12 +190,13 @@ ComponentNameGetDriverName (
                                     language specified by Language.
 **/
 EFI_STATUS
+EFIAPI
 ComponentNameGetControllerName (
-  IN  EFI_COMPONENT_NAME_PROTOCOL *                               This,
-  IN  EFI_HANDLE                                                  ControllerHandle,
-  IN  EFI_HANDLE                                      ChildHandle OPTIONAL,
-  IN  CHAR8 *                                                     Language,
-  OUT CHAR16 **                                                   ControllerName
+  IN  EFI_COMPONENT_NAME_PROTOCOL * This,
+  IN  EFI_HANDLE                    ControllerHandle,
+  IN  EFI_HANDLE                    ChildHandle OPTIONAL,
+  IN  CHAR8 *                       Language,
+  OUT CHAR16 **                     ControllerName
   )
 {
   EFI_NII_POINTER_PROTOCOL *NiiPointerProtocol;
@@ -195,9 +204,8 @@ ComponentNameGetControllerName (
   UNDI_PRIVATE_DATA *       UndiPrivateData;
   EFI_STATUS                Status;
 
-  if ((NULL == Language)
-    || (NULL == ControllerHandle))
-  {
+  if (This == NULL || Language == NULL || ControllerHandle == NULL || ControllerName == NULL) {
+    DEBUGPRINT (INIT, ("One of the passed, required parameters was NULL.\n"));
     return EFI_INVALID_PARAMETER;
   }
 
@@ -223,7 +231,7 @@ ComponentNameGetControllerName (
 
   // Make sure this driver is currently managing ControllerHandle
   if (ChildHandle == NULL) {
-    
+
     // Don't allow NULL ChildHandle here
     return EFI_UNSUPPORTED;
   } else {
@@ -272,4 +280,3 @@ EFI_DRIVER_SUPPORTED_EFI_VERSION_PROTOCOL gUndiSupportedEfiVersion = {
   sizeof (EFI_DRIVER_SUPPORTED_EFI_VERSION_PROTOCOL),
   EFI_2_70_SYSTEM_TABLE_REVISION
 };
-

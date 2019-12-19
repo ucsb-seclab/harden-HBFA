@@ -43,13 +43,169 @@ VOID *             mE1000PxeMemPtr = NULL;
 PXE_SW_UNDI *      mE1000Pxe31 = NULL;  // 3.1 entry
 UNDI_PRIVATE_DATA *mE1000Undi32DeviceList[MAX_NIC_INTERFACES];
 NII_TABLE          mE1000UndiData;
-UINT8              mActiveControllers = 0;
+UINT16             mActiveControllers = 0;
 UINT16             mActiveChildren    = 0;
 EFI_EVENT          mEventNotifyExitBs;
 EFI_EVENT          mEventNotifyVirtual;
 EFI_SYSTEM_TABLE * gSystemTable;
+BOOLEAN            mExitBootServicesTriggered = FALSE;
+
 
 EFI_GUID gEfiNiiPointerGuid = EFI_NII_POINTER_PROTOCOL_GUID;
+
+/* mE1000Undi32DeviceList iteration helper */
+#define FOREACH_ACTIVE_CONTROLLER(d) \
+  for ((d) = GetFirstControllerPrivateData (); \
+       (d) != NULL; \
+       (d) = GetNextControllerPrivateData ((d)))
+
+/** Gets controller private data structure
+
+   @param[in]  ControllerHandle     Controller handle
+
+   @return     UNDI_PRIVATE_DATA    Pointer to Private Data Structure.
+   @return     NULL                 Controller is not initialized
+**/
+UNDI_PRIVATE_DATA*
+GetControllerPrivateData (
+  IN  EFI_HANDLE ControllerHandle
+  )
+{
+  UINT32              i = 0;
+  UNDI_PRIVATE_DATA   *Device;
+
+  for (i = 0; i < MAX_NIC_INTERFACES; i++) {
+    Device = mE1000Undi32DeviceList[i];
+
+    if (Device != NULL) {
+      if (Device->ControllerHandle == ControllerHandle) {
+        return Device;
+      }
+    }
+  }
+
+  return NULL;
+}
+
+/** Insert controller private data structure into mE1000Undi32DeviceList
+    global array.
+
+   @param[in]  UndiPrivateData        Pointer to Private Data struct
+
+   @return     EFI_INVALID_PARAMETER  UndiPrivateData == NULL
+   @return     EFI_OUT_OF_RESOURCES   Array full
+   @return     EFI_SUCCESS            Insertion OK
+**/
+EFI_STATUS
+InsertControllerPrivateData (
+  IN  UNDI_PRIVATE_DATA   *UndiPrivateData
+  )
+{
+  UINTN     i;
+
+  if (UndiPrivateData == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  if (mActiveControllers >= MAX_NIC_INTERFACES) {
+    // Array full
+    return EFI_OUT_OF_RESOURCES;
+  }
+
+  // Find first free slot within mE1000Undi32DeviceList
+  for (i = 0; i < MAX_NIC_INTERFACES; i++) {
+    if (mE1000Undi32DeviceList[i] == NULL) {
+      UndiPrivateData->IfId   = i;
+      mE1000Undi32DeviceList[i]    = UndiPrivateData;
+      mActiveControllers++;
+      break;
+    }
+  }
+
+  if (i == MAX_NIC_INTERFACES) {
+    // Array full
+    return EFI_OUT_OF_RESOURCES;
+  }
+
+  return EFI_SUCCESS;
+}
+
+/** Remove controller private data structure from mE1000Undi32DeviceList
+    global array.
+
+   @param[in]  UndiPrivateData        Pointer to Private Data Structure.
+
+   @return     EFI_INVALID_PARAMETER  UndiPrivateData == NULL
+   @return     EFI_SUCCESS            Removal OK
+**/
+EFI_STATUS
+RemoveControllerPrivateData (
+  IN  UNDI_PRIVATE_DATA   *UndiPrivateData
+  )
+{
+  if (UndiPrivateData == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  // Assuming mE1000Undi32DeviceList[UndiPrivateData->IfNum] == UndiPrivateData
+  mE1000Undi32DeviceList[UndiPrivateData->IfId] = NULL;
+  mActiveControllers--;
+
+  return EFI_SUCCESS;
+}
+
+/** Iteration helper. Get first controller private data structure
+    within mE1000Undi32DeviceList global array.
+
+   @return     UNDI_PRIVATE_DATA    Pointer to Private Data Structure.
+   @return     NULL                 No controllers within the array
+**/
+UNDI_PRIVATE_DATA*
+GetFirstControllerPrivateData (
+  )
+{
+  UINTN   i;
+
+  for (i = 0; i < MAX_NIC_INTERFACES; i++) {
+    if (mE1000Undi32DeviceList[i] != NULL) {
+      return mE1000Undi32DeviceList[i];
+    }
+  }
+
+  return NULL;
+}
+
+/** Iteration helper. Get controller private data structure standing
+    next to UndiPrivateData within mE1000Undi32DeviceList global array.
+
+   @param[in]  UndiPrivateData        Pointer to Private Data Structure.
+
+   @return     UNDI_PRIVATE_DATA    Pointer to Private Data Structure.
+   @return     NULL                 No controllers within the array
+**/
+UNDI_PRIVATE_DATA*
+GetNextControllerPrivateData (
+  IN  UNDI_PRIVATE_DATA     *UndiPrivateData
+  )
+{
+  UINTN   i;
+
+  if (UndiPrivateData == NULL) {
+    return NULL;
+  }
+
+  if (UndiPrivateData->IfId >= MAX_NIC_INTERFACES) {
+    return NULL;
+  }
+
+  for (i = UndiPrivateData->IfId + 1; i < MAX_NIC_INTERFACES; i++) {
+    if (mE1000Undi32DeviceList[i] != NULL) {
+      return mE1000Undi32DeviceList[i];
+    }
+  }
+
+  return NULL;
+}
 
 /* Protocol structure tentative definition */
 EFI_DRIVER_BINDING_PROTOCOL gUndiDriverBinding;
@@ -59,7 +215,7 @@ EFI_DRIVER_BINDING_PROTOCOL gUndiDriverBinding;
    configuration table for UNDI to work at runtime!
 
    @param[in]   Event     Standard Event handler (EVT_SIGNAL_EXIT_BOOT_SERVICES)
-   @param[in]   Context   Unused here 
+   @param[in]   Context   Unused here
 
    @retval   None
 **/
@@ -70,35 +226,21 @@ GigUndiNotifyExitBs (
   VOID *    Context
   )
 {
-  UINT32 i;
-  UINT64 Result = 0;
+  UNDI_PRIVATE_DATA   *Device;
 
-  for (i = 0; i < mActiveControllers; i++) {
-    if (mE1000Undi32DeviceList[i]->NicInfo.Hw.device_id != 0) {
-      if (mE1000Undi32DeviceList[i]->IsChildInitialized) {
-        E1000Shutdown (&mE1000Undi32DeviceList[i]->NicInfo);
-        E1000PciFlush (&mE1000Undi32DeviceList[i]->NicInfo.Hw);
+  // Set the indicator to block DMA access in UNDI functions.
+  // This will also prevent functions below from calling Memory Allocation
+  // Services which should not be done at this stage.
+  mExitBootServicesTriggered = TRUE;
+
+  FOREACH_ACTIVE_CONTROLLER (Device) {
+    if (Device->NicInfo.Hw.device_id != 0) {
+      if (Device->IsChildInitialized) {
+        E1000Shutdown (&Device->NicInfo);
+        E1000PciFlush (&Device->NicInfo.Hw);
         // Delay for 10ms to allow in progress DMA to complete
         gBS->Stall (10000);
       }
-
-      // Get the PCI Command options that are supported by this controller.
-      mE1000Undi32DeviceList[i]->NicInfo.PciIo->Attributes (
-                                                  mE1000Undi32DeviceList[i]->NicInfo.PciIo,
-                                                  EfiPciIoAttributeOperationSupported,
-                                                  0,
-                                                  &Result
-                                                );
-
-      mE1000Undi32DeviceList[i]->NicInfo.PciIo->Attributes (
-                                                  mE1000Undi32DeviceList[i]->NicInfo.PciIo,
-                                                  EfiPciIoAttributeOperationDisable,
-                                                  Result & EFI_PCI_IO_ATTRIBUTE_BUS_MASTER,
-                                                  NULL
-                                                );
-
-      // Set the indicator to block DMA access in UNDI functions
-      mE1000Undi32DeviceList[i]->NicInfo.ExitBootServicesTriggered = TRUE;
     }
   }
 }
@@ -110,9 +252,9 @@ GigUndiNotifyExitBs (
    contain the original device path the NIC was found on (*BaseDevPtr)
    and an added MAC node.
 
-   @param[in,out]   DevPtr       Pointer which will point to the newly created 
+   @param[in,out]   DevPtr       Pointer which will point to the newly created
                                  device path with the MAC node attached.
-   @param[in]       BaseDevPtr   Pointer to the device path which the 
+   @param[in]       BaseDevPtr   Pointer to the device path which the
                                  UNDI device driver is latching on to.
    @param[in]   GigAdapterInfo   Pointer to the NIC data structure information
                                  which the UNDI driver is layering on..
@@ -132,7 +274,6 @@ GigAppendMac2DevPath (
   UINT16                    i;
   UINT16                    TotalPathLen;
   UINT16                    BasePathLen;
-  EFI_STATUS                Status;
   UINT8 *                   DevicePtr;
 
   DEBUGPRINT (INIT, ("GigAppendMac2DevPath\n"));
@@ -170,18 +311,13 @@ GigAppendMac2DevPath (
   }
 
   BasePathLen = (UINT16) ((UINTN) (EndNode) - (UINTN) (BaseDevPtr));
-
-  // create space for full dev path
   TotalPathLen = (UINT16) (BasePathLen + sizeof (MacAddrNode) + sizeof (EFI_DEVICE_PATH_PROTOCOL));
 
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData, // EfiRuntimeServicesData,
-                  TotalPathLen,
-                  &DevicePtr
-                );
-
-  if (Status != EFI_SUCCESS) {
-    return Status;
+  // create space for full dev path
+  DevicePtr = AllocateZeroPool (TotalPathLen);
+  if (DevicePtr == NULL) {
+    DEBUGPRINT (CRITICAL, ("Failed to allocate DevicePtr!\n"));
+    return EFI_OUT_OF_RESOURCES;
   }
 
   // copy the base path, mac addr and end_dev_path nodes
@@ -244,7 +380,7 @@ GigUndiPxeUpdate (
   )
 {
   if (NicPtr == NULL) {
-  
+
     // IFcnt is equal to the number of NICs this UNDI supports - 1
     if (mActiveChildren > 0) {
       mActiveChildren--;
@@ -301,7 +437,7 @@ GigUndiPxeStructInit (
                            PXE_ROMID_IMP_TX_COMPLETE_INT_SUPPORTED |
                            PXE_ROMID_IMP_PACKET_RX_INT_SUPPORTED;
 
-  PxePtr->EntryPoint    = (UINT64) E1000UndiApiEntry;
+  PxePtr->EntryPoint    = (UINT64) (UINTN) E1000UndiApiEntry;
   PxePtr->reserved2[0]  = 0;
   PxePtr->reserved2[1]  = 0;
   PxePtr->reserved2[2]  = 0;
@@ -320,7 +456,7 @@ GigUndiPxeStructInit (
    make sure that there is space for 2 !PXE structures (old and new) and a
    32 bytes padding for alignment adjustment (in case)
 
-   @param[in]   VOID   
+   @param[in]   VOID
 
    @retval   EFI_SUCCESS            !PXE structure initialized
    @retval   EFI_OUT_OF_RESOURCES   Failed to allocate memory for !PXE structure
@@ -330,23 +466,11 @@ InitializePxeStruct (
   VOID
   )
 {
-  EFI_STATUS Status;
-
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData,  // EfiRuntimeServicesData,
-                  (sizeof (PXE_SW_UNDI) + sizeof (PXE_SW_UNDI) + 32),
-                  &mE1000PxeMemPtr
-                );
-
-  if (EFI_ERROR (Status)) {
-    DEBUGPRINT (CRITICAL, ("AllocatePool returns %r\n", Status));
-    return Status;
+  mE1000PxeMemPtr = AllocateZeroPool (sizeof (PXE_SW_UNDI) + sizeof (PXE_SW_UNDI) + 32);
+  if (mE1000PxeMemPtr == NULL) {
+    DEBUGPRINT (CRITICAL, ("Failed to allocate mE1000PxeMemPtr!\n"));
+    return EFI_OUT_OF_RESOURCES;
   }
-
-  ZeroMem (
-    mE1000PxeMemPtr,
-    sizeof (PXE_SW_UNDI) + sizeof (PXE_SW_UNDI) + 32
-  );
 
   // check for paragraph alignment here, assuming that the pointer is
   // already 8 byte aligned.
@@ -357,8 +481,7 @@ InitializePxeStruct (
   }
 
   GigUndiPxeStructInit (mE1000Pxe31, 0x31);  // 3.1 entry
-
-  return Status;
+  return EFI_SUCCESS;
 }
 
 /** Callback to unload the GigUndi from memory.
@@ -562,30 +685,6 @@ InitializeGigUNDIDriver (
   return Status;
 }
 
-/** Gets controller private data structure
-
-   @param[in]  ControllerHandle     Controller handle
-
-   @return     UNDI_PRIVATE_DATA    Pointer to Private Data Structure.
-   @return     NULL                 Controller is not initialized
-**/
-UNDI_PRIVATE_DATA*
-GetControllerPrivateData (
-  IN  EFI_HANDLE ControllerHandle
-  )
-{
-  UINT32 i = 0;
-
-  for (i = 0; i < mActiveControllers; i++) {
-    if (mE1000Undi32DeviceList[i] != NULL) {
-      if (mE1000Undi32DeviceList[i]->ControllerHandle == ControllerHandle) {
-        return mE1000Undi32DeviceList[i];
-      }
-    }
-  }
-  return NULL;
-}
-
 /** Checks if device path is not end of device path
 
    @param[in]  RemainingDevicePath  Device Path
@@ -604,7 +703,7 @@ IsNotEndOfDevicePathNode (
 /** Checks if remaining device path is NULL or end of device path
 
    @param[in]   RemainingDevicePath   Device Path
-   
+
    @retval   TRUE   RemainingDevicePath is NULL or end of device path
 **/
 BOOLEAN
@@ -821,8 +920,7 @@ ExitSupported:
 
 /** Initializes Network Interface Identifier Protocol
 
-   @param[in]       Handle           Controller/Child handle
-   @param[out]      NiiProtocol31   NII Protocol instance
+   @param[in]       UndiPrivateData        Pointer to Private Data struct
 
    @retval          EFI_SUCCESS            Procedure returned successfully
    @retval          EFI_INVALID_PARAMETER  Invalid parameter passed
@@ -830,20 +928,18 @@ ExitSupported:
 **/
 EFI_STATUS
 InitNiiProtocol (
-  IN   EFI_HANDLE *                               Handle,
-  OUT  EFI_NETWORK_INTERFACE_IDENTIFIER_PROTOCOL *NiiProtocol31
+  IN   UNDI_PRIVATE_DATA    *UndiPrivateData
   )
 {
-  EFI_STATUS Status;
-
-  if (Handle == NULL
-    || NiiProtocol31 == NULL)
-  {
+  EFI_STATUS                                Status;
+  EFI_NETWORK_INTERFACE_IDENTIFIER_PROTOCOL *NiiProtocol31;
+  if (UndiPrivateData == NULL) {
     return EFI_INVALID_PARAMETER;
   }
 
-  NiiProtocol31->Id             = (UINT64) (mE1000Pxe31);
-  NiiProtocol31->IfNum          = mE1000Pxe31->IFcnt;
+  NiiProtocol31                 = &UndiPrivateData->NiiProtocol31;
+  NiiProtocol31->Id             = (UINT64) (UINTN) mE1000Pxe31;
+  NiiProtocol31->IfNum          = UndiPrivateData->IfId;
 
   NiiProtocol31->Revision       = EFI_NETWORK_INTERFACE_IDENTIFIER_PROTOCOL_REVISION_31;
   NiiProtocol31->Type           = EfiNetworkInterfaceUndi;
@@ -859,7 +955,7 @@ InitNiiProtocol (
   NiiProtocol31->StringId[3]    = 'I';
 
   Status = gBS->InstallMultipleProtocolInterfaces (
-                  Handle,
+                  &UndiPrivateData->DeviceHandle,
                   &gEfiNetworkInterfaceIdentifierProtocolGuid_31,
                   NiiProtocol31,
                   NULL
@@ -938,7 +1034,7 @@ InitUndiCallbackFunctions (
   NicInfo->MapMem      = (VOID *) 0;
   NicInfo->UnMapMem    = (VOID *) 0;
   NicInfo->SyncMem     = (VOID *) 0;
-  NicInfo->UniqueId    = (UINT64) NicInfo;
+  NicInfo->UniqueId    = (UINT64) (UINTN) NicInfo;
   NicInfo->VersionFlag = 0x31;
 }
 
@@ -949,7 +1045,7 @@ InitUndiCallbackFunctions (
 
    @retval          EFI_SUCCESS            Procedure returned successfully
    @retval          EFI_INVALID_PARAMETER  Invalid parameter passed
-   @retval          !EFI_SUCCESS           Failed to initialize Driver Stop Protocol 
+   @retval          !EFI_SUCCESS           Failed to initialize Driver Stop Protocol
 **/
 EFI_STATUS
 InitDriverStopProtocol (
@@ -1039,14 +1135,15 @@ InitUndiPrivateData (
   OUT UNDI_PRIVATE_DATA **UndiPrivateData
   )
 {
-  UNDI_PRIVATE_DATA *PrivateData;
+  UNDI_PRIVATE_DATA   *PrivateData;
+  EFI_STATUS          Status;
 
   PrivateData = AllocateZeroPool (sizeof (UNDI_PRIVATE_DATA));
   if (PrivateData == NULL) {
-    DEBUGPRINT (CRITICAL, ("AllocateZeroPool returns %r\n", PrivateData));
-    DEBUGWAIT (CRITICAL);
+    DEBUGPRINTWAIT (CRITICAL, ("Failed to allocate PrivateData!\n"));
     return EFI_OUT_OF_RESOURCES;
   }
+
   PrivateData->Signature              = GIG_UNDI_DEV_SIGNATURE;
   PrivateData->DeviceHandle           = NULL;
   PrivateData->NicInfo.HwInitialized  = FALSE;
@@ -1058,11 +1155,16 @@ InitUndiPrivateData (
     PrivateData->ControllerHandle)
   );
 
-  mE1000Undi32DeviceList[mActiveControllers] = PrivateData;
-  mActiveControllers++;
+  Status = InsertControllerPrivateData (PrivateData);
 
-  *UndiPrivateData = PrivateData;
-  return EFI_SUCCESS;
+  if (Status == EFI_SUCCESS) {
+    *UndiPrivateData = PrivateData;
+  } else {
+    *UndiPrivateData = NULL;
+    FreePool (PrivateData);
+  }
+
+  return Status;
 }
 
 /** Opens controller protocols
@@ -1285,8 +1387,7 @@ InitChildProtocols (
 
   if (UndiPrivateData->NicInfo.UndiEnabled) {
     Status = InitNiiProtocol (
-               &UndiPrivateData->DeviceHandle,
-               &UndiPrivateData->NiiProtocol31
+               UndiPrivateData
              );
     if (EFI_ERROR (Status)) {
       DEBUGPRINT (CRITICAL, ("InitNiiProtocol returned %r\n", Status));
@@ -1372,7 +1473,7 @@ OpenChildProtocols (
   {
     return EFI_INVALID_PARAMETER;
   }
-  
+
   // Open For Child Device
   Status = gBS->OpenProtocol (
                   Controller,
@@ -1446,7 +1547,7 @@ CloseControllerProtocols (
 
    @retval   EFI_SUCCESS         This driver is added to controller or controller
                                  and specific child is already initialized
-   @retval   !EFI_SUCCESS        Failed to initialize controller or child 
+   @retval   !EFI_SUCCESS        Failed to initialize controller or child
 **/
 EFI_STATUS
 EFIAPI
@@ -1473,7 +1574,7 @@ GigUndiDriverStart (
     InitializeChild = IsNotEndOfDevicePathNode (RemainingDevicePath);
   }
 
-  if (!InitializeController 
+  if (!InitializeController
     && !InitializeChild)
   {
     return EFI_SUCCESS;
@@ -1528,7 +1629,7 @@ GigUndiDriverStart (
       DEBUGPRINT (CRITICAL, ("InitChild failed with %r\n", Status));
       goto UndiErrorDeleteDevicePath;
     }
-    
+
     Status = InitChildProtocols (
                UndiPrivateData
              );
@@ -1553,14 +1654,14 @@ UndiErrorDeleteDevicePath:
   gBS->FreePool (UndiPrivateData->Undi32DevPath);
 
 UndiError:
-  mE1000Undi32DeviceList[mActiveControllers - 1] = NULL;
-  mActiveControllers--;
-
   CloseControllerProtocols (
     Controller,
     This
   );
-  gBS->FreePool ((VOID **) UndiPrivateData);
+  if (UndiPrivateData != NULL) {
+    RemoveControllerPrivateData (UndiPrivateData);
+    gBS->FreePool ((VOID **) UndiPrivateData);
+  }
   return Status;
 }
 
@@ -1569,7 +1670,7 @@ UndiError:
    @param[in]       This                   Driver Binding protocol instance
    @param[in]       Controller             Controller handle
    @param[in]       ChildHandleBuffer      Buffer with child handles
-   @param[in]       UndiPrivateData        Driver private data structure   
+   @param[in]       UndiPrivateData        Driver private data structure
 
    @retval          EFI_SUCCESS            Procedure returned successfully
    @retval          EFI_INVALID_PARAMETER  Invalid parameter passed
@@ -1667,7 +1768,7 @@ StopChild (
   }
 
   if (UndiPrivateData->NicInfo.UndiEnabled) {
-  
+
     // Call shutdown to clear DRV_LOAD bit and stop Rx and Tx
     E1000Shutdown (&UndiPrivateData->NicInfo);
 
@@ -1687,8 +1788,8 @@ StopChild (
 
    @param[in]       This                   Driver Binding protocol instance
    @param[in]       Controller             Controller handle
-   @param[in]       UndiPrivateData        Driver private data structure 
-   
+   @param[in]       UndiPrivateData        Driver private data structure
+
    @retval          EFI_SUCCESS            Procedure returned successfully
    @retval          EFI_INVALID_PARAMETER  Invalid parameter passed
    @retval          !EFI_SUCCESS           Failed to stop controller
@@ -1723,7 +1824,7 @@ StopController (
   DEBUGPRINT (INIT, ("EfiLibFreeUnicodeStringTable"));
   FreeUnicodeStringTable (UndiPrivateData->ControllerNameTable);
 
-  mE1000Undi32DeviceList[UndiPrivateData->NiiProtocol31.IfNum] = NULL;
+  RemoveControllerPrivateData (UndiPrivateData);
   DEBUGPRINT (INIT, ("FreePool(UndiPrivateData->Undi32DevPath)"));
   Status = gBS->FreePool (UndiPrivateData->Undi32DevPath);
   if (EFI_ERROR (Status)) {
@@ -1780,7 +1881,7 @@ StopController (
   return EFI_SUCCESS;
 }
 
-/** Stops driver on children and controller 
+/** Stops driver on children and controller
 
    Stop this driver on Controller by removing NetworkInterfaceIdentifier protocol and
    closing the DevicePath and PciIo protocols on Controller. Stops controller only when
@@ -1844,7 +1945,6 @@ GigUndiDriverStop (
       DEBUGPRINT (CRITICAL, ("StopController failed with status: %r\n", Status));
       return EFI_DEVICE_ERROR;
     }
-    mActiveControllers--;
     return EFI_SUCCESS;
   }
 
@@ -1876,4 +1976,3 @@ EFI_DRIVER_BINDING_PROTOCOL gUndiDriverBinding = {
   NULL,                   // ImageHandle
   NULL                    // Driver Binding Handle
 };
-

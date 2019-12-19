@@ -74,7 +74,7 @@ _BuildPacket (
   }
 }
 
-/** Run the PHY loopback test for N iterations.  
+/** Run the PHY loopback test for N iterations.
 
    This routine transmits a packet, waits a bit, and then checks to see if it was received.
    If any of the packets are not received then it will be interpreted as a failure.
@@ -82,10 +82,11 @@ _BuildPacket (
    @param[in]   XgbeAdapter      Pointer to the NIC data structure the PHY loopback test will be run on.
    @param[in]   PxeCpbTransmit   Pointer to the packet to transmit.
 
-   @retval      EFI_SUCCESS        All packets were received successfully
-   @retval      EFI_DEVICE_ERROR   Transmitting packet failed.
-   @retval      EFI_DEVICE_ERROR   Receiving packet failed.
-   @retval      EFI_DEVICE_ERROR   Transmitted and received packet data do not match.
+   @retval   EFI_SUCCESS            All packets were received successfully
+   @retval   EFI_DEVICE_ERROR       Transmitting packet failed.
+   @retval   EFI_DEVICE_ERROR       Receiving packet failed.
+   @retval   EFI_DEVICE_ERROR       Transmitted and received packet data do not match.
+   @retval   EFI_OUT_OF_RESOURCES   Couldn't allocate memory for RX/TX buffers.
 **/
 EFI_STATUS
 XgbeUndiRunPhyLoopback (
@@ -93,37 +94,26 @@ XgbeUndiRunPhyLoopback (
   PXE_CPB_TRANSMIT  PxeCpbTransmit
   )
 {
-  PXE_CPB_RECEIVE CpbReceive;
+  EFI_STATUS      Status = EFI_SUCCESS;
   PXE_DB_RECEIVE  DbReceive;
+  PXE_CPB_RECEIVE CpbReceive;
   UINT64          FreeTxBuffer[DEFAULT_TX_DESCRIPTORS];
-  EFI_STATUS      Status;
-  UINT32          j;
-  UINT32          i;
+  UINT32          RxAttempt = 0;
 
-  Status  = EFI_SUCCESS;
-  j       = 0;
-
-  Status = gBS->AllocatePool (
-                  EfiBootServicesData,
-                  RX_BUFFER_SIZE,
-                  (VOID * *) &CpbReceive.BufferAddr
-                );
-
-  if (EFI_ERROR (Status)) {
-    DEBUGPRINT (DIAG, ("AllocatePool Status %X\n", Status));
-    DEBUGWAIT (DIAG);
-    DEBUGPRINT (DIAG, ("Allocate pool error\n"));
-    return Status;
+  // This is zeroed in the loop below before first use.
+  CpbReceive.BufferAddr = (PXE_UINT64) (UINTN) AllocatePool (RX_BUFFER_SIZE);
+  if (CpbReceive.BufferAddr == (PXE_UINT64) (UINTN) NULL) {
+    DEBUGPRINTWAIT (DIAG, ("Failed to allocate CpbReceive.BufferAddr!\n"));
+    return EFI_OUT_OF_RESOURCES;
   }
 
   DEBUGPRINT (DIAG, ("CpbReceive.BufferAddr allocated at %x\n", (UINTN) CpbReceive.BufferAddr));
-
-  while (j < PHY_LOOPBACK_ITERATIONS) {
+  for (UINT32 i = 0; i < PHY_LOOPBACK_ITERATIONS; i++) {
     ZeroMem ((VOID *) CpbReceive.BufferAddr, RX_BUFFER_SIZE);
 
     Status = XgbeTransmit (
                XgbeAdapter,
-               (UINT64) &PxeCpbTransmit,
+               (UINT64) (UINTN) &PxeCpbTransmit,
                PXE_OPFLAGS_TRANSMIT_WHOLE
              );
 
@@ -137,14 +127,10 @@ XgbeUndiRunPhyLoopback (
 
     // Wait a little, then check to see if the packet has arrived
     DEBUGWAIT (DIAG);
-    CpbReceive.BufferLen  = RX_BUFFER_SIZE;
+    CpbReceive.BufferLen = RX_BUFFER_SIZE;
 
-    for (i = 0; i <= 100000; i++) {
-      Status = XgbeReceive (
-                 XgbeAdapter,
-                 &CpbReceive,
-                 &DbReceive
-               );
+    for (RxAttempt = 0; RxAttempt <= 100000; RxAttempt++) {
+      Status = XgbeReceive (XgbeAdapter, &CpbReceive, &DbReceive);
       gBS->Stall (10);
       if (Status == PXE_STATCODE_NO_DATA) {
         continue;
@@ -159,15 +145,12 @@ XgbeUndiRunPhyLoopback (
       // and continue polling for packets.
       //
       if (CompareMem ((VOID *) (UINTN) CpbReceive.BufferAddr, (VOID *) (UINTN) mPacket, TEST_PACKET_SIZE) == 0) {
-        //
-        // Coming out with PXE_STATCODE_SUCCESS
-        //
-        break;
+        break; // Leave with PXE_STATCODE_SUCCESS
       }
     }
 
-    if (i > 100000) {
-      DEBUGPRINT (CRITICAL, ("ERROR: Receive timeout on iteration %d\n", i));
+    if (RxAttempt > 100000) {
+      DEBUGPRINT (CRITICAL, ("ERROR: Receive timeout on iteration %d\n", RxAttempt));
       Status = EFI_DEVICE_ERROR;
       break;
     } else if (Status != PXE_STATCODE_SUCCESS) {
@@ -181,7 +164,6 @@ XgbeUndiRunPhyLoopback (
       DEFAULT_TX_DESCRIPTORS,
       FreeTxBuffer
     );
-    j++;
   }
 
   gBS->FreePool ((VOID *) ((UINTN) CpbReceive.BufferAddr));
@@ -253,7 +235,7 @@ XgbeUndiPhyLoopback (
   // Enable the receive unit
   XgbeReceiveStart (&XgbePrivate->NicInfo);
   DelayInMicroseconds (&XgbePrivate->NicInfo, 1000 * 100);
-    
+
   // Build our packet, and send it out the door.
   DEBUGPRINT (DIAG, ("Building Packet\n"));
   _BuildPacket (&XgbePrivate->NicInfo);
@@ -302,7 +284,7 @@ XgbeUndiPhyLoopback (
       XgbeSetFilter (&XgbePrivate->NicInfo, XgbePrivate->NicInfo.RxFilter);
     }
   } else {
-  
+
     // If the driver is not in the state INITIALIZED, we will still re-init the hardware
     // and bring link up so the device is ready to use.
     InitHwStatus = XgbeInitHw (&XgbePrivate->NicInfo);
@@ -370,6 +352,7 @@ XgbeUndiPhyLoopback (
                                          ChildHandle did not pass the diagnostic.
 **/
 EFI_STATUS
+EFIAPI
 XgbeUndiDriverDiagnosticsRunDiagnostics (
   IN EFI_DRIVER_DIAGNOSTICS_PROTOCOL *                                   This,
   IN EFI_HANDLE                                                          ControllerHandle,
@@ -393,7 +376,7 @@ XgbeUndiDriverDiagnosticsRunDiagnostics (
   // Validate input parameters
 
   // Check against invalid NULL parameters
-  if (NULL == Language 
+  if (NULL == Language
     || NULL == ErrorType
     || NULL == BufferSize
     || NULL == Buffer
@@ -476,7 +459,7 @@ XgbeUndiDriverDiagnosticsRunDiagnostics (
       return EFI_UNSUPPORTED;
     }
   }
-  
+
   if (!XgbePrivate->NicInfo.FwSupported) {
     return EFI_UNSUPPORTED;
   }
@@ -525,4 +508,3 @@ EFI_DRIVER_DIAGNOSTICS2_PROTOCOL gXgbeUndiDriverDiagnostics2 = {
   (EFI_DRIVER_DIAGNOSTICS2_RUN_DIAGNOSTICS) XgbeUndiDriverDiagnosticsRunDiagnostics,
   "en-US"
 };
-

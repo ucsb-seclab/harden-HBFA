@@ -118,4 +118,3 @@ void i40e_fill_default_direct_cmd_desc(struct i40e_aq_desc *desc,
 				       u16 opcode);
 
 #endif /* _I40E_ADMINQ_H_ */
-

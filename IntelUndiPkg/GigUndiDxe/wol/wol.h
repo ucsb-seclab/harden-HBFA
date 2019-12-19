@@ -82,6 +82,17 @@ WolEnableApmPme(
   IN    BOOLEAN                     Enable
 );
 
+WOL_STATUS
+WolGetWakeOnLanStatus_Ice (
+  IN    WOL_ADAPTER_HANDLE_TYPE     Handle,
+  OUT   BOOLEAN                    *WolStatus
+);
+
+WOL_STATUS
+WolEnableWakeOnLan_Ice (
+  IN    WOL_ADAPTER_HANDLE_TYPE     Handle,
+  IN    BOOLEAN                     Enable
+);
+
 #endif /* __WOL_H */
 
-

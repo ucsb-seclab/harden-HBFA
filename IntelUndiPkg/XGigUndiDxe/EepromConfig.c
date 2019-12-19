@@ -48,7 +48,7 @@ EepromGetLanSpeedStatus (
   )
 {
   UINTN Active        = LINK_SPEED_AUTO_NEG;
-  
+
   //  Speed settings are currently not supported for 10 Gig driver. It's always set to autoneg to
   //  allow operation with the highest possible speed
   DEBUGPRINT (HII, ("EepromGetLanSpeedStatus\n"));
@@ -59,7 +59,7 @@ EepromGetLanSpeedStatus (
 
    @param[in]   UndiPrivateData    Driver private data structure
    @param[in]   LanSpeed           Desired LAN speed
-   
+
    @retval   EFI_SUCCESS    LAN speed set successfully
 **/
 EFI_STATUS
@@ -79,7 +79,7 @@ EepromSetLanSpeed (
    @param[out]   DefaultMacAddress   Factory default MAC address of the adapter
    @param[out]   AssignedMacAddress  CLP Assigned MAC address of the adapter,
                                      or the factory MAC address if an alternate MAC
-                                     address has not been assigned. 
+                                     address has not been assigned.
 
    @retval   EFI_SUCCESS   MAC addresses successfully read.
 **/
@@ -119,7 +119,7 @@ _EepromMacAddressGet (
   // factory MAC address location will be the default.
   ixgbe_read_eeprom (&XgbeAdapter->Hw, IXGBE_ALT_MAC_ADDR_PTR, &BackupMacOffset);
 
-  if (BackupMacOffset == 0xFFFF 
+  if (BackupMacOffset == 0xFFFF
     || BackupMacOffset == 0x0000)
   {
     DEBUGPRINT (CLP, ("Alt MAC Address feature not enabled.\n"));
@@ -127,7 +127,7 @@ _EepromMacAddressGet (
     ixgbe_read_eeprom (&XgbeAdapter->Hw, FactoryMacOffset + 1, &DefaultMacAddress[1]);
     ixgbe_read_eeprom (&XgbeAdapter->Hw, FactoryMacOffset + 2, &DefaultMacAddress[2]);
   } else {
-    
+
     // Adjust the MAC address offset if this is the second port (function 1)
     BackupMacOffset = BackupMacOffset + (UINT16) (3 * XgbeAdapter->Function);
     DEBUGPRINT (CLP, ("MAC addresses at offset %X\n", BackupMacOffset));
@@ -135,7 +135,7 @@ _EepromMacAddressGet (
     // Check if MAC address is backed up
     ixgbe_read_eeprom (&XgbeAdapter->Hw, BackupMacOffset, &BackupMacAddress[0]);
     if (BackupMacAddress[0] == 0xFFFF) {
-      
+
       // In this case the factory MAC address is not in the backup location, so the factory
       // default MAC address is the same as the address we read in from the EEPROM CORE 0/1
       // locations.
@@ -143,7 +143,7 @@ _EepromMacAddressGet (
       DefaultMacAddress[1] = AssignedMacAddress[1];
       DefaultMacAddress[2] = AssignedMacAddress[2];
     } else {
-      
+
       // Read in the factory default Mac address.
       ixgbe_read_eeprom (&XgbeAdapter->Hw, BackupMacOffset, &DefaultMacAddress[0]);
       ixgbe_read_eeprom (&XgbeAdapter->Hw, BackupMacOffset + 1, &DefaultMacAddress[1]);
@@ -160,7 +160,7 @@ _EepromMacAddressGet (
    @param[out]   DefaultMacAddress   Factory default MAC address of the adapter
    @param[out]   AssignedMacAddress  CLP Assigned MAC address of the adapter,
                                      or the factory MAC address if an alternate MAC
-                                     address has not been assigned.  
+                                     address has not been assigned.
 
    @retval   EFI_SUCCESS   MAC addresses successfully read.
 **/
@@ -404,4 +404,3 @@ EepromUpdateChecksum (
   return EFI_SUCCESS;
 }
 
-

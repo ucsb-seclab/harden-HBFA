@@ -28,7 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
 
 #include "Xgbe.h"
-#include <Uefi\UEfiPxe.h>
+#include <Uefi/UefiPxe.h>
 
 // Forward declarations for UNDI function table
 /** This routine determines the operational state of the UNDI.  It updates the state flags in the
@@ -51,7 +51,7 @@ UndiGetState (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine is used to change the operational state of the 10-Gigabit UNDI
    from stopped to started.
 
@@ -80,7 +80,7 @@ UndiStart (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine is used to change the operational state of the UNDI from started to stopped.
 
    It will not do this if the adapter's state is PXE_STATFLAGS_GET_STATE_INITIALIZED, otherwise
@@ -100,7 +100,7 @@ UndiStop (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine is used to retrieve the initialization information that is
    needed by drivers and applications to initialize the UNDI.
 
@@ -111,7 +111,7 @@ UndiStop (
    In addition, the CdbPtr->StatFlags ORs in that this NIC supports cable detection.  (APRIORI knowledge)
 
    @param[in]   CdbPtr        Pointer to the command descriptor block.
-   @param[in]   XgbeAdapter   Pointer to the NIC data structure information which the 
+   @param[in]   XgbeAdapter   Pointer to the NIC data structure information which the
                               UNDI driver is layering on..
 
    @retval      None
@@ -121,7 +121,7 @@ UndiGetInitInfo (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine is used to retrieve the configuration information about the NIC being controlled by
   this driver.
 
@@ -141,7 +141,7 @@ UndiGetConfigInfo (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine resets the network adapter and initializes the 10-Gigabit UNDI using the parameters
    supplied in the CPB.
 
@@ -166,7 +166,7 @@ UndiInitialize (
   IN  PXE_CDB *    CdbPtr,
   XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine resets the network adapter and initializes the 10-Gigabit UNDI using the
    parameters supplied in the CPB.
 
@@ -184,7 +184,7 @@ UndiReset (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine resets the network adapter and leaves it in a safe state for another
    driver to initialize.
 
@@ -206,7 +206,7 @@ UndiShutdown (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine can be used to read and/or change the current external interrupt enable
    settings.
 
@@ -226,7 +226,7 @@ UndiInterrupt (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine is used to read and change receive filters and, if supported, read
    and change multicast MAC address filter list.
 
@@ -241,7 +241,7 @@ UndiRecFilter (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine is used to get the current station and broadcast MAC addresses,
    and to change the current station MAC address.
 
@@ -256,7 +256,7 @@ UndiStnAddr (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine is used to read and clear the NIC traffic statistics.  This command is supported
    only if the !PXE structure's Implementation flags say so.
 
@@ -283,7 +283,7 @@ UndiStatistics (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine is used to translate a multicast IP address to a multicast MAC address.
 
    This results in a MAC address composed of 25 bits of fixed data with the upper 23 bits of the IP
@@ -300,7 +300,7 @@ UndiIp2Mac (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine is used to read and write non-volatile storage on the NIC (if supported).  The NVRAM
    could be EEPROM, FLASH, or battery backed RAM.
 
@@ -317,7 +317,7 @@ UndiNvData (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine returns the current interrupt status and/or the transmitted buffer addresses.
 
    If the current interrupt status is returned, pending interrupts will be acknowledged by this
@@ -338,7 +338,7 @@ UndiStatus (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine is used to fill media header(s) in transmit packet(s).
 
    Copies the MAC address into the media header whether it is dealing
@@ -355,7 +355,7 @@ UndiFillHeader (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** This routine is used to place a packet into the transmit queue.
 
    The data buffers given to this command are to be considered locked and the application or
@@ -383,7 +383,7 @@ UndiTransmit (
   IN PXE_CDB *        CdbPtr,
   IN XGBE_DRIVER_DATA *XgbeAdapter
   );
-  
+
 /** When the network adapter has received a frame, this command is used to copy the frame
    into the driver/application storage location.
 
@@ -681,7 +681,7 @@ UndiStop (
    In addition, the CdbPtr->StatFlags ORs in that this NIC supports cable detection.  (APRIORI knowledge)
 
    @param[in]   CdbPtr        Pointer to the command descriptor block.
-   @param[in]   XgbeAdapter   Pointer to the NIC data structure information which the 
+   @param[in]   XgbeAdapter   Pointer to the NIC data structure information which the
                               UNDI driver is layering on..
 
    @retval      None
@@ -1128,7 +1128,7 @@ UndiRecFilter (
   switch (OpFlags & PXE_OPFLAGS_RECEIVE_FILTER_OPMASK) {
   case PXE_OPFLAGS_RECEIVE_FILTER_READ:
     DEBUGPRINT (DECODE, ("PXE_OPFLAGS_RECEIVE_FILTER_READ\n"));
-    
+
     // not expecting a cpb, not expecting any filter bits
     if ((NewFilter != 0)
       || (CdbPtr->CPBsize != 0))
@@ -1148,18 +1148,18 @@ UndiRecFilter (
     }
     break;
   case PXE_OPFLAGS_RECEIVE_FILTER_ENABLE:
-  
+
     // there should be at least one other filter bit set.
     DEBUGPRINT (DECODE, ("PXE_OPFLAGS_RECEIVE_FILTER_ENABLE\n"));
 
     if (NewFilter == 0) {
-  
+
       // nothing to enable
       goto BadCdb;
     }
 
     if (CdbPtr->CPBsize != 0) {
-      
+
       // this must be a multicast address list!
       // don't accept the list unless selective_mcast is set
       // don't accept confusing mcast settings with this
@@ -1199,12 +1199,12 @@ UndiRecFilter (
     break;
 
   case PXE_OPFLAGS_RECEIVE_FILTER_DISABLE:
-  
+
     // mcast list not expected, i.e. no cpb here!
     DEBUGPRINT (DECODE, ("PXE_OPFLAGS_RECEIVE_FILTER_DISABLE\n"));
 
     if (CdbPtr->CPBsize != PXE_CPBSIZE_NOT_USED) {
-      
+
       // db with all_multi??
       goto BadCdb;
     }
@@ -1218,7 +1218,7 @@ UndiRecFilter (
 
   if ((OpFlags & PXE_OPFLAGS_RECEIVE_FILTER_RESET_MCAST_LIST) != 0) {
     DEBUGPRINT (DECODE, ("PXE_OPFLAGS_RECEIVE_FILTER_RESET_MCAST_LIST\n"));
-    
+
     // Setting Mcast list length to 0 will disable receive of multicast packets
     if (XgbeAdapter->McastList.Length != 0) {
       XgbeAdapter->McastList.Length = 0;
@@ -1265,7 +1265,7 @@ UndiStnAddr (
   DEBUGPRINT (DECODE, ("UndiStnAddr\n"));
 
   if (CdbPtr->OpFlags == PXE_OPFLAGS_STATION_ADDRESS_RESET) {
-    
+
     // configure the permanent address.
     // change the AdapterInfo->CurrentNodeAddress field.
     if (CompareMem (
@@ -1350,7 +1350,7 @@ UndiStatistics (
   }
 
   if ((CdbPtr->OpFlags & PXE_OPFLAGS_STATISTICS_RESET) != 0) {
-  
+
     // Reset the statistics
     CdbPtr->StatCode = (UINT16) XgbeStatistics (XgbeAdapter, 0, 0);
   } else {
@@ -1454,16 +1454,13 @@ UndiStatus (
   )
 {
   PXE_DB_GET_STATUS *          DbPtr;
-  UINT16                       i;
   UINT32                       IntStatus;
   UINT16                       NumEntries;
   struct ixgbe_legacy_rx_desc *RxPtr;
   bool                         LinkUp;
 
-  i = 0;
-
   if (XgbeAdapter->DriverBusy) {
-  
+
     //DEBUGPRINT (CRITICAL, ("ERROR: UndiStatus called when driver busy\n"));
     CdbPtr->StatFlags = PXE_STATFLAGS_COMMAND_FAILED;
     CdbPtr->StatCode  = PXE_STATCODE_BUSY;
@@ -1504,7 +1501,7 @@ UndiStatus (
   // Fill in the completed transmit buffer addresses so they can be freed by
   // the calling application or driver
   if ((CdbPtr->OpFlags & PXE_OPFLAGS_GET_TRANSMITTED_BUFFERS) != 0) {
-  
+
     // Calculate the number of entries available in the DB to save the addresses
     // of completed transmit buffers.
     NumEntries = (UINT16) ((CdbPtr->DBsize - sizeof (UINT64)) / sizeof (UINT64));
@@ -1725,7 +1722,7 @@ UndiReceive (
 }
 
 /** This is the main SW UNDI API entry using the newer NII protocol.
-   
+
    The parameter passed in is a 64 bit flat model virtual
    address of the cdb.  We then jump into the service routine pointed to by the
    Api_Table[OpCode].
@@ -1735,6 +1732,7 @@ UndiReceive (
    @retval   None
 **/
 VOID
+EFIAPI
 UndiApiEntry (
   IN UINT64 Cdb
   )
@@ -1761,8 +1759,8 @@ UndiApiEntry (
   XgbeAdapter               = &(mXgbeDeviceList[CdbPtr->IFnum]->NicInfo);
 
   // Check if InitUndiNotifyExitBs was called before
-  if (XgbeAdapter->ExitBootServicesTriggered) {
-    DEBUGPRINT (CRITICAL, ("Pci Bus Mastering Disabled !\n"));
+  if (mExitBootServicesTriggered) {
+    DEBUGPRINT (CRITICAL, ("Exit Boot Services triggered prior to entering UNDI API entry.\n"));
     CdbPtr->StatFlags = PXE_STATFLAGS_COMMAND_FAILED;
     CdbPtr->StatCode  = PXE_STATCODE_NOT_INITIALIZED;
     return;
@@ -1817,11 +1815,9 @@ UndiApiEntry (
     goto BadCdb;
   }
 
-  XgbeAdapter = &(mXgbeDeviceList[CdbPtr->IFnum]->NicInfo);
-
   // check if UNDI_State is valid for this call
   if (TabPtr->State != (UINT16) (-1)) {
-    
+
     // should atleast be started
     if (XgbeAdapter->State == PXE_STATFLAGS_GET_STATE_STOPPED) {
       CdbPtr->StatFlags = PXE_STATFLAGS_COMMAND_FAILED;
@@ -1851,4 +1847,3 @@ BadCdb:
   CdbPtr->StatFlags = PXE_STATFLAGS_COMMAND_FAILED;
   CdbPtr->StatCode  = PXE_STATCODE_INVALID_CDB;
 }
-

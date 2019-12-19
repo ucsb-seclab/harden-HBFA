@@ -32,25 +32,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <Uefi.h>
 #include <Base.h>
-#include <Library\BaseLib.h>
-#include <Library\BaseMemoryLib.h>
-#include <Library\SynchronizationLib.h>
-#include <Library\UefiLib.h>
+#include <Library/BaseLib.h>
+#include <Library/BaseMemoryLib.h>
+#include <Library/SynchronizationLib.h>
+#include <Library/UefiLib.h>
 #include <Library/PrintLib.h>
 #include "Dma.h"
 
-// Remove "conversion from ... to ..., possible lost of data" warning
-#pragma warning(disable : 4244)
-
-// Remove "Type cast from data pointer to function pointer" warning
-#pragma warning(disable : 4055)
-
-
-#ifdef EFI32
-
-// Remove truncation warning in type cast when some 64 bit variables are converted to 32-bit pointers
-#pragma warning(disable : 4305)
-#endif /* EFI32 */
 
 #define CHAR            CHAR8
 #define memcmp          CompareMem
@@ -601,4 +589,3 @@ DelayInMicroseconds (
 
 
 #endif /* I40E_OSDEP_H_ */
-

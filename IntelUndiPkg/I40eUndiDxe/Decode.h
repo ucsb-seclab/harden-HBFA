@@ -42,10 +42,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    @retval      None
 **/
 VOID
+EFIAPI
 UndiApiEntry (
   IN UINT64 Cdb
   );
 
 #endif /* DECODE_H_ */
 
-

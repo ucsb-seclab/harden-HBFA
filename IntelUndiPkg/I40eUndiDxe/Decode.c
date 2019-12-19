@@ -113,7 +113,7 @@ UndiStop (
    In addition, the CdbPtr->StatFlags ORs in that this NIC supports cable detection.  (APRIORI knowledge)
 
    @param[in]   CdbPtr        Pointer to the command descriptor block.
-   @param[in]   AdapterInfo   Pointer to the NIC data structure information which the 
+   @param[in]   AdapterInfo   Pointer to the NIC data structure information which the
                               UNDI driver is layering on..
 
    @retval      None
@@ -609,7 +609,7 @@ UndiStart (
     return;
   }
 
-  if (CdbPtr->CPBsize != sizeof (PXE_CPB_START_30) 
+  if (CdbPtr->CPBsize != sizeof (PXE_CPB_START_30)
     && CdbPtr->CPBsize != sizeof (PXE_CPB_START_31))
   {
     DEBUGPRINT (CRITICAL, ("ERROR: UndiStart CPD size incorrect\n"));
@@ -779,7 +779,7 @@ UndiGetConfigInfo (
   );
 
   CopyMem (
-    DbPtr->pci.Config.Dword, 
+    DbPtr->pci.Config.Dword,
     &AdapterInfo->PciConfig,
     MAX_PCI_CONFIG_LEN * sizeof (UINT32)
   );
@@ -828,7 +828,7 @@ UndiInitialize (
   DEBUGPRINT (DECODE, ("UndiInitialize\n"));
   DEBUGWAIT (DECODE);
 
-  if ((CdbPtr->OpFlags != PXE_OPFLAGS_INITIALIZE_DETECT_CABLE) 
+  if ((CdbPtr->OpFlags != PXE_OPFLAGS_INITIALIZE_DETECT_CABLE)
     && (CdbPtr->OpFlags != PXE_OPFLAGS_INITIALIZE_DO_NOT_DETECT_CABLE))
   {
     DEBUGPRINT (CRITICAL, ("ERROR: UndiInitialize invalid CDB\n"));
@@ -1041,6 +1041,7 @@ UndiInterrupt (
   CdbPtr->StatCode  = PXE_STATCODE_UNSUPPORTED;
 }
 
+#if (DBG_LVL & DECODE)
 /** Debug function to read receive filter flags and multicast addresses.
 
    @param[in]   CdbPtr        Pointer to the command descriptor block.
@@ -1096,6 +1097,7 @@ DebugRcvFilter (
     DEBUGPRINT (DECODE, ("%02x ", Byte[i]));
   }
 }
+#endif /* (DBG_LVL & DECODE) */
 
 /** This routine is used to read and change receive filters and, if supported, read
    and change multicast MAC address filter list.
@@ -1121,7 +1123,9 @@ UndiRecFilter (
   OpFlags   = CdbPtr->OpFlags;
   NewFilter = (UINT16) (OpFlags & 0x1F);
 
+#if (DBG_LVL & DECODE)
   DebugRcvFilter (CdbPtr);
+#endif /* (DBG_LVL & DECODE) */
 
   switch (OpFlags & PXE_OPFLAGS_RECEIVE_FILTER_OPMASK) {
   case PXE_OPFLAGS_RECEIVE_FILTER_READ:
@@ -1175,7 +1179,7 @@ UndiRecFilter (
       }
 
       // if no cpb, make sure we have an old list
-      if ((CdbPtr->CPBsize == 0) 
+      if ((CdbPtr->CPBsize == 0)
         && (AdapterInfo->Vsi.CurrentMcastList.Length == 0))
       {
         goto BadCdb;
@@ -1451,7 +1455,6 @@ UndiStatus (
   )
 {
   PXE_DB_GET_STATUS           *DbPtr;
-  UINT16                      i;
   UINT16                      NumEntries;
   union i40e_16byte_rx_desc   *RxPtr;
   UINT32                      RxStatus;
@@ -1459,7 +1462,6 @@ UndiStatus (
   UINT16                      RxPacketLength;
   UINT32                      RegVal;
 
-  i = 0;
   RegVal = 0;
   // The function is called in timer interrupt.
   // Keep this in mind when you touch Hw resources like AQ, registers, e.t.c.
@@ -1616,7 +1618,7 @@ UndiFillHeader (
     Cpbf = (PXE_CPB_FILL_HEADER_FRAGMENTED *) (UINTN) CdbPtr->CPBaddr;
 
     // assume 1st fragment is big enough for the mac header
-    if ((Cpbf->FragCnt == 0) 
+    if ((Cpbf->FragCnt == 0)
       || (Cpbf->FragDesc[0].FragLen < PXE_MAC_HEADER_LEN_ETHER))
     {
       DEBUGPRINT (CRITICAL, ("ERROR: UndiFillHeader, fragment too small for MAC header\n"));
@@ -1765,6 +1767,7 @@ UndiReceive (
    @retval      None
 **/
 VOID
+EFIAPI
 UndiApiEntry (
   IN UINT64 Cdb
   )
@@ -1790,8 +1793,8 @@ UndiApiEntry (
   AdapterInfo               = &(mUndi32DeviceList[CdbPtr->IFnum]->NicInfo);
 
   // Check if InitUndiNotifyExitBs was called before
-  if (AdapterInfo->ExitBootServicesTriggered) {
-    DEBUGPRINT (CRITICAL, ("Pci Bus Mastering Disabled !\n"));
+  if (mExitBootServicesTriggered) {
+    DEBUGPRINT (CRITICAL, ("Exit Boot Services triggered prior to entering UNDI API entry.\n"));
     CdbPtr->StatFlags = PXE_STATFLAGS_COMMAND_FAILED;
     CdbPtr->StatCode  = PXE_STATCODE_NOT_INITIALIZED;
     return;
@@ -1846,8 +1849,6 @@ UndiApiEntry (
     goto BadCdb;
   }
 
-  AdapterInfo = &(mUndi32DeviceList[CdbPtr->IFnum]->NicInfo);
-
   // check if UNDI_State is valid for this call
   if (TabPtr->State != (UINT16) (-1)) {
 
@@ -1881,4 +1882,3 @@ BadCdb:
   CdbPtr->StatCode  = PXE_STATCODE_INVALID_CDB;
 }
 
-
