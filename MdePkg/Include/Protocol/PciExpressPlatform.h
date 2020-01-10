@@ -643,11 +643,11 @@ typedef struct {
  **/
 typedef
 EFI_STATUS
-(EFIAPI * EFI_PCI_EXPRESS_GET_POLICY) {
+(EFIAPI * EFI_PCI_EXPRESS_GET_POLICY) (
   IN CONST  EFI_PCI_EXPRESS_PLATFORM_PROTOCOL     *This,
   IN        UINTN                                 Size,
   IN OUT    EFI_PCI_EXPRESS_PLATFORM_POLICY       *PlatformPolicy
-};
+);
 
 ///
 /// This protocol provides the interface between the PCI bus driver/PCI Host
