@@ -8,7 +8,7 @@
   PCI Root Bridges. So it means platform needs install PCI Root Bridge IO protocol for each
   PCI Root Bus and install PCI Host Bridge Resource Allocation Protocol.
 
-Copyright (c) 2006 - 2018, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2006 - 2020, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -284,6 +284,10 @@ PciBusDriverBindingStart (
           (VOID **) &gPciOverrideProtocol
           );
   }
+  //
+  // get the PCI Express Protocol or the PCI Express Override Protocol
+  //
+  GetPciExpressProtocol ();
 
   if (mIoMmuProtocol == NULL) {
     gBS->LocateProtocol (

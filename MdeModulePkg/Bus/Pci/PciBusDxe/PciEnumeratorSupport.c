@@ -1,7 +1,7 @@
 /** @file
   PCI emumeration support functions implementation for PCI Bus module.
 
-Copyright (c) 2006 - 2019, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2006 - 2020, Intel Corporation. All rights reserved.<BR>
 (C) Copyright 2015 Hewlett Packard Enterprise Development LP<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -2154,6 +2154,16 @@ CreatePciIoDevice (
              );
   if (!EFI_ERROR (Status)) {
     PciIoDevice->IsPciExp = TRUE;
+    //
+    // read the PCI device's entire PCI Express Capability structure
+    //
+    PciIo->Pci.Read (
+                  PciIo,
+                  EfiPciIoWidthUint8,
+                  PciIoDevice->PciExpressCapabilityOffset,
+                  sizeof (PCI_CAPABILITY_PCIEXP) / sizeof (UINT8),
+                  &PciIoDevice->PciExpressCapabilityStructure
+                  );
   }
 
   if (PcdGetBool (PcdAriSupport)) {
