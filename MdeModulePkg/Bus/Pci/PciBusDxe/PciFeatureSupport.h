@@ -223,4 +223,27 @@ typedef struct {
 }PCI_EXPRESS_FEATURE_INITIALIZATION_POINT;
 
 
+
+/**
+  Enumerate all the nodes of the specified root bridge or PCI-PCI Bridge, to
+  configure the other PCI features.
+
+  @param RootBridge          A pointer to the PCI_IO_DEVICE.
+
+  @retval EFI_SUCCESS           The other PCI features configuration during enumeration
+                                of all the nodes of the PCI root bridge instance were
+                                programmed in PCI-compliance pattern along with the
+                                device-specific policy, as applicable.
+  @retval EFI_UNSUPPORTED       One of the override operation maong the nodes of
+                                the PCI hierarchy resulted in a incompatible address
+                                range.
+  @retval EFI_INVALID_PARAMETER The override operation is performed with invalid input
+                                parameters.
+**/
+EFI_STATUS
+EnumeratePciExpressFeatures (
+  IN EFI_HANDLE             Controller,
+  IN PCI_IO_DEVICE          *RootBridge
+  );
+
 #endif
