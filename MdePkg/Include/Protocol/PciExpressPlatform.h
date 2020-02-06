@@ -360,14 +360,10 @@ struct _EFI_PCI_EXPRESS_L1PM_SUBSTATES {
 };
 
 ///
-/// Reserves for future use
-///
-typedef UINT8 EFI_PCI_EXPRESS_RESERVES;
-
-///
-/// The EFI_PCI_EXPRESS_DEVICE_POLICY is altogether 128-byte size, with each
-/// byte field representing one PCI standerd feature defined in the PCI Express Base
-/// Specification 4.0, version 1.0.
+/// The EFI_PCI_EXPRESS_DEVICE_POLICY size is fixed as per its definition corresponding
+/// to its version, with each byte field represents one PCI Express feature and
+/// its bitmask define the legal combinations to represent all the valid combinations
+/// of its attributes, defined in the PCI Express Base Specification.
 ///
 typedef struct {
   EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE  DeviceCtlMPS;
@@ -384,7 +380,6 @@ typedef struct {
   EFI_PCI_EXPRESS_CTO_SUPPORT       CTOsupport;
   EFI_PCI_EXPRESS_CPM               LinkCtlCPM;
   EFI_PCI_EXPRESS_L1PM_SUBSTATES    L1PMSubstates;
-  EFI_PCI_EXPRESS_RESERVES          Reserves[114];
 } EFI_PCI_EXPRESS_DEVICE_POLICY;
 
 ///
