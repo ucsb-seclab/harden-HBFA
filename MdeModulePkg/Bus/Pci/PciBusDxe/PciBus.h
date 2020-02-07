@@ -299,6 +299,7 @@ struct _PCI_IO_DEVICE {
   BOOLEAN                                   SetupLtr;
   UINT8                                     SetupExtTag;
   UINT8                                     SetupAspm;
+  EFI_PCI_EXPRESS_COMMON_CLOCK_CFG          SetupCcc;
 };
 
 #define PCI_IO_DEVICE_FROM_PCI_IO_THIS(a) \

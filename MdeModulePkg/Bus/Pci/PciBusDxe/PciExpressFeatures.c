@@ -1909,3 +1909,270 @@ ProgramAspm (
   return EFI_SUCCESS;
 }
 
+/**
+  The main routine to setup the PCI Express feature Common Clock configuration
+  as per the device-specific platform policy, as well as in complaince with the
+  PCI Express Base specification Revision 5.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+  @param PciExpressConfigurationTable  pointer to PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE
+
+  @retval EFI_SUCCESS                   setup of PCI feature LTR is successful.
+**/
+EFI_STATUS
+SetupCommonClkCfg (
+  IN  PCI_IO_DEVICE                             *PciDevice,
+  IN  PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE  *PciExpressConfigurationTable
+  )
+{
+  PCI_REG_PCIE_LINK_STATUS                      LinkSts;
+
+  LinkSts.Uint16 = PciDevice->PciExpressCapabilityStructure.LinkStatus.Uint16;
+
+  //
+  // Common Clock Configuration is only applicable to root bridge and its child
+  // devices. Not applicable to empty bridge devices or RCiEP devices
+  //
+  if (PciExpressConfigurationTable) {
+    if (PciDevice->SetupCcc == EFI_PCI_EXPRESS_CLK_CFG_AUTO) {
+      //
+      // as per the PCI Express Base Specification, the link status register
+      // slot clock configuration of the opposing side of link devices indicate
+      // the clock configuration properly; hence rely on this data to configure
+      // the link's clock configuration
+      //
+      if (LinkSts.Bits.SlotClockConfiguration) {
+        PciExpressConfigurationTable->CommonClockConfiguration = TRUE;
+      } else {
+        PciExpressConfigurationTable->CommonClockConfiguration = FALSE;
+      }
+    } else if (PciDevice->SetupCcc == EFI_PCI_EXPRESS_CLK_CFG_ASYNCH) {
+      //
+      // platform override to any device shall change for other device on the
+      // link, the clock configuration has to be maintained common across all
+      // the devices
+      //
+      PciExpressConfigurationTable->CommonClockConfiguration = FALSE;
+    } else {
+      PciExpressConfigurationTable->CommonClockConfiguration = TRUE;
+    }
+  }
+  return EFI_SUCCESS;
+}
+
+/**
+  Program the PCIe Link Control register Coomon Clock Configuration field; if
+  the hardware value is different than the intended value.
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+ProgramCcc (
+  IN PCI_IO_DEVICE                            *PciDevice,
+  IN PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE *PciExFeatureConfiguration
+  )
+{
+  PCI_REG_PCIE_LINK_CONTROL     LinkCtl;
+  UINT32                        Offset;
+  EFI_STATUS                    Status;
+  EFI_TPL                       OldTpl;
+
+  //
+  // Common Clock Configuration is only applicable to root bridge and its child
+  // devices. Not applicable to empty bridge devices or RCiEP devices
+  //
+  if (!PciExFeatureConfiguration) {
+    return EFI_SUCCESS;
+  }
+
+  //
+  // read the link Control register for the ASPM Control
+  //
+  LinkCtl.Uint16 = 0;
+  Offset = PciDevice->PciExpressCapabilityOffset +
+              OFFSET_OF (PCI_CAPABILITY_PCIEXP, LinkControl);
+  Status = PciDevice->PciIo.Pci.Read (
+                                  &PciDevice->PciIo,
+                                  EfiPciIoWidthUint16,
+                                  Offset,
+                                  1,
+                                  &LinkCtl.Uint16
+                                  );
+  ASSERT (Status == EFI_SUCCESS);
+
+  //
+  // in case Common Clock Configuration is required to be programmed in the
+  // downstream ports from the root bridge devices in the heirarchy
+  //
+  if (PciExFeatureConfiguration->CommonClockConfiguration == TRUE) {
+    if (LinkCtl.Bits.CommonClockConfiguration == 0) {
+      LinkCtl.Bits.CommonClockConfiguration = 1;
+      //
+      // current clock mode does not match hence retrain of the link at bridge device
+      // is required
+      //
+      PciExFeatureConfiguration->LinkReTrain = TRUE;
+    }
+  } else {
+    //
+    // in case the opposing devices of the PCI link have different reference clock
+    // set the link control register CCC field accordingly
+    //
+    if (LinkCtl.Bits.CommonClockConfiguration) {
+      LinkCtl.Bits.CommonClockConfiguration = 0;
+      //
+      // current clock mode does not match hence retrain of the link at bridge device
+      // is required
+      //
+      PciExFeatureConfiguration->LinkReTrain = TRUE;
+    }
+  }
+  //
+  // use the retrain flag as a sigm to also update the CCC of the link register
+  //
+  if (PciExFeatureConfiguration->LinkReTrain == TRUE) {
+    DEBUG ((
+      DEBUG_INFO,
+      "CCC: %d,",
+      LinkCtl.Bits.CommonClockConfiguration
+      ));
+    //
+    // Raise TPL to high level to disable timer interrupt while the write operation completes
+    //
+    OldTpl = gBS->RaiseTPL (TPL_HIGH_LEVEL);
+
+    Status = PciDevice->PciIo.Pci.Write (
+                                    &PciDevice->PciIo,
+                                    EfiPciIoWidthUint16,
+                                    Offset,
+                                    1,
+                                    &LinkCtl.Uint16
+                                    );
+    //
+    // Restore TPL to its original level
+    //
+    gBS->RestoreTPL (OldTpl);
+
+    if (!EFI_ERROR (Status)) {
+      PciDevice->PciExpressCapabilityStructure.LinkControl.Uint16 = LinkCtl.Uint16;
+    } else {
+      ReportPciWriteError (PciDevice->BusNumber, PciDevice->DeviceNumber, PciDevice->FunctionNumber, Offset);
+      return Status;
+    }
+  } else {
+    PciDevice->PciExpressCapabilityStructure.LinkControl.Uint16 = LinkCtl.Uint16;
+    DEBUG ((
+      DEBUG_INFO,
+      "No CCC (%d),",
+      LinkCtl.Bits.CommonClockConfiguration
+      ));
+  }
+  return EFI_SUCCESS;
+}
+
+/**
+  Second phase of programming for Common Clock COnfiguration, conditoonally done
+  only on the downstream ports (bridge devices only).
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+EnforceCcc (
+  IN PCI_IO_DEVICE                            *PciDevice,
+  IN PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE *PciExFeatureConfiguration
+  )
+{
+  PCI_REG_PCIE_LINK_CONTROL     LinkCtl;
+  PCI_REG_PCIE_LINK_STATUS      LinkSts;
+  PCI_REG_PCIE_CAPABILITY       PciExCap;
+  UINT32                        Offset;
+  EFI_STATUS                    Status;
+  EFI_TPL                       OldTpl;
+
+  //
+  // Common Clock Configuration is only applicable to root bridge and its child
+  // devices. Not applicable to empty bridge devices or RCiEP devices
+  //
+  if (!PciExFeatureConfiguration) {
+    return EFI_SUCCESS;
+  }
+  PciExCap.Uint16 = PciDevice->PciExpressCapabilityStructure.Capability.Uint16;
+  LinkCtl.Uint16 = PciDevice->PciExpressCapabilityStructure.LinkControl.Uint16;
+
+  //
+  // retrain the bridge device (downstream ports including the root port)
+  //
+  if (PciExFeatureConfiguration->LinkReTrain == TRUE) {
+    if (IS_PCI_BRIDGE (&PciDevice->Pci)) {
+      //
+      // retrain of the PCI link happens for CCC change only on the downstream
+      // ports
+      //
+      if (
+        PciExCap.Bits.DevicePortType == PCIE_DEVICE_PORT_TYPE_ROOT_PORT
+        || PciExCap.Bits.DevicePortType == PCIE_DEVICE_PORT_TYPE_DOWNSTREAM_PORT
+        ) {
+        LinkCtl.Bits.RetrainLink = 1;
+        Offset = PciDevice->PciExpressCapabilityOffset +
+                     OFFSET_OF (PCI_CAPABILITY_PCIEXP, LinkControl);
+        //
+        // Raise TPL to high level to disable timer interrupt while the write operation completes
+        //
+        OldTpl = gBS->RaiseTPL (TPL_HIGH_LEVEL);
+
+        Status = PciDevice->PciIo.Pci.Write (
+                                        &PciDevice->PciIo,
+                                        EfiPciIoWidthUint16,
+                                        Offset,
+                                        1,
+                                        &LinkCtl.Uint16
+                                        );
+        //
+        // Restore TPL to its original level
+        //
+        gBS->RestoreTPL (OldTpl);
+
+        if (!EFI_ERROR (Status)) {
+          //
+          // poll the link status register for the link retrain to be complete
+          //
+          Offset = PciDevice->PciExpressCapabilityOffset +
+                               OFFSET_OF (PCI_CAPABILITY_PCIEXP, LinkStatus);
+          do {
+            Status = PciDevice->PciIo.Pci.Read (
+                                            &PciDevice->PciIo,
+                                            EfiPciIoWidthUint16,
+                                            Offset,
+                                            1,
+                                            &LinkSts.Uint16
+                                            );
+            ASSERT (Status == EFI_SUCCESS);
+          } while (LinkSts.Bits.LinkTraining);
+        } else {
+          ReportPciWriteError (PciDevice->BusNumber, PciDevice->DeviceNumber, PciDevice->FunctionNumber, Offset);
+          return Status;
+        }
+      }
+      //
+      // ignore the upstream bridge devices
+      //
+    }
+    //
+    // not applicable to endpoint devices
+    //
+  }
+  return EFI_SUCCESS;
+}
+

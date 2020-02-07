@@ -112,6 +112,15 @@ struct _PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE {
   // bridge device to its downstream bridge and its endpoint device
   //
   UINT8                                     L1ExitLatency;
+  //
+  // flag to indicate the link training is required in the devices of downstream
+  // ports
+  //
+  BOOLEAN                                   LinkReTrain;
+  //
+  // link status slot clock configuration
+  //
+  BOOLEAN                                   CommonClockConfiguration;
 };
 
 //

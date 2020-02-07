@@ -383,6 +383,14 @@ SetupDefaultPciExpressDevicePolicy (
     PciDevice->SetupAspm = EFI_PCI_EXPRESS_NOT_APPLICABLE;
   }
 
+  //
+  // default device policy for the device's link clock configuration
+  //
+  if (mPciExpressPlatformPolicy.Ccc) {
+    PciDevice->SetupCcc = EFI_PCI_EXPRESS_CLK_CFG_AUTO;
+  } else {
+    PciDevice->SetupCcc = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
 
 }
 
@@ -534,6 +542,15 @@ GetPciExpressDevicePolicy (
       PciDevice->SetupAspm = PciExpressDevicePolicy.LinkCtlASPMState;
     } else {
       PciDevice->SetupAspm = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+    }
+
+    //
+    // set the device policy for the PCI Express feature Common Clock Configuration
+    //
+    if (mPciExpressPlatformPolicy.Ccc) {
+      PciDevice->SetupCcc = PciExpressDevicePolicy.LinkCtlCommonClkCfg;
+    } else {
+      PciDevice->SetupCcc = EFI_PCI_EXPRESS_NOT_APPLICABLE;
     }
 
     DEBUG ((
@@ -848,6 +865,17 @@ PciExpressPlatformNotifyDeviceState (
     PciExDeviceConfiguration.LinkCtlASPMState = GetPciExpressAspmState (PciDevice);
   } else {
     PciExDeviceConfiguration.LinkCtlASPMState = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
+
+  //
+  // get the device-specific Common CLock Configuration value
+  //
+  if (mPciExpressPlatformPolicy.Ccc) {
+    PciExDeviceConfiguration.LinkCtlCommonClkCfg =
+        PciDevice->PciExpressCapabilityStructure.LinkControl.Bits.CommonClockConfiguration ?
+            EFI_PCI_EXPRESS_CLK_CFG_COMMON : EFI_PCI_EXPRESS_CLK_CFG_ASYNCH;
+  } else {
+    PciExDeviceConfiguration.LinkCtlCommonClkCfg = EFI_PCI_EXPRESS_NOT_APPLICABLE;
   }
 
   if (mPciExPlatformProtocol != NULL) {

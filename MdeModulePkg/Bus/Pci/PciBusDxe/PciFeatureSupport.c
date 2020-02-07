@@ -54,7 +54,7 @@ EFI_PCI_EXPRESS_PLATFORM_POLICY             mPciExpressPlatformPolicy = {
     //
     // support for PCI Express feature - Common Clock Configuration
     //
-    FALSE,
+    TRUE,
     //
     // support for PCI Express feature - Extended Sync
     //
@@ -95,7 +95,15 @@ BOOLEAN   mPciExpressGetPlatformPolicyComplete = FALSE;
 // PCI Express feature initialization phase handle routines
 //
 PCI_EXPRESS_FEATURE_INITIALIZATION_POINT  mPciExpressFeatureInitializationList[] = {
-
+  {
+    PciExpressFeatureSetupPhase,          PciExpressCcc,        SetupCommonClkCfg
+  },
+  {
+    PciExpressFeatureEntendedSetupPhase,  PciExpressCcc,        ProgramCcc
+  },
+  {
+    PciExpressFeatureProgramPhase,        PciExpressCcc,        EnforceCcc
+  },
   {
     PciExpressFeatureSetupPhase,          PciExpressAspm,       SetupAspm
   },
@@ -709,6 +717,14 @@ CreatePciRootBridgeDeviceNode (
     // start by assuming less than 1us of L1 Exit Latency
     //
     PciConfigTable->L1ExitLatency               = PCIE_LINK_CAPABILITY_L1_EXIT_LATENCY_1US;
+    //
+    // default link retrain is not required
+    //
+    PciConfigTable->LinkReTrain                 = FALSE;
+    //
+    // start by assuming no common clock configuration mode for the device's link
+    //
+    PciConfigTable->CommonClockConfiguration    = FALSE;
   }
 
   RootBridgeNode->PciExFeaturesConfigurationTable  = PciConfigTable;

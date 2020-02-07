@@ -345,4 +345,55 @@ ProgramAspm (
   IN VOID                   *PciExFeatureConfiguration
   );
 
+/**
+  The main routine to setup the PCI Express feature Common Clock configuration
+  as per the device-specific platform policy, as well as in complaince with the
+  PCI Express Base specification Revision 5.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+  @param PciExpressConfigurationTable  pointer to PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE
+
+  @retval EFI_SUCCESS                   setup of PCI feature LTR is successful.
+**/
+EFI_STATUS
+SetupCommonClkCfg (
+  IN  PCI_IO_DEVICE                             *PciDevice,
+  IN  PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE  *PciExpressConfigurationTable
+  );
+
+/**
+  Program the PCIe Link Control register Coomon Clock Configuration field; if
+  the hardware value is different than the intended value.
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+ProgramCcc (
+  IN PCI_IO_DEVICE                            *PciDevice,
+  IN PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE *PciExFeatureConfiguration
+  );
+
+/**
+  Second phase of programming for Common Clock COnfiguration, conditoonally done
+  only on the downstream ports (bridge devices only).
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+EnforceCcc (
+  IN PCI_IO_DEVICE                            *PciDevice,
+  IN PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE *PciExFeatureConfiguration
+  );
 #endif
