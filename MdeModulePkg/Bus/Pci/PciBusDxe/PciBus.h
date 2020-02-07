@@ -295,6 +295,7 @@ struct _PCI_IO_DEVICE {
   PCI_FEATURE_POLICY                        SetupRO;
   PCI_FEATURE_POLICY                        SetupNS;
   PCI_FEATURE_POLICY                        SetupCTO;
+  EFI_PCI_EXPRESS_ATOMIC_OP                 SetupAtomicOp;
 };
 
 #define PCI_IO_DEVICE_FROM_PCI_IO_THIS(a) \

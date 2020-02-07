@@ -62,7 +62,7 @@ EFI_PCI_EXPRESS_PLATFORM_POLICY             mPciExpressPlatformPolicy = {
     //
     // support for PCI Express feature - Atomic Op
     //
-    FALSE,
+    TRUE,
     //
     // support for PCI Express feature - LTR
     //
@@ -125,6 +125,12 @@ PCI_EXPRESS_FEATURE_INITIALIZATION_POINT  mPciExpressFeatureInitializationList[]
   },
   {
     PciExpressFeatureProgramPhase,        PciExpressCto,        ProgramCompletionTimeout
+  },
+  {
+    PciExpressFeatureSetupPhase,          PciExpressAtomicOp,   SetupAtomicOpRoutingSupport
+  },
+  {
+    PciExpressFeatureProgramPhase,        PciExpressAtomicOp,   ProgramAtomicOp
   }
 };
 
@@ -296,6 +302,16 @@ IsPciExpressFeatureExtendedSetupRequired (
         //
         && PciExpressPolicy[mPciExpressFeatureInitializationList[idx].PciExpressFeatureId] == TRUE
     ) {
+      return TRUE;
+    } else if (
+        //
+        // the PCI Express feature does not require extended setup phase but it
+        // does require global flag to track the AtomicOpRouting caoability to
+        // be tracked for all its bridge devices
+        //
+        idx == PciExpressAtomicOp
+        && PciExpressPolicy[idx] == TRUE
+        ) {
       return TRUE;
     }
   }
@@ -637,6 +653,11 @@ CreatePciRootBridgeDeviceNode (
     // the devices in the PCI tree
     //
     PciConfigTable->Lock_Max_Read_Request_Size  = FALSE;
+    //
+    // start by assuming the AtomicOp Routing capability is supported in the PCI
+    // tree
+    //
+    PciConfigTable->AtomicOpRoutingSupported    = TRUE;
   }
 
   RootBridgeNode->PciExFeaturesConfigurationTable  = PciConfigTable;

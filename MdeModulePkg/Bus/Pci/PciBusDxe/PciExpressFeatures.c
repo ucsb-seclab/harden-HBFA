@@ -908,3 +908,164 @@ ProgramCompletionTimeout (
   return Status;
 }
 
+/**
+  Routine to setup the AtomicOp Requester in the PCI device, verifies the routing
+  support in the bridge devices, to be complaint as per the PCI Base specification.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+  @param PciExFeatureConfiguration      pointer to common configuration table to
+                                        initialize the PCI Express feature
+
+  @retval EFI_SUCCESS                   bridge device routing capability is successful.
+          EFI_INVALID_PARAMETER         input parameter is NULL
+**/
+EFI_STATUS
+SetupAtomicOpRoutingSupport (
+  IN PCI_IO_DEVICE                              *PciDevice,
+  IN PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE   *PciExFeatureConfiguration
+  )
+{
+  //
+  // to enable the AtomicOp Requester in the PCI EP device; its Root Port (bridge),
+  // and its PCIe switch upstream & downstream ports (if present) needs to support
+  // the AtomicOp Routing capability.
+  //
+  if (IS_PCI_BRIDGE (&PciDevice->Pci)) {
+    if (!PciDevice->PciExpressCapabilityStructure.DeviceCapability2.Bits.AtomicOpRouting) {
+      //
+      // since the AtomicOp Routing support flag is initialized as TRUE, negate
+      // in case if any of the PCI Bridge device in the PCI tree does not support
+      // the AtomicOp Routing capability
+      //
+      if (PciExFeatureConfiguration == NULL) {
+        return EFI_INVALID_PARAMETER;
+      }
+      PciExFeatureConfiguration->AtomicOpRoutingSupported = FALSE;
+    }
+  }
+
+  return EFI_SUCCESS;
+}
+
+/**
+  Overrides the PCI Device Control 2 register AtomicOp Requester enable field; if
+  the hardware value is different than the intended value.
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+ProgramAtomicOp (
+  IN PCI_IO_DEVICE                            *PciDevice,
+  IN PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE *PciExFeatureConfiguration
+  )
+{
+  PCI_REG_PCIE_DEVICE_CONTROL2  PcieDev;
+  UINT32                        Offset;
+  EFI_STATUS                    Status;
+  EFI_TPL                       OldTpl;
+
+  PcieDev.Uint16 = 0;
+  Offset = PciDevice->PciExpressCapabilityOffset +
+               OFFSET_OF (PCI_CAPABILITY_PCIEXP, DeviceControl2);
+  Status = PciDevice->PciIo.Pci.Read (
+                                  &PciDevice->PciIo,
+                                  EfiPciIoWidthUint16,
+                                  Offset,
+                                  1,
+                                  &PcieDev.Uint16
+                                  );
+  ASSERT (Status == EFI_SUCCESS);
+
+  if (PciDevice->SetupAtomicOp.Override) {
+    //
+    // override AtomicOp requester device control bit of the device based on the
+    // platform request
+    //
+    if (IS_PCI_BRIDGE (&PciDevice->Pci)) {
+      //
+      // for a bridge device as AtomicOp Requester function; only platform override
+      // request is used to set the device control register
+      //
+      if (PcieDev.Bits.AtomicOpRequester != PciDevice->SetupAtomicOp.Enable_AtomicOpRequester) {
+        PcieDev.Bits.AtomicOpRequester = PciDevice->SetupAtomicOp.Enable_AtomicOpRequester;
+      }
+      //
+      // if platform also request its AtomicOp Egress blocking to be enabled; set
+      // only if its device capability's AtomicOpRouting bit is 1.
+      // applicable to only the bridge devices
+      //
+      if (PciDevice->SetupAtomicOp.Enable_AtomicOpEgressBlocking) {
+        if (PciDevice->PciExpressCapabilityStructure.DeviceCapability2.Bits.AtomicOpRouting) {
+          PcieDev.Bits.AtomicOpEgressBlocking = 1;
+        }
+      }
+    } else {
+      //
+      // in the case of non-bridge device
+      //
+      if (PciExFeatureConfiguration) {
+        //
+        // for a device as AtomicOp Requester function; its bridge devices should
+        // support the AtomicOp Routing capability to enable the device's as a
+        // requester function
+        //
+        if (PciExFeatureConfiguration->AtomicOpRoutingSupported) {
+          if (PcieDev.Bits.AtomicOpRequester != PciDevice->SetupAtomicOp.Enable_AtomicOpRequester) {
+            PcieDev.Bits.AtomicOpRequester = PciDevice->SetupAtomicOp.Enable_AtomicOpRequester;
+          }
+        }
+      } else {
+        //
+        // for the RCiEP device or the bridge device without any child, setup AtomicOp
+        // Requester as per platform's device policy
+        //
+        if (PcieDev.Bits.AtomicOpRequester != PciDevice->SetupAtomicOp.Enable_AtomicOpRequester) {
+          PcieDev.Bits.AtomicOpRequester = PciDevice->SetupAtomicOp.Enable_AtomicOpRequester;
+        }
+      }
+      //
+      // the enabling of AtomicOp Egress Blocking is not applicable to a non-bridge
+      // device
+      //
+    }
+    DEBUG ((
+      DEBUG_INFO,
+      "AtomicOp=%d,",
+      PcieDev.Bits.AtomicOpRequester
+      ));
+
+    //
+    // Raise TPL to high level to disable timer interrupt while the write operation completes
+    //
+    OldTpl = gBS->RaiseTPL (TPL_HIGH_LEVEL);
+
+    Status = PciDevice->PciIo.Pci.Write (
+                                    &PciDevice->PciIo,
+                                    EfiPciIoWidthUint16,
+                                    Offset,
+                                    1,
+                                    &PcieDev.Uint16
+                                    );
+    //
+    // Restore TPL to its original level
+    //
+    gBS->RestoreTPL (OldTpl);
+
+    if (!EFI_ERROR(Status)) {
+      PciDevice->PciExpressCapabilityStructure.DeviceControl2.Uint16 = PcieDev.Uint16;
+    } else {
+      ReportPciWriteError (PciDevice->BusNumber, PciDevice->DeviceNumber, PciDevice->FunctionNumber, Offset);
+    }
+  } else {
+    DEBUG (( DEBUG_INFO, "No AtomicOp,"));
+  }
+
+  return Status;
+}
+

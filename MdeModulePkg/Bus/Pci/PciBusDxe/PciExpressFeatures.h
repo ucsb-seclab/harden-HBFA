@@ -168,4 +168,39 @@ ProgramCompletionTimeout (
   IN VOID                   *PciExFeatureConfiguration
   );
 
+/**
+  Routine to setup the AtomicOp Requester in the PCI device, verifies the routing
+  support in the bridge devices, to be complaint as per the PCI Base specification.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+  @param PciExFeatureConfiguration      pointer to common configuration table to
+                                        initialize the PCI Express feature
+
+  @retval EFI_SUCCESS                   bridge device routing capability is successful.
+          EFI_INVALID_PARAMETER         input parameter is NULL
+**/
+EFI_STATUS
+SetupAtomicOpRoutingSupport (
+  IN PCI_IO_DEVICE                              *PciDevice,
+  IN PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE   *PciExFeatureConfiguration
+  );
+
+/**
+  Overrides the PCI Device Control 2 register AtomicOp Requester enable field; if
+  the hardware value is different than the intended value.
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+ProgramAtomicOp (
+  IN PCI_IO_DEVICE          *PciDevice,
+  IN VOID                   *PciExFeatureConfiguration
+  );
+
 #endif
