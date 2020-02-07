@@ -116,6 +116,40 @@ SetDevicePolicyPciExpressMps (
 }
 
 /**
+  Routine to translate the given device-specific platform policy from type
+  EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE to HW-specific value, as per PCI Base Specification
+  Revision 4.0; for the PCI feature Max_Read_Req_Size.
+
+  @param  MRRS    Input device-specific policy should be in terms of type
+                  EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE
+
+  @retval         Range values for the Max_Read_Req_Size as defined in the PCI
+                  Base Specification 4.0
+**/
+UINT8
+SetDevicePolicyPciExpressMrrs (
+  IN  UINT8                   MRRS
+)
+{
+  switch (MRRS) {
+    case EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_128B:
+      return PCIE_MAX_READ_REQ_SIZE_128B;
+    case EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_256B:
+      return PCIE_MAX_READ_REQ_SIZE_256B;
+    case EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_512B:
+      return PCIE_MAX_READ_REQ_SIZE_512B;
+    case EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_1024B:
+      return PCIE_MAX_READ_REQ_SIZE_1024B;
+    case EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_2048B:
+      return PCIE_MAX_READ_REQ_SIZE_2048B;
+    case EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_4096B:
+      return PCIE_MAX_READ_REQ_SIZE_4096B;
+    default:
+      return PCIE_MAX_READ_REQ_SIZE_128B;
+  }
+}
+
+/**
   Generic routine to setup the PCI features as per its predetermined defaults.
 **/
 VOID
@@ -128,6 +162,12 @@ SetupDefaultPciExpressDevicePolicy (
     PciDevice->SetupMPS = EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_AUTO;
   } else {
     PciDevice->SetupMPS = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
+
+  if (mPciExpressPlatformPolicy.Mrrs) {
+    PciDevice->SetupMRRS = EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_AUTO;
+  } else {
+    PciDevice->SetupMRRS = EFI_PCI_EXPRESS_NOT_APPLICABLE;
   }
 
 }
@@ -211,6 +251,14 @@ GetPciExpressDevicePolicy (
       PciDevice->SetupMPS = EFI_PCI_EXPRESS_NOT_APPLICABLE;
     }
 
+    //
+    // set device specific policy for Max_Read_Req_Size
+    //
+    if (mPciExpressPlatformPolicy.Mrrs) {
+      PciDevice->SetupMRRS = PciExpressDevicePolicy.DeviceCtlMRRS;
+    } else {
+      PciDevice->SetupMRRS = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+    }
 
     DEBUG ((
       DEBUG_INFO,
@@ -327,6 +375,28 @@ GetPciExpressMps (
   return EFI_PCI_EXPRESS_NOT_APPLICABLE;
 }
 
+EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE
+GetPciExpressMrrs (
+  IN UINT8              Mrrs
+  )
+{
+  switch (Mrrs) {
+    case PCIE_MAX_READ_REQ_SIZE_128B:
+      return EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_128B;
+    case PCIE_MAX_READ_REQ_SIZE_256B:
+      return EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_256B;
+    case PCIE_MAX_READ_REQ_SIZE_512B:
+      return EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_512B;
+    case PCIE_MAX_READ_REQ_SIZE_1024B:
+      return EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_1024B;
+    case PCIE_MAX_READ_REQ_SIZE_2048B:
+      return EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_2048B;
+    case PCIE_MAX_READ_REQ_SIZE_4096B:
+      return EFI_PCI_EXPRESS_MAX_READ_REQ_SIZE_4096B;
+  }
+  return EFI_PCI_EXPRESS_NOT_APPLICABLE;
+}
+
 
 /**
   Notifies the platform about the current PCI Express state of the device.
@@ -356,6 +426,17 @@ PciExpressPlatformNotifyDeviceState (
                                               );
   } else {
     PciExDeviceConfiguration.DeviceCtlMPS = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
+
+  //
+  // get the device-specific state for the PCIe Max_Read_Req_Size feature
+  //
+  if (mPciExpressPlatformPolicy.Mrrs) {
+    PciExDeviceConfiguration.DeviceCtlMRRS = GetPciExpressMrrs (
+                                              (UINT8)PciDevice->PciExpressCapabilityStructure.DeviceControl.Bits.MaxReadRequestSize
+                                              );
+  } else {
+    PciExDeviceConfiguration.DeviceCtlMRRS = EFI_PCI_EXPRESS_NOT_APPLICABLE;
   }
 
   if (mPciExPlatformProtocol != NULL) {

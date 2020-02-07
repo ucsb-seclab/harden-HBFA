@@ -288,6 +288,7 @@ struct _PCI_IO_DEVICE {
   //
   UINT16                                    BridgeIoAlignment;
   UINT8                                     SetupMPS;
+  UINT8                                     SetupMRRS;
 };
 
 #define PCI_IO_DEVICE_FROM_PCI_IO_THIS(a) \

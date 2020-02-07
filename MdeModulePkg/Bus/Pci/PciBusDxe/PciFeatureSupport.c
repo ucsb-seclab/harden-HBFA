@@ -34,7 +34,7 @@ EFI_PCI_EXPRESS_PLATFORM_POLICY             mPciExpressPlatformPolicy = {
     //
     // support for PCI Express feature - Max. Read Request Size
     //
-    FALSE,
+    TRUE,
     //
     // support for PCI Express feature - Extended Tag
     //
@@ -104,6 +104,15 @@ PCI_EXPRESS_FEATURE_INITIALIZATION_POINT  mPciExpressFeatureInitializationList[]
   },
   {
     PciExpressFeatureProgramPhase,        PciExpressMps,        ProgramMaxPayloadSize
+  },
+  {
+    PciExpressFeatureSetupPhase,          PciExpressMrrs,       SetupMaxReadReqSize
+  },
+  {
+    PciExpressFeatureEntendedSetupPhase,  PciExpressMrrs,       ConditionalCasMaxReadReqSize
+  },
+  {
+    PciExpressFeatureProgramPhase,        PciExpressMrrs,       ProgramMaxReadReqSize
   }
 };
 
@@ -607,6 +616,15 @@ CreatePciRootBridgeDeviceNode (
     // start by assuming 4096B as the default value for the Max. Payload Size
     //
     PciConfigTable->Max_Payload_Size            = PCIE_MAX_PAYLOAD_SIZE_4096B;
+    //
+    // start by assuming 4096B as the default value for the Max. Read Request Size
+    //
+    PciConfigTable->Max_Read_Request_Size       = PCIE_MAX_READ_REQ_SIZE_4096B;
+    //
+    // start by assuming the Max. Read Request Size need not be common for all
+    // the devices in the PCI tree
+    //
+    PciConfigTable->Lock_Max_Read_Request_Size  = FALSE;
   }
 
   RootBridgeNode->PciExFeaturesConfigurationTable  = PciConfigTable;
