@@ -66,7 +66,7 @@ EFI_PCI_EXPRESS_PLATFORM_POLICY             mPciExpressPlatformPolicy = {
     //
     // support for PCI Express feature - LTR
     //
-    FALSE,
+    TRUE,
     //
     // support for PCI Express feature - PTM
     //
@@ -131,6 +131,15 @@ PCI_EXPRESS_FEATURE_INITIALIZATION_POINT  mPciExpressFeatureInitializationList[]
   },
   {
     PciExpressFeatureProgramPhase,        PciExpressAtomicOp,   ProgramAtomicOp
+  },
+  {
+    PciExpressFeatureSetupPhase,          PciExpressLtr,        SetupLtr
+  },
+  {
+    PciExpressFeatureEntendedSetupPhase,  PciExpressLtr,        ReSetupLtr
+  },
+  {
+    PciExpressFeatureProgramPhase,        PciExpressLtr,        ProgramLtr
   }
 };
 
@@ -653,6 +662,14 @@ CreatePciRootBridgeDeviceNode (
     // the devices in the PCI tree
     //
     PciConfigTable->Lock_Max_Read_Request_Size  = FALSE;
+    //
+    // start by assuming the LTR mechanism is supported in a PCI tree
+    //
+    PciConfigTable->LtrSupported                = TRUE;
+    //
+    // the default LTR mechanism is disabled as per the PCI Base specification
+    //
+    PciConfigTable->LtrEnable                   = FALSE;
     //
     // start by assuming the AtomicOp Routing capability is supported in the PCI
     // tree

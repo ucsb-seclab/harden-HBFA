@@ -81,6 +81,15 @@ struct _PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE {
   //
   BOOLEAN                                   Lock_Max_Read_Request_Size;
   //
+  // to record the adversity in LTR mechanism support capability among the PCI
+  // device of an heirarchy
+  //
+  BOOLEAN                                   LtrSupported;
+  //
+  // to enable the LTR mechansim for the entire PCI tree from a root port
+  //
+  BOOLEAN                                   LtrEnable;
+  //
   // to record the AtomicOp Routing capability of the PCI Heirarchy to enable
   // the AtomicOp of the EP device
   //

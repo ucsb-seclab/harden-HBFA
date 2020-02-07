@@ -308,6 +308,36 @@ SetDevicePolicyPciExpressCto (
 }
 
 /**
+  Routine to set the device-specific policy for the PCI feature LTR enable/disable
+
+  @param  AtomicOp      value corresponding to data type EFI_PCI_EXPRESS_ATOMIC_OP
+  @param  PciDevice     A pointer to PCI_IO_DEVICE
+
+**/
+VOID
+SetDevicePolicyPciExpressLtr (
+  IN  EFI_PCI_EXPRESS_LTR            Ltr,
+  OUT PCI_IO_DEVICE               *PciDevice
+  )
+{
+  switch (Ltr){
+    case EFI_PCI_EXPRESS_LTR_AUTO:
+    case EFI_PCI_EXPRESS_LTR_DISABLE:
+      //
+      // leave the LTR mechanism disable or restore to its default state
+      //
+      PciDevice->SetupLtr = FALSE;
+      break;
+    case EFI_PCI_EXPRESS_LTR_ENABLE:
+      //
+      // LTR mechanism enable
+      //
+      PciDevice->SetupLtr = TRUE;
+      break;
+  }
+}
+
+/**
   Generic routine to setup the PCI features as per its predetermined defaults.
 **/
 VOID
@@ -335,6 +365,8 @@ SetupDefaultPciExpressDevicePolicy (
   PciDevice->SetupCTO.Override = 0;
 
   PciDevice->SetupAtomicOp.Override = 0;
+
+  PciDevice->SetupLtr = FALSE;
 
 }
 
@@ -460,6 +492,16 @@ GetPciExpressDevicePolicy (
     } else {
       PciDevice->SetupAtomicOp.Override = 0;
     }
+
+    //
+    // set the device-specific policy for LTR mechanism in the function
+    //
+    if (mPciExpressPlatformPolicy.Ltr) {
+      SetDevicePolicyPciExpressLtr (PciExpressDevicePolicy.DeviceCtl2LTR, PciDevice);
+    } else {
+      PciDevice->SetupLtr = FALSE;
+    }
+
 
     DEBUG ((
       DEBUG_INFO,
@@ -715,6 +757,17 @@ PciExpressPlatformNotifyDeviceState (
     PciExDeviceConfiguration.DeviceCtl2AtomicOp.Enable_AtomicOpRequester = 0;
     PciExDeviceConfiguration.DeviceCtl2AtomicOp.Enable_AtomicOpEgressBlocking = 0;
   }
+  //
+  // get the device-specific state for LTR mechanism in the function
+  //
+  if (mPciExpressPlatformPolicy.Ltr) {
+    PciExDeviceConfiguration.DeviceCtl2LTR = PciDevice->PciExpressCapabilityStructure.DeviceControl2.Bits.LtrMechanism
+                                                ? EFI_PCI_EXPRESS_LTR_ENABLE
+                                                : EFI_PCI_EXPRESS_LTR_DISABLE;
+  } else {
+    PciExDeviceConfiguration.DeviceCtl2LTR = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
+
 
   if (mPciExPlatformProtocol != NULL) {
     return mPciExPlatformProtocol->NotifyDeviceState (

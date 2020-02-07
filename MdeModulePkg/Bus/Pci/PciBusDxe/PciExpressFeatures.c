@@ -1069,3 +1069,174 @@ ProgramAtomicOp (
   return Status;
 }
 
+/**
+  The main routine which process the PCI feature LTR enable/disable as per the
+  device-specific platform policy, as well as in complaince with the PCI Express
+  Base specification Revision 5.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+  @param PciExpressConfigurationTable  pointer to PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE
+
+  @retval EFI_SUCCESS                   setup of PCI feature LTR is successful.
+**/
+EFI_STATUS
+SetupLtr (
+  IN  PCI_IO_DEVICE                             *PciDevice,
+  IN  PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE  *PciExpressConfigurationTable
+  )
+{
+  PCI_REG_PCIE_DEVICE_CAPABILITY2 DeviceCap2;
+  //
+  // as per the PCI-Express Base Specification, in order to enable LTR mechanism
+  // in the upstream ports, all the upstream ports and its downstream ports has
+  // to support the LTR mechanism reported in its Device Capability 2 register
+  //
+  DeviceCap2.Uint32 = PciDevice->PciExpressCapabilityStructure.DeviceCapability2.Uint32;
+
+  if (PciExpressConfigurationTable) {
+    //
+    // in this phase establish 2 requirements:
+    // (1) all the PCI devices in the hierarchy supports the LTR mechanism
+    // (2) check and record any device-specific platform policy that wants to
+    //     enable the LTR mechanism
+    //
+    if (!PciDevice->PciExpressCapabilityStructure.DeviceCapability2.Bits.LtrMechanism) {
+
+      //
+      // it starts with the assumption that all the PCI devices support LTR mechanism
+      // and negates the flag if any PCI device Device Capability 2 register advertizes
+      // as not supported
+      //
+      PciExpressConfigurationTable->LtrSupported = FALSE;
+    }
+
+    if (PciDevice->SetupLtr == TRUE) {
+      //
+      // it starts with the assumption that device-specific platform policy would
+      // be set to LTR disable, and negates the flag if any PCI device platform
+      // policy wants to override to enable the LTR mechanism
+      //
+      PciExpressConfigurationTable->LtrEnable = TRUE;
+    }
+  } else {
+    //
+    // in case of RCiEP device or the bridge device with out any child device,
+    // overrule the device policy if the device in not capable
+    //
+    if (!PciDevice->PciExpressCapabilityStructure.DeviceCapability2.Bits.LtrMechanism
+        && PciDevice->SetupLtr == TRUE) {
+      PciDevice->SetupLtr = FALSE;
+    }
+    //
+    // for any bridge device which is Hot-Plug capable, it is expected that platform
+    // will not enforce the enabling of LTR mechanism only for the bridge device
+    //
+  }
+
+  DEBUG (( DEBUG_INFO, "LTR En: %d (LTR Cap: %d),",
+    PciDevice->SetupLtr ? 1 : 0,
+    PciDevice->PciExpressCapabilityStructure.DeviceCapability2.Bits.LtrMechanism
+    ));
+  return EFI_SUCCESS;
+}
+
+EFI_STATUS
+ReSetupLtr (
+  IN  PCI_IO_DEVICE                             *PciDevice,
+  IN  PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE  *PciExpressConfigurationTable
+  )
+{
+  //
+  // not applicable to RCiEP device...
+  // for the bridge device without any child device, the policy is already overruled
+  // based on capability in the above routine
+  //
+  if (PciExpressConfigurationTable) {
+    //
+    // in this phase align the device policy to enable LTR policy of any PCI device
+    // in the tree if all the devices are capable to support the LTR mechanism
+    //
+    if (PciExpressConfigurationTable->LtrSupported == TRUE
+        && PciExpressConfigurationTable->LtrEnable == TRUE
+    ) {
+      PciDevice->SetupLtr = TRUE;
+    } else {
+      PciDevice->SetupLtr = FALSE;
+    }
+  }
+
+  DEBUG (( DEBUG_INFO, "LTR En: %d (LTR Cap: %d),",
+    PciDevice->SetupLtr ? 1 : 0,
+    PciDevice->PciExpressCapabilityStructure.DeviceCapability2.Bits.LtrMechanism
+    ));
+  return EFI_SUCCESS;
+}
+
+/**
+  Program the PCI Device Control 2 register LTR mechanism field; if
+  the hardware value is different than the intended value.
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+ProgramLtr (
+  IN PCI_IO_DEVICE          *PciDevice,
+  IN VOID                   *PciExFeatureConfiguration
+  )
+{
+  PCI_REG_PCIE_DEVICE_CONTROL2  PcieDev;
+  UINT32                        Offset;
+  EFI_STATUS                    Status;
+  EFI_TPL                       OldTpl;
+
+  PcieDev.Uint16 = 0;
+  Offset = PciDevice->PciExpressCapabilityOffset +
+               OFFSET_OF (PCI_CAPABILITY_PCIEXP, DeviceControl2);
+  Status = PciDevice->PciIo.Pci.Read (
+                                  &PciDevice->PciIo,
+                                  EfiPciIoWidthUint16,
+                                  Offset,
+                                  1,
+                                  &PcieDev.Uint16
+                                  );
+  ASSERT (Status == EFI_SUCCESS);
+
+  if (PciDevice->SetupLtr != (BOOLEAN) PcieDev.Bits.LtrMechanism) {
+    PcieDev.Bits.LtrMechanism = PciDevice->SetupLtr ? 1 : 0;
+    DEBUG (( DEBUG_INFO, "LTR=%d,", PcieDev.Bits.LtrMechanism));
+
+    //
+    // Raise TPL to high level to disable timer interrupt while the write operation completes
+    //
+    OldTpl = gBS->RaiseTPL (TPL_HIGH_LEVEL);
+
+    Status = PciDevice->PciIo.Pci.Write (
+                                    &PciDevice->PciIo,
+                                    EfiPciIoWidthUint16,
+                                    Offset,
+                                    1,
+                                    &PcieDev.Uint16
+                                    );
+    //
+    // Restore TPL to its original level
+    //
+    gBS->RestoreTPL (OldTpl);
+
+    if (!EFI_ERROR(Status)) {
+      PciDevice->PciExpressCapabilityStructure.DeviceControl2.Uint16 = PcieDev.Uint16;
+    } else {
+      ReportPciWriteError (PciDevice->BusNumber, PciDevice->DeviceNumber, PciDevice->FunctionNumber, Offset);
+    }
+  } else {
+    DEBUG (( DEBUG_INFO, "no LTR,"));
+  }
+
+  return Status;
+}
+
