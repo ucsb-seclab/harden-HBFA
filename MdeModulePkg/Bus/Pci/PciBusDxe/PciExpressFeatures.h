@@ -243,4 +243,54 @@ ProgramLtr (
   IN VOID                   *PciExFeatureConfiguration
   );
 
+/**
+  The main routine to setup the PCI Express feature Extended Tag as per the
+  device-specific platform policy, as well as in complaince with the PCI Express
+  Base specification Revision 5.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+  @param PciFeaturesConfigurationTable  pointer to PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE
+
+  @retval EFI_SUCCESS                   setup of PCI feature LTR is successful.
+**/
+EFI_STATUS
+SetupExtTag (
+  IN  PCI_IO_DEVICE                             *PciDevice,
+  IN  PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE  *PciFeaturesConfigurationTable
+  );
+
+/**
+  Additional routine to setup the PCI Express feature Extended Tag in complaince
+  with the PCI Express Base specification Revision, a common value for all the
+  devices in the PCI hierarchy.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+  @param PciFeaturesConfigurationTable  pointer to PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE
+
+  @retval EFI_SUCCESS                   setup of PCI feature LTR is successful.
+**/
+EFI_STATUS
+AlignExtTag (
+  IN  PCI_IO_DEVICE                             *PciDevice,
+  IN  PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE  *PciFeaturesConfigurationTable
+  );
+
+/**
+  Program the PCI Device Control 2 register for 10b Extended Tag value, or the
+  Device Control register for 5b/8b Extended Tag value.
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+ProgramExtTag (
+  IN PCI_IO_DEVICE          *PciDevice,
+  IN VOID                   *PciExFeatureConfiguration
+  );
+
 #endif

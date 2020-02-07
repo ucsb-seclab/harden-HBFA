@@ -38,7 +38,7 @@ EFI_PCI_EXPRESS_PLATFORM_POLICY             mPciExpressPlatformPolicy = {
     //
     // support for PCI Express feature - Extended Tag
     //
-    FALSE,
+    TRUE,
     //
     // support for PCI Express feature - Relax Order
     //
@@ -140,6 +140,15 @@ PCI_EXPRESS_FEATURE_INITIALIZATION_POINT  mPciExpressFeatureInitializationList[]
   },
   {
     PciExpressFeatureProgramPhase,        PciExpressLtr,        ProgramLtr
+  },
+  {
+    PciExpressFeatureSetupPhase,          PciExpressExtTag,     SetupExtTag
+  },
+  {
+    PciExpressFeatureEntendedSetupPhase,  PciExpressExtTag,     AlignExtTag
+  },
+  {
+    PciExpressFeatureProgramPhase,        PciExpressExtTag,     ProgramExtTag
   }
 };
 
@@ -675,6 +684,10 @@ CreatePciRootBridgeDeviceNode (
     // tree
     //
     PciConfigTable->AtomicOpRoutingSupported    = TRUE;
+    //
+    // start by assuming the Extended Tag is 10b Requester capable
+    //
+    PciConfigTable->ExtendedTag                 = EFI_PCI_EXPRESS_EXTENDED_TAG_10BIT;
   }
 
   RootBridgeNode->PciExFeaturesConfigurationTable  = PciConfigTable;

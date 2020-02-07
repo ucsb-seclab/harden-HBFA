@@ -94,6 +94,10 @@ struct _PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE {
   // the AtomicOp of the EP device
   //
   BOOLEAN                                   AtomicOpRoutingSupported;
+  //
+  // to configure a common extended tag size for all the childs of a root port
+  //
+  UINT8                                     ExtendedTag;
 };
 
 //

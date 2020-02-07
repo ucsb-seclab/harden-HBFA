@@ -297,6 +297,7 @@ struct _PCI_IO_DEVICE {
   PCI_FEATURE_POLICY                        SetupCTO;
   EFI_PCI_EXPRESS_ATOMIC_OP                 SetupAtomicOp;
   BOOLEAN                                   SetupLtr;
+  UINT8                                     SetupExtTag;
 };
 
 #define PCI_IO_DEVICE_FROM_PCI_IO_THIS(a) \

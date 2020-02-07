@@ -368,6 +368,12 @@ SetupDefaultPciExpressDevicePolicy (
 
   PciDevice->SetupLtr = FALSE;
 
+  if (mPciExpressPlatformPolicy.ExtTag) {
+    PciDevice->SetupExtTag = EFI_PCI_EXPRESS_EXTENDED_TAG_AUTO;
+  } else {
+    PciDevice->SetupExtTag = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
+
 }
 
 /**
@@ -500,6 +506,15 @@ GetPciExpressDevicePolicy (
       SetDevicePolicyPciExpressLtr (PciExpressDevicePolicy.DeviceCtl2LTR, PciDevice);
     } else {
       PciDevice->SetupLtr = FALSE;
+    }
+
+    //
+    // set the device-specifci policy for the PCI Express feature Extended Tag
+    //
+    if (mPciExpressPlatformPolicy.ExtTag) {
+      PciDevice->SetupExtTag = PciExpressDevicePolicy.DeviceCtlExtTag;
+    } else {
+      PciDevice->SetupExtTag = EFI_PCI_EXPRESS_NOT_APPLICABLE;
     }
 
 
@@ -668,6 +683,19 @@ GetPciExpressCto (
   return EFI_PCI_EXPRESS_NOT_APPLICABLE;
 }
 
+EFI_PCI_EXPRESS_EXTENDED_TAG
+GetPciExpressExtTag (
+  IN PCI_IO_DEVICE                        *PciDevice
+  )
+{
+  if (PciDevice->PciExpressCapabilityStructure.DeviceControl2.Bits.TenBitTagRequesterEnable) {
+    return EFI_PCI_EXPRESS_EXTENDED_TAG_10BIT;
+  } else if (PciDevice->PciExpressCapabilityStructure.DeviceControl.Bits.ExtendedTagField) {
+    return EFI_PCI_EXPRESS_EXTENDED_TAG_8BIT;
+  } else {
+    return EFI_PCI_EXPRESS_EXTENDED_TAG_5BIT;
+  }
+}
 
 /**
   Notifies the platform about the current PCI Express state of the device.
@@ -768,6 +796,14 @@ PciExpressPlatformNotifyDeviceState (
     PciExDeviceConfiguration.DeviceCtl2LTR = EFI_PCI_EXPRESS_NOT_APPLICABLE;
   }
 
+  //
+  // get the device-specific state for the PCie Extended Tag in the function
+  //
+  if (mPciExpressPlatformPolicy.ExtTag) {
+    PciExDeviceConfiguration.DeviceCtlExtTag = GetPciExpressExtTag (PciDevice);
+  } else {
+    PciExDeviceConfiguration.DeviceCtlExtTag = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
 
   if (mPciExPlatformProtocol != NULL) {
     return mPciExPlatformProtocol->NotifyDeviceState (

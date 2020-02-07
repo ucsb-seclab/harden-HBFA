@@ -1240,3 +1240,281 @@ ProgramLtr (
   return Status;
 }
 
+/**
+  The main routine to setup the PCI Express feature Extended Tag as per the
+  device-specific platform policy, as well as in complaince with the PCI Express
+  Base specification Revision 5.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+  @param PciExpressConfigurationTable  pointer to PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE
+
+  @retval EFI_SUCCESS                   setup of PCI feature LTR is successful.
+**/
+EFI_STATUS
+SetupExtTag (
+  IN  PCI_IO_DEVICE                             *PciDevice,
+  IN  PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE  *PciExpressConfigurationTable
+  )
+{
+  PCI_REG_PCIE_DEVICE_CAPABILITY2 DeviceCap2;
+  PCI_REG_PCIE_DEVICE_CAPABILITY  DeviceCap;
+  EFI_PCI_EXPRESS_EXTENDED_TAG    PciExpressExtendedTag;
+
+  DeviceCap.Uint32 = PciDevice->PciExpressCapabilityStructure.DeviceCapability.Uint32;
+  DeviceCap2.Uint32 = PciDevice->PciExpressCapabilityStructure.DeviceCapability2.Uint32;
+  //
+  // The PCI Express feature Extended Tag has to be maintained common from a
+  // root bridge device to all its child devices.
+  // The Device Capability 2 register is used to determine the 10b Extended Tag
+  // capability of a device. The device capability register is used to determine
+  // 5b/8b Extended Tag capability of a device
+  //
+  if (DeviceCap2.Bits.TenBitTagCompleterSupported & DeviceCap2.Bits.TenBitTagRequesterSupported) {
+    //
+    // device supports the 10b Extended Tag capability
+    //
+    PciExpressExtendedTag = EFI_PCI_EXPRESS_EXTENDED_TAG_10BIT;
+  } else {
+    if (DeviceCap.Bits.ExtendedTagField) {
+      PciExpressExtendedTag = EFI_PCI_EXPRESS_EXTENDED_TAG_8BIT;
+    } else {
+      PciExpressExtendedTag = EFI_PCI_EXPRESS_EXTENDED_TAG_5BIT;
+    }
+  }
+  if (PciDevice->SetupExtTag == EFI_PCI_EXPRESS_EXTENDED_TAG_AUTO) {
+    PciDevice->SetupExtTag = PciExpressExtendedTag;
+  }
+  //
+  // in case of PCI Bridge and its child devices
+  //
+  if (PciExpressConfigurationTable) {
+    //
+    // align the Extended Tag value as per the device supported value
+    //
+    PciExpressConfigurationTable->ExtendedTag = MIN (
+                                                  PciExpressExtendedTag,
+                                                  PciExpressConfigurationTable->ExtendedTag
+                                                  );
+    //
+    // check for any invalid platform policy request for the device; if true than
+    // align with the device capability value. Else align as per platform request
+    //
+    if (PciDevice->SetupExtTag > PciExpressConfigurationTable->ExtendedTag) {
+      //
+      // setup the device Extended Tag to common value supported by all the devices
+      //
+      PciDevice->SetupExtTag = PciExpressConfigurationTable->ExtendedTag;
+    }
+    //
+    // if the platform policy is to downgrade the device's Extended Tag value than
+    // all the other devices in the PCI tree including the root bridge will be align
+    // with this device override value
+    //
+    if (PciDevice->SetupExtTag < PciExpressConfigurationTable->ExtendedTag) {
+      PciExpressConfigurationTable->ExtendedTag = PciDevice->SetupExtTag;
+    }
+  } else {
+    //
+    // in case of RCiEP devices or the bridge device without any child, overrule
+    // the Extended Tag device policy if it does not match with its capability
+    //
+    PciDevice->SetupExtTag = MIN (
+                              PciDevice->SetupExtTag,
+                              PciExpressExtendedTag
+                              );
+  }
+
+  DEBUG ((
+    DEBUG_INFO,
+    "ExtTag: %d [cap:%d],",
+    PciDevice->SetupExtTag,
+    PciExpressExtendedTag
+    ));
+  return EFI_SUCCESS;
+}
+
+/**
+  Additional routine to setup the PCI Express feature Extended Tag in complaince
+  with the PCI Express Base specification Revision, a common value for all the
+  devices in the PCI hierarchy.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+  @param PciExpressConfigurationTable  pointer to PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE
+
+  @retval EFI_SUCCESS                   setup of PCI feature LTR is successful.
+**/
+EFI_STATUS
+AlignExtTag (
+  IN  PCI_IO_DEVICE                             *PciDevice,
+  IN  PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE  *PciExpressConfigurationTable
+  )
+{
+  if (PciExpressConfigurationTable) {
+    //
+    // align the Extended Tag value to a common value among all the devices
+    //
+    PciDevice->SetupExtTag = MIN (
+                              PciDevice->SetupExtTag,
+                              PciExpressConfigurationTable->ExtendedTag
+                              );
+  }
+
+  DEBUG ((
+    DEBUG_INFO,
+    "ExtTag: %d,",
+    PciDevice->SetupExtTag
+    ));
+  return EFI_SUCCESS;
+}
+
+/**
+  Program the PCI Device Control 2 register for 10b Extended Tag value, or the
+  Device Control register for 5b/8b Extended Tag value.
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+ProgramExtTag (
+  IN PCI_IO_DEVICE          *PciDevice,
+  IN VOID                   *PciExFeatureConfiguration
+  )
+{
+  PCI_REG_PCIE_DEVICE_CONTROL   DevCtl;
+  PCI_REG_PCIE_DEVICE_CONTROL2  DevCtl2;
+  UINT32                        Offset;
+  UINT32                        Offset2;
+  BOOLEAN                       OverrideDevCtl;
+  BOOLEAN                       OverrideDevCtl2;
+  EFI_STATUS                    Status;
+  EFI_TPL                       OldTpl;
+
+  //
+  // read the Device Control register for the Extended Tag Field Enable
+  //
+  DevCtl.Uint16 = 0;
+  Offset = PciDevice->PciExpressCapabilityOffset +
+              OFFSET_OF (PCI_CAPABILITY_PCIEXP, DeviceControl);
+  Status = PciDevice->PciIo.Pci.Read (
+                                  &PciDevice->PciIo,
+                                  EfiPciIoWidthUint16,
+                                  Offset,
+                                  1,
+                                  &DevCtl.Uint16
+                                  );
+  ASSERT (Status == EFI_SUCCESS);
+
+  OverrideDevCtl = FALSE;
+  //
+  // read the Device COntrol 2 register for the 10-Bit Tag Requester Enable
+  //
+  DevCtl2.Uint16 = 0;
+  Offset2 = PciDevice->PciExpressCapabilityOffset +
+              OFFSET_OF (PCI_CAPABILITY_PCIEXP, DeviceControl2);
+  Status = PciDevice->PciIo.Pci.Read (
+                                  &PciDevice->PciIo,
+                                  EfiPciIoWidthUint16,
+                                  Offset2,
+                                  1,
+                                  &DevCtl2.Uint16
+                                  );
+  ASSERT (Status == EFI_SUCCESS);
+
+  OverrideDevCtl2 = FALSE;
+
+  if (PciDevice->SetupExtTag == EFI_PCI_EXPRESS_EXTENDED_TAG_5BIT) {
+    if (DevCtl.Bits.ExtendedTagField) {
+      DevCtl.Bits.ExtendedTagField = 0;
+      OverrideDevCtl = TRUE;
+    }
+
+    if (DevCtl2.Bits.TenBitTagRequesterEnable) {
+      DevCtl2.Bits.TenBitTagRequesterEnable = 0;
+      OverrideDevCtl2 = TRUE;
+    }
+  }
+  if (PciDevice->SetupExtTag == EFI_PCI_EXPRESS_EXTENDED_TAG_8BIT) {
+    if (!DevCtl.Bits.ExtendedTagField) {
+      DevCtl.Bits.ExtendedTagField = 1;
+      OverrideDevCtl = TRUE;
+    }
+    if (DevCtl2.Bits.TenBitTagRequesterEnable) {
+      DevCtl2.Bits.TenBitTagRequesterEnable = 0;
+      OverrideDevCtl2 = TRUE;
+    }
+  }
+  if (PciDevice->SetupExtTag == EFI_PCI_EXPRESS_EXTENDED_TAG_10BIT) {
+    if (!DevCtl2.Bits.TenBitTagRequesterEnable) {
+      DevCtl2.Bits.TenBitTagRequesterEnable = 1;
+      OverrideDevCtl2 = TRUE;
+    }
+  }
+
+  if (OverrideDevCtl) {
+
+    DEBUG (( DEBUG_INFO, "ExtTag=%d,", DevCtl.Bits.ExtendedTagField));
+
+    //
+    // Raise TPL to high level to disable timer interrupt while the write operation completes
+    //
+    OldTpl = gBS->RaiseTPL (TPL_HIGH_LEVEL);
+
+    Status = PciDevice->PciIo.Pci.Write (
+                                    &PciDevice->PciIo,
+                                    EfiPciIoWidthUint16,
+                                    Offset,
+                                    1,
+                                    &DevCtl.Uint16
+                                    );
+    //
+    // Restore TPL to its original level
+    //
+    gBS->RestoreTPL (OldTpl);
+
+    if (!EFI_ERROR(Status)) {
+      PciDevice->PciExpressCapabilityStructure.DeviceControl.Uint16 = DevCtl.Uint16;
+    } else {
+      ReportPciWriteError (PciDevice->BusNumber, PciDevice->DeviceNumber, PciDevice->FunctionNumber, Offset);
+    }
+  } else {
+    DEBUG (( DEBUG_INFO, "no ExtTag (%d),", DevCtl.Bits.ExtendedTagField));
+  }
+
+  if (OverrideDevCtl2) {
+
+    DEBUG (( DEBUG_INFO, "10bExtTag=%d,", DevCtl2.Bits.TenBitTagRequesterEnable));
+
+    //
+    // Raise TPL to high level to disable timer interrupt while the write operation completes
+    //
+    OldTpl = gBS->RaiseTPL (TPL_HIGH_LEVEL);
+
+    Status = PciDevice->PciIo.Pci.Write (
+                                    &PciDevice->PciIo,
+                                    EfiPciIoWidthUint16,
+                                    Offset2,
+                                    1,
+                                    &DevCtl2.Uint16
+                                    );
+    //
+    // Restore TPL to its original level
+    //
+    gBS->RestoreTPL (OldTpl);
+
+    if (!EFI_ERROR(Status)) {
+      PciDevice->PciExpressCapabilityStructure.DeviceControl2.Uint16 = DevCtl2.Uint16;
+    } else {
+      ReportPciWriteError (PciDevice->BusNumber, PciDevice->DeviceNumber, PciDevice->FunctionNumber, Offset2);
+    }
+  } else {
+    DEBUG (( DEBUG_INFO, "no 10bExtTag (%d),", DevCtl2.Bits.TenBitTagRequesterEnable));
+  }
+
+  return Status;
+}
+
