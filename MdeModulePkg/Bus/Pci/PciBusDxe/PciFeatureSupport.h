@@ -98,6 +98,20 @@ struct _PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE {
   // to configure a common extended tag size for all the childs of a root port
   //
   UINT8                                     ExtendedTag;
+  //
+  // to configure common ASPM state for all the devices link
+  //
+  UINT8                                     AspmSupport;
+  //
+  // to record maximum L0s Exit Latency among all the devices starting from root
+  // bridge device to its downstream bridge and its endpoint device
+  //
+  UINT8                                     L0sExitLatency;
+  //
+  // to record maximum L1 Exit Latency among all the devices starting from root
+  // bridge device to its downstream bridge and its endpoint device
+  //
+  UINT8                                     L1ExitLatency;
 };
 
 //

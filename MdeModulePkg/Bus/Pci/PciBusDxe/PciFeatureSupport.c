@@ -50,7 +50,7 @@ EFI_PCI_EXPRESS_PLATFORM_POLICY             mPciExpressPlatformPolicy = {
     //
     // support for PCI Express feature - ASPM state
     //
-    FALSE,
+    TRUE,
     //
     // support for PCI Express feature - Common Clock Configuration
     //
@@ -96,6 +96,15 @@ BOOLEAN   mPciExpressGetPlatformPolicyComplete = FALSE;
 //
 PCI_EXPRESS_FEATURE_INITIALIZATION_POINT  mPciExpressFeatureInitializationList[] = {
 
+  {
+    PciExpressFeatureSetupPhase,          PciExpressAspm,       SetupAspm
+  },
+  {
+    PciExpressFeatureEntendedSetupPhase,  PciExpressAspm,       AlignAspm
+  },
+  {
+    PciExpressFeatureProgramPhase,        PciExpressAspm,       ProgramAspm
+  },
   {
     PciExpressFeatureSetupPhase,          PciExpressMps,        SetupMaxPayloadSize
   },
@@ -688,6 +697,18 @@ CreatePciRootBridgeDeviceNode (
     // start by assuming the Extended Tag is 10b Requester capable
     //
     PciConfigTable->ExtendedTag                 = EFI_PCI_EXPRESS_EXTENDED_TAG_10BIT;
+    //
+    // initial state set to ASPM L0s and L1 both
+    //
+    PciConfigTable->AspmSupport                 = EFI_PCI_EXPRESS_ASPM_L0S_L1_SUPPORT;
+    //
+    // start by assuming less than 64ns of L0s Exit Latency
+    //
+    PciConfigTable->L0sExitLatency              = PCIE_LINK_CAPABILITY_L0S_EXIT_LATENCY_64NS;
+    //
+    // start by assuming less than 1us of L1 Exit Latency
+    //
+    PciConfigTable->L1ExitLatency               = PCIE_LINK_CAPABILITY_L1_EXIT_LATENCY_1US;
   }
 
   RootBridgeNode->PciExFeaturesConfigurationTable  = PciConfigTable;

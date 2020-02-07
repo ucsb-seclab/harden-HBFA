@@ -9,6 +9,15 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #ifndef _EFI_PCI_EXPRESS_FEATURES_H_
 #define _EFI_PCI_EXPRESS_FEATURES_H_
 
+//
+// PCIe L0s Exit Latencies declarations
+//
+#define PCIE_LINK_CAPABILITY_L0S_EXIT_LATENCY_64NS  0   // less than 64ns
+
+//
+// PCIe L1 Exit latencies declarations
+//
+#define PCIE_LINK_CAPABILITY_L1_EXIT_LATENCY_1US    0   // less than 1us
 
 /**
   The main routine which process the PCI feature Max_Payload_Size as per the
@@ -289,6 +298,49 @@ AlignExtTag (
 **/
 EFI_STATUS
 ProgramExtTag (
+  IN PCI_IO_DEVICE          *PciDevice,
+  IN VOID                   *PciExFeatureConfiguration
+  );
+
+/**
+  The main routine to setup the PCI Express feature ASPM as per the
+  device-specific platform policy, as well as in complaince with the PCI Express
+  Base specification Revision 5.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+  @param PciFeaturesConfigurationTable  pointer to PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE
+
+  @retval EFI_SUCCESS                   setup of PCI feature LTR is successful.
+**/
+EFI_STATUS
+SetupAspm (
+  IN  PCI_IO_DEVICE                             *PciDevice,
+  IN  PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE  *PciFeaturesConfigurationTable
+  );
+
+/**
+  Setup of PCI Express feature ASPM in the PciExpressFeatureEntendedSetupPhase
+**/
+EFI_STATUS
+AlignAspm (
+  IN  PCI_IO_DEVICE                             *PciDevice,
+  IN  PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE  *PciFeaturesConfigurationTable
+  );
+
+/**
+  Program the PCIe Link Control register ASPM Control field; if
+  the hardware value is different than the intended value.
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+ProgramAspm (
   IN PCI_IO_DEVICE          *PciDevice,
   IN VOID                   *PciExFeatureConfiguration
   );

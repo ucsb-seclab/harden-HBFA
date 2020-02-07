@@ -1518,3 +1518,394 @@ ProgramExtTag (
   return Status;
 }
 
+/**
+  Set the ASPM device policy as per the device's link capability.
+**/
+UINT8
+SetAspmPolicy (
+  IN UINT8  PciExpressLinkCapAspm
+  )
+{
+  switch (PciExpressLinkCapAspm) {
+    case 0:
+      //
+      // cannot support ASPM state, disable
+      //
+      return EFI_PCI_EXPRESS_ASPM_DISABLE;
+    case 1:
+      //
+      // supports only ASPM L0s state
+      //
+      return EFI_PCI_EXPRESS_ASPM_L0s_SUPPORT;
+    case 2:
+      //
+      // supports only ASPM L1 state
+      //
+      return EFI_PCI_EXPRESS_ASPM_L1_SUPPORT;
+    case 3:
+      //
+      // supports both L0s and L1 ASPM states
+      //
+      return EFI_PCI_EXPRESS_ASPM_L0S_L1_SUPPORT;
+  }
+  return EFI_PCI_EXPRESS_ASPM_DISABLE;
+}
+
+/**
+  The main routine to setup the PCI Express feature ASPM as per the
+  device-specific platform policy, as well as in complaince with the PCI Express
+  Base specification Revision 5.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+  @param PciExpressConfigurationTable  pointer to PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE
+
+  @retval EFI_SUCCESS                   setup of PCI feature LTR is successful.
+**/
+EFI_STATUS
+SetupAspm (
+  IN  PCI_IO_DEVICE                             *PciDevice,
+  IN  PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE  *PciExpressConfigurationTable
+  )
+{
+  PCI_REG_PCIE_LINK_CAPABILITY            PciExLinkCap;
+  PCI_REG_PCIE_DEVICE_CAPABILITY          PciExpressDeviceCapability;
+  BOOLEAN                                 AlignAspmPolicy;
+
+  PciExLinkCap.Uint32 = PciDevice->PciExpressCapabilityStructure.LinkCapability.Uint32;
+  PciExpressDeviceCapability.Uint32 = PciDevice->PciExpressCapabilityStructure.DeviceCapability.Uint32;
+  //
+  // ASPM support is only applicable to root bridge and its child devices. Not
+  // applicable to empty bridge devices or RCiEP devices
+  //
+  if (PciExpressConfigurationTable) {
+    PciExpressConfigurationTable->L0sExitLatency = MAX (
+                    PciExpressConfigurationTable->L0sExitLatency,
+                    (UINT8)PciExLinkCap.Bits.L0sExitLatency
+                    );
+    PciExpressConfigurationTable->L1ExitLatency = MAX (
+                    PciExpressConfigurationTable->L1ExitLatency,
+                    (UINT8)PciExLinkCap.Bits.L1ExitLatency
+                    );
+    if (PciDevice->SetupAspm == EFI_PCI_EXPRESS_ASPM_AUTO) {
+      //
+      // set the ASPM support as per device's link capability
+      //
+      PciDevice->SetupAspm = SetAspmPolicy ((UINT8)PciExLinkCap.Bits.Aspm);
+    } else {
+      //
+      // Check the ASPM device policy is applicable to the link capability.
+      // In case of invalid device policy, there are 2 options:
+      // (1) ASPM disable -> platform request rightly denied, and no ASPM
+      // (2) set as per the device capability -> platform request rightly denied,
+      //      but still set applicable power management
+      // this implementation shall take option 2 to overule invalid platform request
+      // and go with applicable policy as per device capability
+      //
+      switch (SetAspmPolicy ((UINT8)PciExLinkCap.Bits.Aspm)) {
+        case EFI_PCI_EXPRESS_ASPM_DISABLE:
+          PciDevice->SetupAspm = EFI_PCI_EXPRESS_ASPM_DISABLE;
+          break;
+        case EFI_PCI_EXPRESS_ASPM_L1_SUPPORT:
+          if (PciDevice->SetupAspm == EFI_PCI_EXPRESS_ASPM_L0s_SUPPORT) {
+            //
+            // not applicable, set as per device's link capability
+            //
+            PciDevice->SetupAspm = EFI_PCI_EXPRESS_ASPM_L1_SUPPORT;
+          }
+          break;
+        case EFI_PCI_EXPRESS_ASPM_L0s_SUPPORT:
+          if (PciDevice->SetupAspm == EFI_PCI_EXPRESS_ASPM_L1_SUPPORT) {
+            //
+            // not applicable, set as per device's link capability
+            //
+            PciDevice->SetupAspm = EFI_PCI_EXPRESS_ASPM_L0s_SUPPORT;
+          }
+          break;
+      }
+    }
+    //
+    // set the ASPM policy to minimum state among all the devices links
+    //
+    PciExpressConfigurationTable->AspmSupport = MIN (
+                                                  PciExpressConfigurationTable->AspmSupport,
+                                                  PciDevice->SetupAspm
+                                                  );
+    //
+    // check the common ASPM value applicable as per this device capability, if
+    // not applicable disable the ASPM for all the devices
+    //
+    if (
+      (PciExpressConfigurationTable->AspmSupport == EFI_PCI_EXPRESS_ASPM_L0s_SUPPORT
+        && SetAspmPolicy ((UINT8)PciExLinkCap.Bits.Aspm) == EFI_PCI_EXPRESS_ASPM_L1_SUPPORT)
+      ||
+      (PciExpressConfigurationTable->AspmSupport == EFI_PCI_EXPRESS_ASPM_L1_SUPPORT
+        && SetAspmPolicy ((UINT8)PciExLinkCap.Bits.Aspm) == EFI_PCI_EXPRESS_ASPM_L0s_SUPPORT)
+      ) {
+      //
+      // disable the ASPM
+      //
+      PciExpressConfigurationTable->AspmSupport = EFI_PCI_EXPRESS_ASPM_DISABLE;
+      PciDevice->SetupAspm = PciExpressConfigurationTable->AspmSupport;
+    }
+
+    if (PciExpressConfigurationTable->AspmSupport != EFI_PCI_EXPRESS_ASPM_DISABLE) {
+      //
+      // in case of ASPM policy is not to disable the ASPM support, check other
+      // condition of EP device L0s/L1 acceptance latency with the L0s/L1 exit
+      // latencies comprising from this endpoint all the way up to root complex
+      // root port, to determine whether the ASPM L0s/L1 entry can be used with
+      // no loss of performance
+      //
+      if (!IS_PCI_BRIDGE (&PciDevice->Pci)) {
+
+        switch (PciExpressConfigurationTable->AspmSupport) {
+          case EFI_PCI_EXPRESS_ASPM_L0S_L1_SUPPORT:
+            if (
+                PciExpressDeviceCapability.Bits.EndpointL0sAcceptableLatency >= PciExpressConfigurationTable->L0sExitLatency
+                && PciExpressDeviceCapability.Bits.EndpointL1AcceptableLatency >= PciExpressConfigurationTable->L1ExitLatency
+            ) {
+              //
+              // both the L0s & L1 acceptance of this endpoint device is greater
+              // than or equal to all of the comprised L0s & L1 exit latencies
+              // thus good to set the ASPM to L0s & L1 state
+              //
+              AlignAspmPolicy = TRUE;
+            } else {
+              //
+              // in case the EP device L0s and L1 Acceptance latency does not match
+              // with the comprised L0s & L1 exit latencies than disable the ASPM
+              // state
+              //
+              AlignAspmPolicy = FALSE;
+            }
+            break;
+
+          case EFI_PCI_EXPRESS_ASPM_L1_SUPPORT:
+            if (
+                PciExpressDeviceCapability.Bits.EndpointL1AcceptableLatency >= PciExpressConfigurationTable->L1ExitLatency
+            ) {
+              //
+              // the endpoint device L1 acceptance latency meets the all the
+              // comprised L1 exit latencies of all the devices from the bridge
+              // hence ASPM L1 is applicable state for the PCI tree
+              //
+              AlignAspmPolicy = TRUE;
+            } else {
+              //
+              // in case the EP device L1 Acceptance latency does not match
+              // with the comprised L1 exit latencies than disable the ASPM
+              // state
+              //
+              AlignAspmPolicy = FALSE;
+            }
+            break;
+
+          case EFI_PCI_EXPRESS_ASPM_L0s_SUPPORT:
+            if (
+                PciExpressDeviceCapability.Bits.EndpointL0sAcceptableLatency >= PciExpressConfigurationTable->L0sExitLatency
+            ) {
+              //
+              // the endpoint device L0s acceptance latency meets the all the
+              // comprised L0s exit latencies of all the devices from the bridge
+              // hence ASPM L0s is applicable state for the PCI tree
+              //
+              AlignAspmPolicy = TRUE;
+            } else {
+              //
+              // in case the EP device L0s Acceptance latency does not match
+              // with the comprised L0s exit latencies than disable the ASPM
+              // state
+              //
+              AlignAspmPolicy = FALSE;
+            }
+            break;
+        }
+      } else {
+        //
+        // align the bridge with the global common ASPM value
+        //
+        AlignAspmPolicy = TRUE;
+      }
+    } else {
+      //
+      // ASPM is disabled for all the devices
+      //
+      AlignAspmPolicy = FALSE;
+    }
+
+    if (AlignAspmPolicy) {
+      //
+      // reset the device's ASPM policy to common minimum value
+      //
+      if (PciDevice->SetupAspm != PciExpressConfigurationTable->AspmSupport) {
+        PciDevice->SetupAspm = PciExpressConfigurationTable->AspmSupport;
+      }
+    } else {
+      //
+      // disable the ASPM
+      //
+      PciExpressConfigurationTable->AspmSupport = EFI_PCI_EXPRESS_ASPM_DISABLE;
+      PciDevice->SetupAspm = PciExpressConfigurationTable->AspmSupport;
+    }
+    DEBUG ((
+      DEBUG_INFO,
+      "Aspm: %d [cap:%d],",
+      PciDevice->SetupAspm,
+      (PciExLinkCap.Bits.Aspm + 1)
+      ));
+  }
+
+  return EFI_SUCCESS;
+}
+
+/**
+  Setup of PCI Express feature ASPM in the PciExpressFeatureEntendedSetupPhase
+**/
+EFI_STATUS
+AlignAspm (
+  IN  PCI_IO_DEVICE                             *PciDevice,
+  IN  PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE  *PciExpressConfigurationTable
+  )
+{
+  //
+  // ASPM support is only applicable to root bridge and its child devices. Not
+  // applicable to empty bridge devices or RCiEP devices
+  //
+  if (PciExpressConfigurationTable) {
+    //
+    // reset the device's ASPM policy to common minimum ASPM value
+    //
+    if (PciDevice->SetupAspm != PciExpressConfigurationTable->AspmSupport) {
+      PciDevice->SetupAspm = PciExpressConfigurationTable->AspmSupport;
+    }
+    DEBUG ((
+      DEBUG_INFO,
+      "Aspm: %d,",
+      PciDevice->SetupAspm
+      ));
+  }
+
+  return EFI_SUCCESS;
+}
+
+
+/**
+  Get the ASPM value from the ASPM device policy.
+**/
+UINT8
+GetAspmValue (
+  IN UINT8  AspmPolicy
+  )
+{
+  switch (AspmPolicy) {
+    case EFI_PCI_EXPRESS_ASPM_DISABLE:
+      //
+      // ASPM disable
+      //
+      return 0;
+    case EFI_PCI_EXPRESS_ASPM_L0s_SUPPORT:
+      //
+      // ASPM L0s state
+      //
+      return 1;
+    case EFI_PCI_EXPRESS_ASPM_L1_SUPPORT:
+      //
+      // ASPM L1 state
+      //
+      return 2;
+    case EFI_PCI_EXPRESS_ASPM_L0S_L1_SUPPORT:
+      //
+      // L0s and L1 ASPM states
+      //
+      return 3;
+  }
+  return 0;
+}
+
+/**
+  Program the PCIe Link Control register ASPM Control field; if
+  the hardware value is different than the intended value.
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+ProgramAspm (
+  IN PCI_IO_DEVICE          *PciDevice,
+  IN VOID                   *PciExFeatureConfiguration
+  )
+{
+  PCI_REG_PCIE_LINK_CONTROL     LinkCtl;
+  UINT32                        Offset;
+  EFI_STATUS                    Status;
+  EFI_TPL                       OldTpl;
+  UINT8                         AspmValue;
+
+  //
+  // ASPM support is only applicable to root bridge and its child devices. Not
+  // applicable to empty bridge devices or RCiEP devices
+  //
+  if (!PciExFeatureConfiguration) {
+    return EFI_SUCCESS;
+  }
+
+  //
+  // read the link Control register for the ASPM Control
+  //
+  LinkCtl.Uint16 = 0;
+  Offset = PciDevice->PciExpressCapabilityOffset +
+              OFFSET_OF (PCI_CAPABILITY_PCIEXP, LinkControl);
+  Status = PciDevice->PciIo.Pci.Read (
+                                  &PciDevice->PciIo,
+                                  EfiPciIoWidthUint16,
+                                  Offset,
+                                  1,
+                                  &LinkCtl.Uint16
+                                  );
+  ASSERT (Status == EFI_SUCCESS);
+
+  AspmValue = GetAspmValue (PciDevice->SetupAspm);
+  if (AspmValue != LinkCtl.Bits.AspmControl) {
+    DEBUG ((
+      DEBUG_INFO,
+      "Aspm: %d,",
+      AspmValue
+      ));
+    //
+    // Raise TPL to high level to disable timer interrupt while the write operation completes
+    //
+    OldTpl = gBS->RaiseTPL (TPL_HIGH_LEVEL);
+
+    Status = PciDevice->PciIo.Pci.Write (
+                                    &PciDevice->PciIo,
+                                    EfiPciIoWidthUint16,
+                                    Offset,
+                                    1,
+                                    &LinkCtl.Uint16
+                                    );
+    //
+    // Restore TPL to its original level
+    //
+    gBS->RestoreTPL (OldTpl);
+
+    if (!EFI_ERROR (Status)) {
+      PciDevice->PciExpressCapabilityStructure.LinkControl.Uint16 = LinkCtl.Uint16;
+    } else {
+      ReportPciWriteError (PciDevice->BusNumber, PciDevice->DeviceNumber, PciDevice->FunctionNumber, Offset);
+      return Status;
+    }
+  } else {
+    DEBUG ((
+      DEBUG_INFO,
+      "No Aspm (%d),",
+      AspmValue
+      ));
+  }
+  return EFI_SUCCESS;
+}
+

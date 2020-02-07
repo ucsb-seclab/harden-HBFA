@@ -374,6 +374,16 @@ SetupDefaultPciExpressDevicePolicy (
     PciDevice->SetupExtTag = EFI_PCI_EXPRESS_NOT_APPLICABLE;
   }
 
+  //
+  // default device policy for device's link ASPM
+  //
+  if (mPciExpressPlatformPolicy.Aspm) {
+    PciDevice->SetupAspm = EFI_PCI_EXPRESS_ASPM_AUTO;
+  } else {
+    PciDevice->SetupAspm = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
+
+
 }
 
 /**
@@ -517,6 +527,14 @@ GetPciExpressDevicePolicy (
       PciDevice->SetupExtTag = EFI_PCI_EXPRESS_NOT_APPLICABLE;
     }
 
+    //
+    // set the device-specific policy for the PCI Express feature ASPM
+    //
+    if (mPciExpressPlatformPolicy.Aspm) {
+      PciDevice->SetupAspm = PciExpressDevicePolicy.LinkCtlASPMState;
+    } else {
+      PciDevice->SetupAspm = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+    }
 
     DEBUG ((
       DEBUG_INFO,
@@ -697,6 +715,24 @@ GetPciExpressExtTag (
   }
 }
 
+EFI_PCI_EXPRESS_ASPM_SUPPORT
+GetPciExpressAspmState (
+  IN PCI_IO_DEVICE                        *PciDevice
+  )
+{
+  switch (PciDevice->PciExpressCapabilityStructure.LinkControl.Bits.AspmControl) {
+    case 0:
+      return EFI_PCI_EXPRESS_ASPM_DISABLE;
+    case 1:
+      return EFI_PCI_EXPRESS_ASPM_L0s_SUPPORT;
+    case 2:
+      return EFI_PCI_EXPRESS_ASPM_L1_SUPPORT;
+    case 3:
+      return EFI_PCI_EXPRESS_ASPM_L0S_L1_SUPPORT;
+  }
+  return EFI_PCI_EXPRESS_NOT_APPLICABLE;
+}
+
 /**
   Notifies the platform about the current PCI Express state of the device.
 
@@ -803,6 +839,15 @@ PciExpressPlatformNotifyDeviceState (
     PciExDeviceConfiguration.DeviceCtlExtTag = GetPciExpressExtTag (PciDevice);
   } else {
     PciExDeviceConfiguration.DeviceCtlExtTag = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
+
+  //
+  // get the device-specific state for PCIe ASPM state
+  //
+  if (mPciExpressPlatformPolicy.Aspm) {
+    PciExDeviceConfiguration.LinkCtlASPMState = GetPciExpressAspmState (PciDevice);
+  } else {
+    PciExDeviceConfiguration.LinkCtlASPMState = EFI_PCI_EXPRESS_NOT_APPLICABLE;
   }
 
   if (mPciExPlatformProtocol != NULL) {
