@@ -229,6 +229,85 @@ SetDevicePolicyPciExpressNs (
 }
 
 /**
+  Routine to set the device-specific policy for the PCI feature CTO value range
+  or disable
+
+  @param  CtoSupport    value corresponding to data type EFI_PCI_EXPRESS_CTO_SUPPORT
+  @param  PciDevice     A pointer to PCI_IO_DEVICE
+**/
+VOID
+SetDevicePolicyPciExpressCto (
+  IN  EFI_PCI_EXPRESS_CTO_SUPPORT    CtoSupport,
+  OUT PCI_IO_DEVICE               *PciDevice
+)
+{
+  //
+  // implementation specific rules for the usage of PCI_FEATURE_POLICY members
+  // exclusively for the PCI Feature CTO
+  //
+  // .Override = 0 to skip this PCI feature CTO for the PCI device
+  // .Override = 1 to program this CTO PCI feature
+  //      .Act = 1 to program the CTO range as per given device policy in .Support
+  //      .Act = 0 to disable the CTO mechanism in the PCI device, CTO set to default range
+  //
+  switch (CtoSupport) {
+    case  EFI_PCI_EXPRESS_CTO_AUTO:
+      PciDevice->SetupCTO.Override = 0;
+      break;
+    case  EFI_PCI_EXPRESS_CTO_DEFAULT:
+      PciDevice->SetupCTO.Override = 1;
+      PciDevice->SetupCTO.Act = 1;
+      PciDevice->SetupCTO.Support = PCIE_COMPLETION_TIMEOUT_50US_50MS;
+      break;
+    case  EFI_PCI_EXPRESS_CTO_RANGE_A1:
+      PciDevice->SetupCTO.Override = 1;
+      PciDevice->SetupCTO.Act = 1;
+      PciDevice->SetupCTO.Support = PCIE_COMPLETION_TIMEOUT_50US_100US;
+      break;
+    case  EFI_PCI_EXPRESS_CTO_RANGE_A2:
+      PciDevice->SetupCTO.Override = 1;
+      PciDevice->SetupCTO.Act = 1;
+      PciDevice->SetupCTO.Support = PCIE_COMPLETION_TIMEOUT_1MS_10MS;
+      break;
+    case  EFI_PCI_EXPRESS_CTO_RANGE_B1:
+      PciDevice->SetupCTO.Override = 1;
+      PciDevice->SetupCTO.Act = 1;
+      PciDevice->SetupCTO.Support = PCIE_COMPLETION_TIMEOUT_16MS_55MS;
+      break;
+    case  EFI_PCI_EXPRESS_CTO_RANGE_B2:
+      PciDevice->SetupCTO.Override = 1;
+      PciDevice->SetupCTO.Act = 1;
+      PciDevice->SetupCTO.Support = PCIE_COMPLETION_TIMEOUT_65MS_210MS;
+      break;
+    case  EFI_PCI_EXPRESS_CTO_RANGE_C1:
+      PciDevice->SetupCTO.Override = 1;
+      PciDevice->SetupCTO.Act = 1;
+      PciDevice->SetupCTO.Support = PCIE_COMPLETION_TIMEOUT_260MS_900MS;
+      break;
+    case  EFI_PCI_EXPRESS_CTO_RANGE_C2:
+      PciDevice->SetupCTO.Override = 1;
+      PciDevice->SetupCTO.Act = 1;
+      PciDevice->SetupCTO.Support = PCIE_COMPLETION_TIMEOUT_1S_3_5S;
+      break;
+    case  EFI_PCI_EXPRESS_CTO_RANGE_D1:
+      PciDevice->SetupCTO.Override = 1;
+      PciDevice->SetupCTO.Act = 1;
+      PciDevice->SetupCTO.Support = PCIE_COMPLETION_TIMEOUT_4S_13S;
+      break;
+    case  EFI_PCI_EXPRESS_CTO_RANGE_D2:
+      PciDevice->SetupCTO.Override = 1;
+      PciDevice->SetupCTO.Act = 1;
+      PciDevice->SetupCTO.Support = PCIE_COMPLETION_TIMEOUT_17S_64S;
+      break;
+    case  EFI_PCI_EXPRESS_CTO_DET_DISABLE:
+      PciDevice->SetupCTO.Override = 1;
+      PciDevice->SetupCTO.Act = 0;
+      PciDevice->SetupCTO.Support = PCIE_COMPLETION_TIMEOUT_50US_50MS;
+      break;
+  }
+}
+
+/**
   Generic routine to setup the PCI features as per its predetermined defaults.
 **/
 VOID
@@ -252,6 +331,8 @@ SetupDefaultPciExpressDevicePolicy (
   PciDevice->SetupRO.Override = 0;
 
   PciDevice->SetupNS.Override = 0;
+
+  PciDevice->SetupCTO.Override = 0;
 
 }
 
@@ -358,6 +439,15 @@ GetPciExpressDevicePolicy (
       SetDevicePolicyPciExpressNs (PciExpressDevicePolicy.DeviceCtlNoSnoop, PciDevice);
     } else {
       PciDevice->SetupNS.Override = 0;
+    }
+
+    //
+    // set the device specific policy for Completion Timeout (CTO)
+    //
+    if (mPciExpressPlatformPolicy.Cto) {
+      SetDevicePolicyPciExpressCto (PciExpressDevicePolicy.CTOsupport, PciDevice);
+    } else {
+      PciDevice->SetupCTO.Override = 0;
     }
 
 
@@ -498,6 +588,34 @@ GetPciExpressMrrs (
   return EFI_PCI_EXPRESS_NOT_APPLICABLE;
 }
 
+EFI_PCI_EXPRESS_CTO_SUPPORT
+GetPciExpressCto (
+  IN UINT8              Cto
+  )
+{
+  switch (Cto) {
+    case PCIE_COMPLETION_TIMEOUT_50US_50MS:
+      return EFI_PCI_EXPRESS_CTO_DEFAULT;
+    case PCIE_COMPLETION_TIMEOUT_50US_100US:
+      return EFI_PCI_EXPRESS_CTO_RANGE_A1;
+    case PCIE_COMPLETION_TIMEOUT_1MS_10MS:
+      return EFI_PCI_EXPRESS_CTO_RANGE_A2;
+    case PCIE_COMPLETION_TIMEOUT_16MS_55MS:
+      return EFI_PCI_EXPRESS_CTO_RANGE_B1;
+    case PCIE_COMPLETION_TIMEOUT_65MS_210MS:
+      return EFI_PCI_EXPRESS_CTO_RANGE_B2;
+    case PCIE_COMPLETION_TIMEOUT_260MS_900MS:
+      return EFI_PCI_EXPRESS_CTO_RANGE_C1;
+    case PCIE_COMPLETION_TIMEOUT_1S_3_5S:
+      return EFI_PCI_EXPRESS_CTO_RANGE_C2;
+    case PCIE_COMPLETION_TIMEOUT_4S_13S:
+      return EFI_PCI_EXPRESS_CTO_RANGE_D1;
+    case PCIE_COMPLETION_TIMEOUT_17S_64S:
+      return EFI_PCI_EXPRESS_CTO_RANGE_D2;
+  }
+  return EFI_PCI_EXPRESS_NOT_APPLICABLE;
+}
+
 
 /**
   Notifies the platform about the current PCI Express state of the device.
@@ -559,6 +677,19 @@ PciExpressPlatformNotifyDeviceState (
                                                     : EFI_PCI_EXPRESS_NS_DISABLE;
   } else {
     PciExDeviceConfiguration.DeviceCtlNoSnoop = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
+
+  //
+  // get the device-specific state for the PCIe CTO feature
+  //
+  if (mPciExpressPlatformPolicy.Cto) {
+    PciExDeviceConfiguration.CTOsupport = PciDevice->PciExpressCapabilityStructure.DeviceControl2.Bits.CompletionTimeoutDisable
+                                          ? EFI_PCI_EXPRESS_CTO_DET_DISABLE
+                                          : GetPciExpressCto (
+                                              (UINT8)PciDevice->PciExpressCapabilityStructure.DeviceControl2.Bits.CompletionTimeoutValue
+                                              );
+  } else {
+    PciExDeviceConfiguration.CTOsupport = EFI_PCI_EXPRESS_NOT_APPLICABLE;
   }
 
 

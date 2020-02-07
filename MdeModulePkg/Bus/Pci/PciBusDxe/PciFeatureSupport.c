@@ -74,7 +74,7 @@ EFI_PCI_EXPRESS_PLATFORM_POLICY             mPciExpressPlatformPolicy = {
     //
     // support for PCI Express feature - Completion Timeout
     //
-    FALSE,
+    TRUE,
     //
     // support for PCI Express feature - Clock Power Management
     //
@@ -119,6 +119,12 @@ PCI_EXPRESS_FEATURE_INITIALIZATION_POINT  mPciExpressFeatureInitializationList[]
   },
   {
     PciExpressFeatureProgramPhase,        PciExpressNoSnoop,    ProgramNoSnoop
+  },
+  {
+    PciExpressFeatureSetupPhase,          PciExpressCto,        SetupCompletionTimeout
+  },
+  {
+    PciExpressFeatureProgramPhase,        PciExpressCto,        ProgramCompletionTimeout
   }
 };
 

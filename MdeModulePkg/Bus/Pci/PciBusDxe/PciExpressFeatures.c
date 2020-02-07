@@ -521,3 +521,390 @@ ProgramNoSnoop (
   return Status;
 }
 
+/**
+  To determine the CTO Range A values
+
+  @param  CtoValue    input CTO range value from 0 to 14
+  @retval TRUE        the given CTO value belongs to Range A
+          FALSE       the given value does not belong to Range A
+**/
+BOOLEAN
+IsCtoRangeA (
+  IN  UINT8   CtoValue
+  )
+{
+  switch (CtoValue) {
+    case  PCIE_COMPLETION_TIMEOUT_50US_100US:
+    case  PCIE_COMPLETION_TIMEOUT_1MS_10MS:
+      return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+  To determine the CTO Range B values
+
+  @param  CtoValue    input CTO range value from 0 to 14
+  @retval TRUE        the given CTO value belongs to Range B
+          FALSE       the given value does not belong to Range B
+**/
+BOOLEAN
+IsCtoRangeB (
+  IN  UINT8   CtoValue
+  )
+{
+  switch (CtoValue) {
+    case  PCIE_COMPLETION_TIMEOUT_16MS_55MS:
+    case  PCIE_COMPLETION_TIMEOUT_65MS_210MS:
+      return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+  To determine the CTO Range C values
+
+  @param  CtoValue    input CTO range value from 0 to 14
+  @retval TRUE        the given CTO value belongs to Range C
+          FALSE       the given value does not belong to Range C
+**/
+BOOLEAN
+IsCtoRangeC (
+  IN  UINT8   CtoValue
+  )
+{
+  switch (CtoValue) {
+    case  PCIE_COMPLETION_TIMEOUT_260MS_900MS:
+    case  PCIE_COMPLETION_TIMEOUT_1S_3_5S:
+      return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+  To determine the CTO Range D values
+
+  @param  CtoValue    input CTO range value from 0 to 14
+  @retval TRUE        the given CTO value belongs to Range D
+          FALSE       the given value does not belong to Range D
+**/
+BOOLEAN
+IsCtoRangeD (
+  IN  UINT8   CtoValue
+  )
+{
+  switch (CtoValue) {
+    case  PCIE_COMPLETION_TIMEOUT_4S_13S:
+    case  PCIE_COMPLETION_TIMEOUT_17S_64S:
+      return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+  The main routine which setup the PCI feature Completion Timeout as per the
+  device-specific platform policy, as well as in complaince with the PCI Base
+  specification Revision 4.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+
+  @retval EFI_SUCCESS                   processing of PCI feature CTO is successful.
+**/
+EFI_STATUS
+SetupCompletionTimeout (
+  IN PCI_IO_DEVICE          *PciDevice,
+  IN VOID                   *PciExFeatureConfiguration
+  )
+{
+  PCI_REG_PCIE_DEVICE_CAPABILITY2 DeviceCap2;
+  UINT8                           CtoRangeValue;
+
+  if (!PciDevice->SetupCTO.Override) {
+    //
+    // No override of CTO is required for this device
+    //
+    return  EFI_SUCCESS;
+  }
+
+  //
+  // determine the CTO range values as per its device capability register
+  //
+  DeviceCap2.Uint32 = PciDevice->PciExpressCapabilityStructure.DeviceCapability2.Uint32;
+  if (!DeviceCap2.Bits.CompletionTimeoutRanges
+      && !DeviceCap2.Bits.CompletionTimeoutDisable
+  ) {
+    //
+    // device does not support the CTO mechanism, hence no override is applicable
+    //
+    return EFI_SUCCESS;
+  }
+
+  //
+  // override the device CTO values if applicable
+  //
+  if (PciDevice->SetupCTO.Act) {
+    //
+    // program the CTO range values
+    //
+    if (DeviceCap2.Bits.CompletionTimeoutRanges) {
+      CtoRangeValue = PCIE_COMPLETION_TIMEOUT_50US_50MS;
+      //
+      // in case if the supported CTO range and the requirement from platform
+      // policy does not match, than the CTO range setting would be based on
+      // this driver's implementation specific, and its rules are as follows:-
+      //
+      // if device is capable of Range A only and if platform ask for any of
+      // ranges B, C, D; than this implementation will only program the default
+      // range value for the duration of 50us to 50ms.
+      //
+      // if device is capable of Range B, or range B & C, or Ranges B, C & D only
+      // and if the platform ask for the Range A; than this implementation will
+      // only program the default range value for the duration of 50us to 50ms.
+      //
+      // if the device is capable of Range B only, or the ranges A & B; and the
+      // platform ask for Range C, or Range D values, than this implementation
+      // will only program the Range B value for the duration of 65ms to 210ms.
+      //
+      // if the device is capable of Ranges B & C, or Ranges A, B, and C; and
+      // if the platform ask for Range D values; than this implementation will
+      // only program the Range C for the duration of 1s to 3.5s.
+      //
+
+      switch (DeviceCap2.Bits.CompletionTimeoutRanges) {
+        case  PCIE_COMPLETION_TIMEOUT_RANGE_A_SUPPORTED:
+          if (IsCtoRangeA (PciDevice->SetupCTO.Support)) {
+            CtoRangeValue = PciDevice->SetupCTO.Support;
+          }
+          //
+          // if device is capable of Range A only and if platform ask for any of
+          // ranges B, C, D; than this implementation will only program the default
+          // range value for the duration of 50us to 50ms.
+          //
+          if (IsCtoRangeB (PciDevice->SetupCTO.Support)
+              || IsCtoRangeC (PciDevice->SetupCTO.Support)
+              || IsCtoRangeD (PciDevice->SetupCTO.Support)
+          ) {
+            CtoRangeValue = PCIE_COMPLETION_TIMEOUT_50US_50MS;
+          }
+          break;
+
+        case  PCIE_COMPLETION_TIMEOUT_RANGE_B_SUPPORTED:
+          //
+          // if device is capable of Range B, or range B & C, or Ranges B, C & D only
+          // and if the platform ask for the Range A; than this implementation will
+          // only program the default range value for the duration of 50us to 50ms.
+          //
+          if (IsCtoRangeA (PciDevice->SetupCTO.Support)) {
+            CtoRangeValue = PCIE_COMPLETION_TIMEOUT_50US_50MS;
+          }
+
+          if (IsCtoRangeB (PciDevice->SetupCTO.Support)) {
+            CtoRangeValue = PciDevice->SetupCTO.Support;
+          }
+          //
+          // if the device is capable of Range B only, or the ranges A & B; and the
+          // platform ask for Range C, or Range D values, than this implementation
+          // will only program the Range B value for the duration of 65ms to 210ms.
+          //
+          if (IsCtoRangeC (PciDevice->SetupCTO.Support)
+              || IsCtoRangeD (PciDevice->SetupCTO.Support)
+          ) {
+            CtoRangeValue = PCIE_COMPLETION_TIMEOUT_65MS_210MS;
+          }
+          break;
+
+        case  PCIE_COMPLETION_TIMEOUT_RANGE_B_C_SUPPORTED:
+          if (IsCtoRangeA (PciDevice->SetupCTO.Support)) {
+            CtoRangeValue = PCIE_COMPLETION_TIMEOUT_50US_50MS;
+          }
+
+          if (IsCtoRangeB (PciDevice->SetupCTO.Support)
+              || IsCtoRangeC (PciDevice->SetupCTO.Support)
+              ) {
+            CtoRangeValue = PciDevice->SetupCTO.Support;
+          }
+          //
+          // if the device is capable of Ranges B & C, or Ranges A, B, and C; and
+          // if the platform ask for Range D values; than this implementation will
+          // only program the Range C for the duration of 1s to 3.5s.
+          //
+          if (IsCtoRangeD (PciDevice->SetupCTO.Support)) {
+            CtoRangeValue = PCIE_COMPLETION_TIMEOUT_1S_3_5S;
+          }
+          break;
+
+        case  PCIE_COMPLETION_TIMEOUT_RANGE_B_C_D_SUPPORTED:
+          if (IsCtoRangeA (PciDevice->SetupCTO.Support)) {
+            CtoRangeValue = PCIE_COMPLETION_TIMEOUT_50US_50MS;
+          }
+          if (IsCtoRangeB (PciDevice->SetupCTO.Support)
+              || IsCtoRangeC (PciDevice->SetupCTO.Support)
+              || IsCtoRangeD (PciDevice->SetupCTO.Support)
+          ) {
+            CtoRangeValue = PciDevice->SetupCTO.Support;
+          }
+          break;
+
+        case  PCIE_COMPLETION_TIMEOUT_RANGE_A_B_SUPPORTED:
+          if (IsCtoRangeA (PciDevice->SetupCTO.Support)
+              || IsCtoRangeB (PciDevice->SetupCTO.Support)
+              ) {
+            CtoRangeValue = PciDevice->SetupCTO.Support;
+          }
+          if (IsCtoRangeC (PciDevice->SetupCTO.Support)
+              || IsCtoRangeD (PciDevice->SetupCTO.Support)
+          ) {
+            CtoRangeValue = PCIE_COMPLETION_TIMEOUT_65MS_210MS;
+          }
+          break;
+
+        case  PCIE_COMPLETION_TIMEOUT_RANGE_A_B_C_SUPPORTED:
+          if (IsCtoRangeA (PciDevice->SetupCTO.Support)
+              || IsCtoRangeB (PciDevice->SetupCTO.Support)
+              || IsCtoRangeC (PciDevice->SetupCTO.Support)
+          ) {
+            CtoRangeValue = PciDevice->SetupCTO.Support;
+          }
+          if (IsCtoRangeD (PciDevice->SetupCTO.Support)) {
+            CtoRangeValue = PCIE_COMPLETION_TIMEOUT_1S_3_5S;
+          }
+          break;
+
+        case  PCIE_COMPLETION_TIMEOUT_RANGE_A_B_C_D_SUPPORTED:
+          if (IsCtoRangeA (PciDevice->SetupCTO.Support)
+              || IsCtoRangeB (PciDevice->SetupCTO.Support)
+              || IsCtoRangeC (PciDevice->SetupCTO.Support)
+              || IsCtoRangeD (PciDevice->SetupCTO.Support)
+          ) {
+            CtoRangeValue = PciDevice->SetupCTO.Support;
+          }
+          break;
+
+        default:
+          DEBUG ((
+            DEBUG_ERROR,
+            "Invalid CTO range: %d\n",
+            DeviceCap2.Bits.CompletionTimeoutRanges
+            ));
+          return EFI_INVALID_PARAMETER;
+      }
+
+      if (PciDevice->SetupCTO.Support != CtoRangeValue) {
+        PciDevice->SetupCTO.Support = CtoRangeValue;
+      }
+    }
+    DEBUG (( DEBUG_INFO, "CTO enable: %d, CTO range: 0x%x,",
+        PciDevice->SetupCTO.Act,
+        PciDevice->SetupCTO.Support
+    ));
+  }
+  return EFI_SUCCESS;
+}
+
+/**
+  Overrides the PCI Device Control2 register Completion Timeout range; if
+  the hardware value is different than the intended value.
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+ProgramCompletionTimeout (
+  IN PCI_IO_DEVICE          *PciDevice,
+  IN VOID                   *PciExFeatureConfiguration
+  )
+{
+  PCI_REG_PCIE_DEVICE_CONTROL2    DeviceCtl2;
+  PCI_REG_PCIE_DEVICE_CAPABILITY2 DeviceCap2;
+  UINT32                          Offset;
+  EFI_STATUS                      Status;
+  EFI_TPL                         OldTpl;
+
+  if (!PciDevice->SetupCTO.Override) {
+    //
+    // No override of CTO is required for this device
+    //
+    DEBUG (( DEBUG_INFO, "CTO skipped,"));
+    return  EFI_SUCCESS;
+  }
+
+  //
+  // to program the CTO range values, determine in its device capability register
+  //
+  DeviceCap2.Uint32 = PciDevice->PciExpressCapabilityStructure.DeviceCapability2.Uint32;
+  if (DeviceCap2.Bits.CompletionTimeoutRanges
+      || DeviceCap2.Bits.CompletionTimeoutDisable) {
+    //
+    // device supports the CTO mechanism
+    //
+    DeviceCtl2.Uint16 = 0;
+    Offset = PciDevice->PciExpressCapabilityOffset +
+              OFFSET_OF (PCI_CAPABILITY_PCIEXP, DeviceControl2);
+    Status = PciDevice->PciIo.Pci.Read (
+                                  &PciDevice->PciIo,
+                                  EfiPciIoWidthUint16,
+                                  Offset,
+                                  1,
+                                  &DeviceCtl2.Uint16
+                                  );
+    ASSERT (Status == EFI_SUCCESS);
+  } else {
+    //
+    // device does not support the CTO mechanism, hence no override performed
+    //
+    DEBUG (( DEBUG_INFO, "CTO n/a,"));
+    return EFI_SUCCESS;
+  }
+
+  //
+  // override the device CTO values if applicable
+  //
+  if (PciDevice->SetupCTO.Act) {
+    //
+    // program the CTO range values
+    //
+    if (PciDevice->SetupCTO.Support != DeviceCtl2.Bits.CompletionTimeoutValue) {
+      DeviceCtl2.Bits.CompletionTimeoutValue = PciDevice->SetupCTO.Support;
+    }
+  } else {
+    //
+    // disable the CTO mechanism in device
+    //
+    DeviceCtl2.Bits.CompletionTimeoutValue = 0;
+    DeviceCtl2.Bits.CompletionTimeoutDisable = 1;
+  }
+  DEBUG (( DEBUG_INFO, "CTO disable: %d, CTO range: 0x%x,",
+      DeviceCtl2.Bits.CompletionTimeoutDisable,
+      DeviceCtl2.Bits.CompletionTimeoutValue
+  ));
+
+  //
+  // Raise TPL to high level to disable timer interrupt while the write operation completes
+  //
+  OldTpl = gBS->RaiseTPL (TPL_HIGH_LEVEL);
+
+  Status = PciDevice->PciIo.Pci.Write (
+                                &PciDevice->PciIo,
+                                EfiPciIoWidthUint16,
+                                Offset,
+                                1,
+                                &DeviceCtl2.Uint16
+                                );
+  //
+  // Restore TPL to its original level
+  //
+  gBS->RestoreTPL (OldTpl);
+
+  if (!EFI_ERROR(Status)) {
+    PciDevice->PciExpressCapabilityStructure.DeviceControl2.Uint16 = DeviceCtl2.Uint16;
+  } else {
+    ReportPciWriteError (PciDevice->BusNumber, PciDevice->DeviceNumber, PciDevice->FunctionNumber, Offset);
+  }
+  return Status;
+}
+

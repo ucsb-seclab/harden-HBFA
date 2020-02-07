@@ -133,4 +133,39 @@ ProgramNoSnoop (
   IN VOID                   *PciExFeatureConfiguration
   );
 
+/**
+  The main routine which process the PCI feature Completion Timeout as per the
+  device-specific platform policy, as well as in complaince with the PCI Base
+  specification Revision 4.
+
+  @param PciDevice                      A pointer to the PCI_IO_DEVICE.
+  @param PciConfigPhase                 for the PCI feature configuration phases:
+                                        PciExpressFeatureSetupPhase & PciExpressFeatureEntendedSetupPhase
+
+  @retval EFI_SUCCESS                   processing of PCI feature CTO is successful.
+**/
+EFI_STATUS
+SetupCompletionTimeout (
+  IN PCI_IO_DEVICE          *PciDevice,
+  IN VOID                   *PciExFeatureConfiguration
+  );
+
+/**
+  Overrides the PCI Device Control2 register Completion Timeout range; if
+  the hardware value is different than the intended value.
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+ProgramCompletionTimeout (
+  IN PCI_IO_DEVICE          *PciDevice,
+  IN VOID                   *PciExFeatureConfiguration
+  );
+
 #endif
