@@ -97,4 +97,22 @@ ProgramMaxReadReqSize (
   IN VOID                   *PciExFeatureConfiguration
   );
 
+/**
+  Overrides the PCI Device Control register Relax Order register field; if
+  the hardware value is different than the intended value.
+
+  @param  PciDevice             A pointer to the PCI_IO_DEVICE instance.
+
+  @retval EFI_SUCCESS           The data was read from or written to the PCI device.
+  @retval EFI_UNSUPPORTED       The address range specified by Offset, Width, and Count is not
+                                valid for the PCI configuration header of the PCI controller.
+  @retval EFI_INVALID_PARAMETER Buffer is NULL or Width is invalid.
+
+**/
+EFI_STATUS
+ProgramRelaxOrder (
+  IN PCI_IO_DEVICE          *PciDevice,
+  IN VOID                   *PciExFeatureConfiguration
+  );
+
 #endif

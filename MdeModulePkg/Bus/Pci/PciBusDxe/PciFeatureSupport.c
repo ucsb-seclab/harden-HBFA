@@ -42,7 +42,7 @@ EFI_PCI_EXPRESS_PLATFORM_POLICY             mPciExpressPlatformPolicy = {
     //
     // support for PCI Express feature - Relax Order
     //
-    FALSE,
+    TRUE,
     //
     // support for PCI Express feature - No-Snoop
     //
@@ -113,6 +113,9 @@ PCI_EXPRESS_FEATURE_INITIALIZATION_POINT  mPciExpressFeatureInitializationList[]
   },
   {
     PciExpressFeatureProgramPhase,        PciExpressMrrs,       ProgramMaxReadReqSize
+  },
+  {
+    PciExpressFeatureProgramPhase,        PciExpressRelaxOrder, ProgramRelaxOrder
   }
 };
 
