@@ -61,6 +61,8 @@
   PciFeatureSupport.h
   PciPlatformSupport.c
   PciPlatformSupport.h
+  PciExpressFeatures.c
+  PciExpressFeatures.h
 
 [Packages]
   MdePkg/MdePkg.dec

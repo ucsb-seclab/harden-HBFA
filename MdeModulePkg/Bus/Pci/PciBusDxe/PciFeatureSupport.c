@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "PciBus.h"
 #include "PciFeatureSupport.h"
+#include "PciExpressFeatures.h"
 
 /**
   Hold the current instance of Root Bridge IO protocol Handle
@@ -29,7 +30,7 @@ EFI_PCI_EXPRESS_PLATFORM_POLICY             mPciExpressPlatformPolicy = {
     //
     // support for PCI Express feature - Max. Payload Size
     //
-    FALSE,
+    TRUE,
     //
     // support for PCI Express feature - Max. Read Request Size
     //
@@ -94,11 +95,16 @@ BOOLEAN   mPciExpressGetPlatformPolicyComplete = FALSE;
 // PCI Express feature initialization phase handle routines
 //
 PCI_EXPRESS_FEATURE_INITIALIZATION_POINT  mPciExpressFeatureInitializationList[] = {
-    //
-    // vacant entry, shall be replaced with actual entry when the PCI Express
-    // feature are added.
-    //
-  { 0, 0, NULL}
+
+  {
+    PciExpressFeatureSetupPhase,          PciExpressMps,        SetupMaxPayloadSize
+  },
+  {
+    PciExpressFeatureEntendedSetupPhase,  PciExpressMps,        CasMaxPayloadSize
+  },
+  {
+    PciExpressFeatureProgramPhase,        PciExpressMps,        ProgramMaxPayloadSize
+  }
 };
 
 /**
@@ -597,6 +603,10 @@ CreatePciRootBridgeDeviceNode (
                      );
   if (PciConfigTable) {
     PciConfigTable->ID                          = PortNumber;
+    //
+    // start by assuming 4096B as the default value for the Max. Payload Size
+    //
+    PciConfigTable->Max_Payload_Size            = PCIE_MAX_PAYLOAD_SIZE_4096B;
   }
 
   RootBridgeNode->PciExFeaturesConfigurationTable  = PciConfigTable;

@@ -66,6 +66,11 @@ struct _PCI_EXPRESS_FEATURES_CONFIGURATION_TABLE {
   // Configuration Table ID
   //
   UINTN                                     ID;
+  //
+  // to configure the PCI feature Maximum payload size to maintain the data packet
+  // size among all the PCI devices in the PCI hierarchy
+  //
+  UINT8                                     Max_Payload_Size;
 };
 
 //

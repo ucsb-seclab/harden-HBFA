@@ -84,4 +84,21 @@ EFI_STATUS
 PciExpressPlatformNotifyDeviceState (
   IN PCI_IO_DEVICE                        *PciDevice
   );
+
+/**
+  Routine to translate the given device-specific platform policy from type
+  EFI_PCI_CONF_MAX_PAYLOAD_SIZE to HW-specific value, as per PCI Base Specification
+  Revision 4.0; for the PCI feature Max_Payload_Size.
+
+  @param  MPS     Input device-specific policy should be in terms of type
+                  EFI_PCI_CONF_MAX_PAYLOAD_SIZE
+
+  @retval         Range values for the Max_Payload_Size as defined in the PCI
+                  Base Specification 4.0
+**/
+UINT8
+SetDevicePolicyPciExpressMps (
+  IN  UINT8                   MPS
+);
+
 #endif

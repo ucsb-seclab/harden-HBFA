@@ -81,6 +81,39 @@ IsPciExpressProtocolPresent (
   return TRUE;
 }
 
+/**
+  Routine to translate the given device-specific platform policy from type
+  EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE to HW-specific value, as per PCI Base Specification
+  Revision 4.0; for the PCI feature Max_Payload_Size.
+
+  @param  MPS     Input device-specific policy should be in terms of type
+                  EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE
+
+  @retval         Range values for the Max_Payload_Size as defined in the PCI
+                  Base Specification 4.0
+**/
+UINT8
+SetDevicePolicyPciExpressMps (
+  IN  UINT8                   MPS
+)
+{
+  switch (MPS) {
+    case EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_128B:
+      return PCIE_MAX_PAYLOAD_SIZE_128B;
+    case EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_256B:
+      return PCIE_MAX_PAYLOAD_SIZE_256B;
+    case EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_512B:
+      return PCIE_MAX_PAYLOAD_SIZE_512B;
+    case EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_1024B:
+      return PCIE_MAX_PAYLOAD_SIZE_1024B;
+    case EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_2048B:
+      return PCIE_MAX_PAYLOAD_SIZE_2048B;
+    case EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_4096B:
+      return PCIE_MAX_PAYLOAD_SIZE_4096B;
+    default:
+      return PCIE_MAX_PAYLOAD_SIZE_128B;
+  }
+}
 
 /**
   Generic routine to setup the PCI features as per its predetermined defaults.
@@ -90,6 +123,12 @@ SetupDefaultPciExpressDevicePolicy (
   IN  PCI_IO_DEVICE               *PciDevice
   )
 {
+
+  if (mPciExpressPlatformPolicy.Mps) {
+    PciDevice->SetupMPS = EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_AUTO;
+  } else {
+    PciDevice->SetupMPS = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
 
 }
 
@@ -162,6 +201,15 @@ GetPciExpressDevicePolicy (
     //
     // platform chipset policies are returned for this PCI device
     //
+
+    //
+    // set device specific policy for the Max_Payload_Size
+    //
+    if (mPciExpressPlatformPolicy.Mps) {
+      PciDevice->SetupMPS = PciExpressDevicePolicy.DeviceCtlMPS;
+    } else {
+      PciDevice->SetupMPS = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+    }
 
 
     DEBUG ((
@@ -257,6 +305,28 @@ PciExpressPlatformGetPolicy (
   return Status;
 }
 
+EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE
+GetPciExpressMps (
+  IN UINT8              Mps
+  )
+{
+  switch (Mps) {
+    case PCIE_MAX_PAYLOAD_SIZE_128B:
+      return EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_128B;
+    case PCIE_MAX_PAYLOAD_SIZE_256B:
+      return EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_256B;
+    case PCIE_MAX_PAYLOAD_SIZE_512B:
+      return EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_512B;
+    case PCIE_MAX_PAYLOAD_SIZE_1024B:
+      return EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_1024B;
+    case PCIE_MAX_PAYLOAD_SIZE_2048B:
+      return EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_2048B;
+    case PCIE_MAX_PAYLOAD_SIZE_4096B:
+      return EFI_PCI_EXPRESS_MAX_PAYLOAD_SIZE_4096B;
+  }
+  return EFI_PCI_EXPRESS_NOT_APPLICABLE;
+}
+
 
 /**
   Notifies the platform about the current PCI Express state of the device.
@@ -277,6 +347,16 @@ PciExpressPlatformNotifyDeviceState (
 {
   EFI_PCI_EXPRESS_DEVICE_CONFIGURATION      PciExDeviceConfiguration;
 
+  //
+  // get the device-specific state for the PCIe Max_Payload_Size feature
+  //
+  if (mPciExpressPlatformPolicy.Mps) {
+    PciExDeviceConfiguration.DeviceCtlMPS = GetPciExpressMps (
+                                              (UINT8)PciDevice->PciExpressCapabilityStructure.DeviceControl.Bits.MaxPayloadSize
+                                              );
+  } else {
+    PciExDeviceConfiguration.DeviceCtlMPS = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
 
   if (mPciExPlatformProtocol != NULL) {
     return mPciExPlatformProtocol->NotifyDeviceState (
