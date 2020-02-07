@@ -189,6 +189,46 @@ SetDevicePolicyPciExpressRo (
 }
 
 /**
+  Routine to set the device-specific policy for the PCI feature No-Snoop enable
+  or disable
+
+  @param  NoSnoop       value corresponding to data type EFI_PCI_EXPRESS_NO_SNOOP
+  @param  PciDevice     A pointer to PCI_IO_DEVICE
+**/
+VOID
+SetDevicePolicyPciExpressNs (
+  IN  EFI_PCI_EXPRESS_NO_SNOOP  NoSnoop,
+  OUT PCI_IO_DEVICE             *PciDevice
+  )
+{
+  //
+  // implementation specific rules for the usage of PCI_FEATURE_POLICY members
+  // exclusively for the PCI Feature No-Snoop
+  //
+  // .Override = 0 to skip this PCI feature No-Snoop for the PCI device
+  // .Override = 1 to program this No-Snoop PCI feature
+  //      .Act = 1 to enable the No-Snoop in the PCI device
+  //      .Act = 0 to disable the No-Snoop in the PCI device
+  //
+  switch (NoSnoop) {
+    case  EFI_PCI_EXPRESS_NS_AUTO:
+      PciDevice->SetupNS.Override = 0;
+      break;
+    case  EFI_PCI_EXPRESS_NS_DISABLE:
+      PciDevice->SetupNS.Override = 1;
+      PciDevice->SetupNS.Act = 0;
+      break;
+    case  EFI_PCI_EXPRESS_NS_ENABLE:
+      PciDevice->SetupNS.Override = 1;
+      PciDevice->SetupNS.Act = 1;
+      break;
+    default:
+      PciDevice->SetupNS.Override = 0;
+      break;
+  }
+}
+
+/**
   Generic routine to setup the PCI features as per its predetermined defaults.
 **/
 VOID
@@ -210,6 +250,8 @@ SetupDefaultPciExpressDevicePolicy (
   }
 
   PciDevice->SetupRO.Override = 0;
+
+  PciDevice->SetupNS.Override = 0;
 
 }
 
@@ -307,6 +349,15 @@ GetPciExpressDevicePolicy (
       SetDevicePolicyPciExpressRo (PciExpressDevicePolicy.DeviceCtlRelaxOrder, PciDevice);
     } else {
       PciDevice->SetupRO.Override = 0;
+    }
+
+    //
+    // set the device specific policy for No-Snoop
+    //
+    if (mPciExpressPlatformPolicy.NoSnoop) {
+      SetDevicePolicyPciExpressNs (PciExpressDevicePolicy.DeviceCtlNoSnoop, PciDevice);
+    } else {
+      PciDevice->SetupNS.Override = 0;
     }
 
 
@@ -497,6 +548,17 @@ PciExpressPlatformNotifyDeviceState (
                                                       : EFI_PCI_EXPRESS_RO_DISABLE;
   } else {
     PciExDeviceConfiguration.DeviceCtlRelaxOrder = EFI_PCI_EXPRESS_NOT_APPLICABLE;
+  }
+
+  //
+  // get the device-specific state for the PCIe NoSnoop feature
+  //
+  if (mPciExpressPlatformPolicy.NoSnoop) {
+    PciExDeviceConfiguration.DeviceCtlNoSnoop = PciDevice->PciExpressCapabilityStructure.DeviceControl.Bits.NoSnoop
+                                                    ? EFI_PCI_EXPRESS_NS_ENABLE
+                                                    : EFI_PCI_EXPRESS_NS_DISABLE;
+  } else {
+    PciExDeviceConfiguration.DeviceCtlNoSnoop = EFI_PCI_EXPRESS_NOT_APPLICABLE;
   }
 
 

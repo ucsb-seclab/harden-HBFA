@@ -46,7 +46,7 @@ EFI_PCI_EXPRESS_PLATFORM_POLICY             mPciExpressPlatformPolicy = {
     //
     // support for PCI Express feature - No-Snoop
     //
-    FALSE,
+    TRUE,
     //
     // support for PCI Express feature - ASPM state
     //
@@ -116,6 +116,9 @@ PCI_EXPRESS_FEATURE_INITIALIZATION_POINT  mPciExpressFeatureInitializationList[]
   },
   {
     PciExpressFeatureProgramPhase,        PciExpressRelaxOrder, ProgramRelaxOrder
+  },
+  {
+    PciExpressFeatureProgramPhase,        PciExpressNoSnoop,    ProgramNoSnoop
   }
 };
 
