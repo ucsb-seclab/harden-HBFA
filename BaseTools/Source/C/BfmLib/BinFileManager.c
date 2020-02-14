@@ -253,6 +253,7 @@ BfmImageAdd (
   CHAR8                       *FvId;
   BOOLEAN                     FirstInFlag;
   BOOLEAN                     FvGuidExisted;
+  FV_INFORMATION              *FvInFdTmp;
 
   NewFvLength                 = 0;
   FvEncapLevel                = 0;
@@ -271,6 +272,7 @@ BfmImageAdd (
   OutputFileName              = NULL;
   FvId                        = NULL;
   FvGuidExisted               = FALSE;
+  FvInFdTmp                   = NULL;
 
   //
   // Get the size of ffs file to be inserted.
@@ -308,6 +310,15 @@ BfmImageAdd (
   do {
     if ((FvGuidExisted && mFvGuidIsSet && FvInFd->IsInputFvFlag) || ((!FvGuidExisted || (!mFvGuidIsSet)) && FvInFd->IsBfvFlag)) {
 
+      if (FvInFd->IsBfvFlag) {
+        FvInFdTmp = FdData->Fv;
+        while (FvInFdTmp != NULL) {
+          if (FvInFdTmp->IsBfvFlag) {
+            FvInFd = FvInFdTmp;
+          }
+          FvInFdTmp = FvInFdTmp->FvNext;
+        }
+      }
       Status = LibLocateBfv (FdData, &FvId, &FvInFd);
 
       if (EFI_ERROR (Status)) {
