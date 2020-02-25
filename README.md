@@ -167,7 +167,7 @@ The Boot flow sequence consists of:
 The **CdeLib** and **CdeServices** are derived from their companion project 
 [Torito C Library](https://github.com/KilianKegel/torito-C-Library) but
 split into *wrapper*/*worker* architecture. (Internally [Torito C Library](https://github.com/KilianKegel/torito-C-Library)
-was designed from the very beginning for that splitted architecture, but  library and driver were merged into one executable, to
+was designed from the very beginning for that split architecture, but  library and driver were merged into one executable, to
 run on platforms without **CdeServices** protocol.)
 
 The functions below are already implemented and tested, every single one of them, except otherwise noted:
