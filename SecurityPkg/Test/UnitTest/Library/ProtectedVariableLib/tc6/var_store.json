@@ -1,0 +1,170 @@
+{
+    "__metainfo__"  :   {
+        "Description"   :   "Variable storage with encrypted variables (AES_CBC_256)",
+        "RootKey"       :   "32B:0xF5, 0xBC, 0x2F, 0x6C, 0x7E, 0x83, 0x48, 0xB4, 0x80, 0x35, 0x83, 0x50, 0xA7, 0x10, 0x33, 0x8A, 0x0C, 0x9A, 0xC0, 0x16, 0xDC, 0x53, 0x4C, 0x15, 0x89, 0xEB, 0xCC, 0x88, 0x8D, 0x63, 0x49, 0xD9",
+        "InitVec"       :   "16B:0xFB, 0x95, 0xD1, 0x52, 0x28, 0x3A, 0x48, 0xD4, 0xBB, 0x83, 0x95, 0x61, 0x53, 0xEC, 0x1B, 0xA2",
+        "RpmcCounter"   :   "I:0x77",
+
+        "standard types":   "(B)b - (U)INT8, (H)h - (U)INT16, (I)i - (U)INT32, (Q)q - (U)INT64",
+        "extra types"   :   "G(g) - GUID(c-format), U(u) - Unicode String(no nul), S(s) - Ascii String(no nul)",
+        "tricks"        :   "User Reserved to indicate encryption",
+        "Test case 6"   :   "Two MetaDataHmacVar: good in-delete but bad added"
+    },
+
+    "__struct__"    :   {
+        "FvHeader"  :   {
+            "ZeroVector"        :   "16B:00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00",
+            "FileSystemGuid"    :   "16B:8D 2B F1 FF 96 76 8B 4C A9 85 27 47 07 5B 4F 50",
+            "FvLength"          :   "Q:0x84000",
+            "Signature"         :   "4B:0x5f, 0x46, 0x56, 0x48",
+            "Attributes"        :   "I:0x0004feff",
+            "HeaderLength"      :   "H:0x0048",
+            "Checksum"          :   "H:0000",
+            "ExtHeaderOffset"   :   "H:0000",
+            "Reserved"          :   "B:00",
+            "Revision"          :   "B:02",
+            "BlockMap"          :   [
+                {
+                "NumBlocks"     :   "I:0x84",
+                "Length"        :   "I:0x1000"
+                },
+                {
+                "NumBlocks"     :   "I:0",
+                "Length"        :   "I:0"
+                }
+            ]
+        },
+
+        "VarStoreHeader"    :   {
+            "Signature"     :   "16B:78 2C F3 AA 7B 94 9A 43 A1 80 2E 14 4E C3 77 92",
+            "Size"          :   "I:0003FFB8",
+            "Format"        :   "B:5A",
+            "State"         :   "B:FE",
+            "Reserved"      :   "H:0000",
+            "Reserved1"     :   "I:00000000"
+        },
+
+        "Variables" :   [
+            {
+                "#padding"          :   ":@_align_(4)",
+                "StartId"           :   "H:55AA",
+                "State"             :   "B:3F",
+                "Reserved"          :   "B:01",
+                "Attributes"        :   "I:7",
+                "MonotonicCount"    :   "Q:",
+                "TimeStamp"         :   "HBBBBBBIHBB:0000 00 00 00 00 00 00 00000000 0000 00 00",
+                "PubKeyIndex"       :   "I:",
+                "NameSize"          :   "I:0x12",
+                "DataSize"          :   "I:1",
+                "VendorGuid"        :   "G:03EB1519-A9A0-4C43-BD22-F3AC73F1545B",
+                "Name"              :   "U:TestVar1",
+                "Data"              :   "B:0x37"
+            },
+            {
+                "#padding"          :   ":@_align_(4)",
+                "StartId"           :   "H:55AA",
+                "State"             :   "B:3F",
+                "Reserved"          :   "B:00",
+                "Attributes"        :   "I:07",
+                "MonotonicCount"    :   "Q:",
+                "TimeStamp"         :   "H BBBBBB I H BB:0000 00 00 00 00 00 00 00000000 0000 00 00",
+                "PubKeyIndex"       :   "I:",
+                "NameSize"          :   "I:0x1A",
+                "DataSize"          :   "I:01",
+                "VendorGuid"        :   "G:04b37fe8-f6ae-480b-bdd5-37d98c5e89aa",
+                "Name"              :   "U:VarErrorFlag",
+                "Data"              :   "B:0x00"
+            },
+            {
+                "#padding"          :   ":@_align_(4)",
+                "StartId"           :   "H:55AA",
+                "State"             :   "B:3F",
+                "Reserved"          :   "B:01",
+                "Attributes"        :   "I:07",
+                "MonotonicCount"    :   "Q:",
+                "TimeStamp"         :   "H BBBBBB I H BB:0000 00 00 00 00 00 00 00000000 0000 00 00",
+                "PubKeyIndex"       :   "I:",
+                "NameSize"          :   "I:0x12",
+                "DataSize"          :   "I:07",
+                "VendorGuid"        :   "G:B872A153-DC9F-41EB-818F-00E66D66B17B",
+                "Name"              :   "U:TestVar2",
+                "Data"              :   "7B:0x36, 0x1A, 0x6A, 0xDA, 0x1F, 0xFB, 0x48"
+            },
+            {
+                "#padding"          :   ":@_align_(4)",
+                "StartId"           :   "H:55AA",
+                "State"             :   "B:3D",
+                "Reserved"          :   "B:00",
+                "Attributes"        :   "I:07",
+                "MonotonicCount"    :   "Q:",
+                "TimeStamp"         :   "H BBBBBB I H BB:0000 00 00 00 00 00 00 00000000 0000 00 00",
+                "PubKeyIndex"       :   "I:",
+                "NameSize"          :   "I:0x22",
+                "DataSize"          :   "I:0x11",
+                "VendorGuid"        :   "G:B872A153-DC9F-41EB-818F-00E66D66B17B",
+                "Name"              :   "U:TestVar3_deleted",
+                "Data"              :   "17B:0x71, 0xBD, 0xB0, 0x03, 0xB8, 0x74, 0x44, 0x92, 0x9C, 0x3B, 0x93, 0x64, 0x26, 0x82, 0x3B, 0xAE, 0x79"
+            },
+            {
+                "#padding"          :   ":@_align_(4)",
+                "StartId"           :   "H:55AA",
+                "State"             :   "B:3C",
+                "Reserved"          :   "B:00",
+                "Attributes"        :   "I:07",
+                "MonotonicCount"    :   "Q:",
+                "TimeStamp"         :   "H BBBBBB I H BB:0000 00 00 00 00 00 00 00000000 0000 00 00",
+                "PubKeyIndex"       :   "I:",
+                "NameSize"          :   "I:0x22",
+                "DataSize"          :   "I:0x11",
+                "VendorGuid"        :   "G:B872A153-DC9F-41EB-818F-00E66D66B17B",
+                "Name"              :   "U:TestVar4_deleted",
+                "Data"              :   "17B:0x71, 0xBD, 0xB0, 0x03, 0xB8, 0x74, 0x44, 0x92, 0x9C, 0x3B, 0x93, 0x64, 0x26, 0x82, 0x3B, 0xAE, 0x79"
+            },
+            {
+                "#padding"          :   ":@_align_(4)",
+                "StartId"           :   "H:55AA",
+                "State"             :   "B:3E",
+                "Reserved"          :   "B:01",
+                "Attributes"        :   "I:07",
+                "MonotonicCount"    :   "Q:",
+                "TimeStamp"         :   "H BBBBBB I H BB:0000 00 00 00 00 00 00 00000000 0000 00 00",
+                "PubKeyIndex"       :   "I:",
+                "NameSize"          :   "I:0x20",
+                "DataSize"          :   "I:0x20",
+                "VendorGuid"        :   "G:e3e890ad-5b67-466e-904f-94ca7e9376bb",
+                "Name"              :   "U:MetaDataHmacVar",
+                "Data"              :   "32B:00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+            },
+            {
+                "#padding"          :   ":@_align_(4)",
+                "StartId"           :   "H:55AA",
+                "State"             :   "B:3F",
+                "Reserved"          :   "B:01",
+                "Attributes"        :   "I:07",
+                "MonotonicCount"    :   "Q:",
+                "TimeStamp"         :   "H BBBBBB I H BB:0000 00 00 00 00 00 00 00000000 0000 00 00",
+                "PubKeyIndex"       :   "I:",
+                "NameSize"          :   "I:0x20",
+                "DataSize"          :   "I:0x10",
+                "VendorGuid"        :   "G:B872A153-DC9F-41EB-818F-00E66D66B17B",
+                "Name"              :   "U:TestVar5_in_del",
+                "Data"              :   "16B:0xA7, 0xEF, 0x5E, 0xF2, 0x8C, 0x71, 0x4D, 0xBA, 0xA4, 0x66, 0xB7, 0xC3, 0x61, 0x97, 0x35, 0xB0"
+            },
+            {
+                "#padding"          :   ":@_align_(4)",
+                "StartId"           :   "H:55AA",
+                "State"             :   "B:3F",
+                "Reserved"          :   "B:00",
+                "Attributes"        :   "I:07",
+                "MonotonicCount"    :   "Q:",
+                "TimeStamp"         :   "H BBBBBB I H BB:0000 00 00 00 00 00 00 00000000 0000 00 00",
+                "PubKeyIndex"       :   "I:",
+                "NameSize"          :   "I:0x20",
+                "DataSize"          :   "I:0x20",
+                "VendorGuid"        :   "G:e3e890ad-5b67-466e-904f-94ca7e9376bb",
+                "Name"              :   "U:MetaDataHmacVar",
+                "Data"              :   "32B:00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+            }
+        ]
+    }
+}

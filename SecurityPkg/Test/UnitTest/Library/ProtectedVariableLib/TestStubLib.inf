@@ -1,0 +1,84 @@
+## @file
+#
+#  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010029
+  BASE_NAME                      = TestStubLib
+  FILE_GUID                      = A15085F8-A196-4CC7-87BD-EBA5151FF859
+  MODULE_TYPE                    = HOST_APPLICATION
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = NULL|HOST_APPLICATION
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 ARM AARCH64
+#
+
+[Sources]
+  TestStubLib.c
+
+  StubVariableKeyLib.c
+  StubRpmcLib.c
+  StubRngLib.c
+  StubEncryptionVariableLib.c
+  StubVariableStore.c
+  StubProtectedVariableCommon.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  CryptoPkg/CryptoPkg.dec
+  SecurityPkg/SecurityPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  DebugLib
+  TimerLib
+  BaseCryptLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  HobLib
+  PeiServicesLib
+
+  UnitTestLib
+
+[Guids]
+  gEfiGlobalVariableGuid
+  gEfiVariableGuid
+  gEfiAuthenticatedVariableGuid
+  gEdkiiProtectedVariableGlobalGuid
+  gEdkiiMetaDataHmacVariableGuid
+  gEdkiiVarErrorFlagGuid
+  gEfiVariableIndexTableGuid
+  gEdkiiFaultTolerantWriteGuid
+  gEfiSystemNvDataFvGuid
+
+[Ppis]
+  gEfiPeiReadOnlyVariable2PpiGuid
+
+[Pcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize      ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase      ## SOMETIMES_CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase64    ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMaxVariableSize                 ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMaxAuthVariableSize             ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMaxVolatileVariableSize         ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMaxHardwareErrorVariableSize    ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVariableStoreSize               ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdHwErrStorageSize                ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMaxUserNvVariableSpaceSize           ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdBoottimeReservedNvVariableSpaceSize  ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdReclaimVariableSpaceAtEndOfDxe  ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdEmuVariableNvModeEnable         ## SOMETIMES_CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdEmuVariableNvStoreReserved      ## SOMETIMES_CONSUMES
+
+[FeaturePcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVariableCollectStatistics  ## CONSUMES # statistic the information of variable.
+  gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultLangDeprecate ## CONSUMES # Auto update PlatformLang/Lang
+
+  

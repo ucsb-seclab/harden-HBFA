@@ -1,0 +1,137 @@
+## @file
+#  ProtectedVariableLib test cases for SMM variable services.
+#
+#  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010029
+  BASE_NAME                      = TestSmmProtectedVariableLib
+  FILE_GUID                      = 783C9791-B41A-487B-8AA3-B1A26D0863C8
+  MODULE_TYPE                    = HOST_APPLICATION
+  VERSION_STRING                 = 1.0
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 ARM AARCH64
+#
+
+[Sources]
+  tc20/setup.c
+  tc21/setup.c
+  tc22/setup.c
+  tc23/setup.c
+  tc24/setup.c
+  tc25/setup.c
+
+  TestStubLib.c
+
+  StubProtectedVariablePei.c
+  StubVariableSmm.c
+  StubVariableKeyLib.c
+  StubRpmcLib.c
+  StubRngLib.c
+  StubEncryptionVariableLib.c
+  StubProtectedVariableCommon.c
+  StubFvbProtocol.c
+  StubFtwProtocol.c
+  StubPcdLib.c
+  StubMmSysTable.c
+
+  TestSmmProtectedVariableLib.c
+  TestSmmProtectedVariableLib.h
+  SecurityPkg/Library/ProtectedVariableLib/ProtectedVariableSmm.c
+  SecurityPkg/Library/ProtectedVariableLib/ProtectedVariableSmmDxeCommon.c
+  SecurityPkg/Library/ProtectedVariableLib/ProtectedVariableInternal.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  CryptoPkg/CryptoPkg.dec
+  SecurityPkg/SecurityPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  DebugLib
+  TimerLib
+  BaseCryptLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  HobLib
+  SynchronizationLib
+  UefiLib
+  MmServicesTableLib
+  DxeServicesTableLib
+  PcdLib
+  SmmMemLib
+  AuthVariableLib
+  VarCheckLib
+  UefiBootServicesTableLib
+  UefiRuntimeLib
+  PlatformFvbLib
+  ReportStatusCodeLib
+
+  UnitTestLib
+
+[Guids]
+  gEfiGlobalVariableGuid
+  gEfiVariableGuid
+  gEfiAuthenticatedVariableGuid
+  gEdkiiProtectedVariableGlobalGuid
+  gEdkiiMetaDataHmacVariableGuid
+  gEdkiiVarErrorFlagGuid
+  gEfiVariableIndexTableGuid
+  gEdkiiFaultTolerantWriteGuid
+  gEfiSystemNvDataFvGuid
+  gSmmVariableWriteGuid
+
+  gEfiAuthenticatedVariableGuid
+  gEfiVariableGuid
+  gEfiGlobalVariableGuid
+  gEfiMemoryOverwriteControlDataGuid            ## SOMETIMES_CONSUMES   ## Variable:L"MemoryOverwriteRequestControl"
+  gEfiMemoryOverwriteRequestControlLockGuid     ## SOMETIMES_PRODUCES   ## Variable:L"MemoryOverwriteRequestControlLock"
+  gSmmVariableWriteGuid                         ## PRODUCES             ## GUID # Install protocol
+  gEfiSystemNvDataFvGuid                        ## CONSUMES             ## GUID
+  gEdkiiFaultTolerantWriteGuid                  ## SOMETIMES_CONSUMES   ## HOB
+  gEdkiiVarErrorFlagGuid
+  gEdkiiMetaDataHmacVariableGuid
+  gEdkiiProtectedVariableGlobalGuid
+
+[Protocols]
+  gEfiSmmFirmwareVolumeBlockProtocolGuid        ## CONSUMES
+  gEfiSmmFaultTolerantWriteProtocolGuid
+  gEfiSmmVariableProtocolGuid
+  gEfiMmEndOfDxeProtocolGuid                    ## NOTIFY
+  gEdkiiSmmVarCheckProtocolGuid                 ## PRODUCES
+  gEfiTcgProtocolGuid                           ## SOMETIMES_CONSUMES
+  gEfiTcg2ProtocolGuid                          ## SOMETIMES_CONSUMES
+  gEfiFirmwareVolumeBlock2ProtocolGuid
+  gEfiFirmwareVolumeBlockProtocolGuid
+
+[Pcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize      ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase      ## SOMETIMES_CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase64    ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMaxVariableSize                 ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMaxAuthVariableSize             ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMaxVolatileVariableSize         ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMaxHardwareErrorVariableSize    ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVariableStoreSize               ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdHwErrStorageSize                ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMaxUserNvVariableSpaceSize           ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdBoottimeReservedNvVariableSpaceSize  ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdReclaimVariableSpaceAtEndOfDxe  ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdEmuVariableNvModeEnable         ## SOMETIMES_CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdEmuVariableNvStoreReserved      ## SOMETIMES_CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingSize
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize
+  gEfiSecurityPkgTokenSpaceGuid.PcdStatusCodeVariableIntegrity
+
+[FeaturePcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVariableCollectStatistics  ## CONSUMES # statistic the information of variable.
+  gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultLangDeprecate ## CONSUMES # Auto update PlatformLang/Lang

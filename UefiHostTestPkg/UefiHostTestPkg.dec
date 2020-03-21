@@ -1,0 +1,105 @@
+## @file  UefiHostTestPkg.dec
+#
+# Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = UefiHostTestPkg
+  PACKAGE_GUID                   = 1D212CA8-77BF-4957-80DA-75609227E70C
+  PACKAGE_VERSION                = 0.1
+
+[Includes.common]
+  Include
+
+[Guids]
+  gTestCasePkgTokenSpaceGuid         =  {0x9edb214f, 0x55a4, 0x465c, {0xa9, 0x23, 0x7d, 0xf4, 0x5f, 0x54, 0x56, 0x10}}
+
+[PcdsFeatureFlag]
+  gTestCasePkgTokenSpaceGuid.PcdTestFeaturePlagTrue |TRUE |BOOLEAN|0x80000000
+  gTestCasePkgTokenSpaceGuid.PcdTestFeaturePlagFalse|FALSE|BOOLEAN|0x80000001
+
+[PcdsFixedAtBuild]
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildBoolTrue   |TRUE              |BOOLEAN|0x80010000
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildBoolFalse  |FALSE             |BOOLEAN|0x80010001
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildUint8All0  |0                 |UINT8|0x80010002
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildUint8All1  |0xFF              |UINT8|0x80010003
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildUint16All0 |0                 |UINT16|0x80010004
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildUint16All1 |0xFFFF            |UINT16|0x80010005
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildUint32All0 |0                 |UINT32|0x80010006
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildUint32All1 |0xFFFFFFFF        |UINT32|0x80010007
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildUint64All0 |0                 |UINT64|0x80010008
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildUint64All1 |0xFFFFFFFFFFFFFFFF|UINT64|0x80010009
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildVoidStrAsc |"StrAsc"          |VOID*|0x8001000A
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildVoidStrUni |L"StrUni"         |VOID*|0x8001000B
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildVoidBufAll0|{0x0, 0x0, 0x0}   |VOID*|0x8001000C
+  gTestCasePkgTokenSpaceGuid.PcdTestFixedAtBuildVoidBufAll1|{0xFF, 0xFF, 0xFF}|VOID*|0x8001000D
+
+[PcdsPatchableInModule]
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleBoolTrue   |TRUE              |BOOLEAN|0x80020000
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleBoolFalse  |FALSE             |BOOLEAN|0x80020001
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleUint8All0  |0                 |UINT8|0x80020002
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleUint8All1  |0xFF              |UINT8|0x80020003
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleUint16All0 |0                 |UINT16|0x80020004
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleUint16All1 |0xFFFF            |UINT16|0x80020005
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleUint32All0 |0                 |UINT32|0x80020006
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleUint32All1 |0xFFFFFFFF        |UINT32|0x80020007
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleUint64All0 |0                 |UINT64|0x80020008
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleUint64All1 |0xFFFFFFFFFFFFFFFF|UINT64|0x80020009
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleVoidStrAsc |"StrAsc"          |VOID*|0x8002000A
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleVoidStrUni |L"StrUni"         |VOID*|0x8002000B
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleVoidBufAll0|{0x0, 0x0, 0x0}   |VOID*|0x8002000C
+  gTestCasePkgTokenSpaceGuid.PcdTestPatchableInModuleVoidBufAll1|{0xFF, 0xFF, 0xFF}|VOID*|0x8002000D
+
+  [PcdsDynamic]
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicBoolTrue   |TRUE              |BOOLEAN|0x80030000
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicBoolFalse  |FALSE             |BOOLEAN|0x80030001
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicUint8All0  |0                 |UINT8|0x80030002
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicUint8All1  |0xFF              |UINT8|0x80030003
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicUint16All0 |0                 |UINT16|0x80030004
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicUint16All1 |0xFFFF            |UINT16|0x80030005
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicUint32All0 |0                 |UINT32|0x80030006
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicUint32All1 |0xFFFFFFFF        |UINT32|0x80030007
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicUint64All0 |0                 |UINT64|0x80030008
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicUint64All1 |0xFFFFFFFFFFFFFFFF|UINT64|0x80030009
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicVoidStrAsc |"StrAsc"          |VOID*|0x8003000A
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicVoidStrUni |L"StrUni"         |VOID*|0x8003000B
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicVoidBufAll0|{0x0, 0x0, 0x0}   |VOID*|0x8003000C
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicVoidBufAll1|{0xFF, 0xFF, 0xFF}|VOID*|0x8003000D
+
+[PcdsDynamicEx]
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExBoolTrue   |TRUE              |BOOLEAN|0x80040000
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExBoolFalse  |FALSE             |BOOLEAN|0x80040001
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExUint8All0  |0                 |UINT8|0x80040002
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExUint8All1  |0xFF              |UINT8|0x80040003
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExUint16All0 |0                 |UINT16|0x80040004
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExUint16All1 |0xFFFF            |UINT16|0x80040005
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExUint32All0 |0                 |UINT32|0x80040006
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExUint32All1 |0xFFFFFFFF        |UINT32|0x80040007
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExUint64All0 |0                 |UINT64|0x80040008
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExUint64All1 |0xFFFFFFFFFFFFFFFF|UINT64|0x80040009
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExVoidStrAsc |"StrAsc"          |VOID*|0x8004000A
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExVoidStrUni |L"StrUni"         |VOID*|0x8004000B
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExVoidBufAll0|{0x0, 0x0, 0x0}   |VOID*|0x8004000C
+  gTestCasePkgTokenSpaceGuid.PcdTestDynamicExVoidBufAll1|{0xFF, 0xFF, 0xFF}|VOID*|0x8004000D
+
+  [PcdsFixedAtBuild]
+  ##
+  ## Allocate 56 KB [0x2000..0xFFFF] of I/O space for Pci Devices
+  ## If PcdPciReservedMemLimit =0  Pci Reserved default  MMIO Limit is PciExpressBase else use PcdPciReservedMemLimit .
+  ##
+  gTestCasePkgTokenSpaceGuid.PcdPciReservedIobase           |0x2000     |UINT16|0x40010041
+  gTestCasePkgTokenSpaceGuid.PcdPciReservedIoLimit          |0xFFFF     |UINT16|0x40010042
+  gTestCasePkgTokenSpaceGuid.PcdPciReservedMemBase          |0x90000000 |UINT32|0x40010043
+  gTestCasePkgTokenSpaceGuid.PcdPciReservedMemLimit         |0x00000000 |UINT32|0x40010044
+  gTestCasePkgTokenSpaceGuid.PcdPciReservedMemAbove4GBBase  |0xFFFFFFFFFFFFFFFF |UINT64|0x40010045
+  gTestCasePkgTokenSpaceGuid.PcdPciReservedMemAbove4GBLimit |0x0000000000000000 |UINT64|0x40010046 
+  gTestCasePkgTokenSpaceGuid.PcdPciReservedPMemBase         |0xFFFFFFFF |UINT32|0x40010047
+  gTestCasePkgTokenSpaceGuid.PcdPciReservedPMemLimit        |0x00000000 |UINT32|0x40010048
+  gTestCasePkgTokenSpaceGuid.PcdPciReservedPMemAbove4GBBase |0xFFFFFFFFFFFFFFFF |UINT64|0x40010049
+  gTestCasePkgTokenSpaceGuid.PcdPciReservedPMemAbove4GBLimit|0x0000000000000000 |UINT64|0x4001004A 
+  gTestCasePkgTokenSpaceGuid.PcdPciDmaAbove4G               |FALSE|BOOLEAN|0x4001004B
+  gTestCasePkgTokenSpaceGuid.PcdPciNoExtendedConfigSpace    |FALSE|BOOLEAN|0x4001004C
+  gTestCasePkgTokenSpaceGuid.PcdPciResourceAssigned         |FALSE|BOOLEAN|0x4001004D
