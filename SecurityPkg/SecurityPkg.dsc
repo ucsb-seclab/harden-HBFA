@@ -67,6 +67,7 @@
   VariableKeyLib|SecurityPkg/Library/VariableKeyLibNull/VariableKeyLibNull.inf
   RpmcLib|SecurityPkg/Library/RpmcLibNull/RpmcLibNull.inf
   EncryptionVariableLib|SecurityPkg/Library/EncryptionVariableLibNull/EncryptionVariableLibNull.inf
+  ProtectedVariableLib|SecurityPkg/Library/ProtectedVariableLibNull/ProtectedVariableLibNull.inf
 
 [LibraryClasses.ARM]
   #
@@ -226,6 +227,7 @@
   SecurityPkg/Library/VariableKeyLibNull/VariableKeyLibNull.inf
   SecurityPkg/Library/RpmcLibNull/RpmcLibNull.inf
   SecurityPkg/Library/EncryptionVariableLibNull/EncryptionVariableLibNull.inf
+  SecurityPkg/Library/ProtectedVariableLibNull/ProtectedVariableLibNull.inf
 
   #
   # Other
