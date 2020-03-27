@@ -21,8 +21,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/UefiLib.h>
 #include <Library/EncryptionVariableLib.h>
 
-#define DEFAULT_COUNTER_INDEX         0
-
 typedef VARIABLE_ENCRYPTION_INFO      PROTECTED_VARIABLE_INFO;
 
 /**
