@@ -15,8 +15,8 @@
   FILE_GUID                      = B38CBDA6-8017-4111-8232-9E8328DE82F6
   VERSION_STRING                 = 1.0
   MODULE_TYPE                    = DXE_DRIVER
-  LIBRARY_CLASS                  = BaseCryptLib | DXE_DRIVER UEFI_DRIVER UEFI_APPLICATION
-  LIBRARY_CLASS                  = TlsLib       | DXE_DRIVER UEFI_DRIVER UEFI_APPLICATION
+  LIBRARY_CLASS                  = BaseCryptLib | DXE_DRIVER UEFI_DRIVER UEFI_APPLICATION DXE_RUNTIME_DRIVER
+  LIBRARY_CLASS                  = TlsLib       | DXE_DRIVER UEFI_DRIVER UEFI_APPLICATION DXE_RUNTIME_DRIVER
   CONSTRUCTOR                    = DxeCryptLibConstructor
 
 #
