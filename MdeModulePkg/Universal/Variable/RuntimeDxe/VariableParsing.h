@@ -367,4 +367,71 @@ UpdateVariableInfo (
   IN OUT VARIABLE_INFO_ENTRY  **VariableInfo
   );
 
+/**
+
+  Retrieve details of the variable next to given variable within VariableStore.
+
+  If VarInfo->Address is NULL, the first one in VariableStore is returned.
+
+  VariableStart and/or VariableEnd can be given optionally for the situation
+  in which the valid storage space is smaller than the VariableStore->Size.
+  This usually happens when PEI variable services make a compact variable
+  cache to save memory, which cannot make use VariableStore->Size to determine
+  the correct variable storage range.
+
+  @param VariableStore            Pointer to a variable storage. It's optional.
+  @param VariableStart            Start point of valid range in VariableStore.
+  @param VariableEnd              End point of valid range in VariableStore.
+  @param VariableInfo             Pointer to variable information.
+
+  @retval EFI_INVALID_PARAMETER  VariableInfo or VariableStore is NULL.
+  @retval EFI_NOT_FOUND          If the end of VariableStore is reached.
+  @retval EFI_SUCCESS            The next variable is retrieved successfully.
+
+**/
+EFI_STATUS
+EFIAPI
+GetNextVariableInfo (
+  IN      VARIABLE_STORE_HEADER     *VarStore,
+  IN      VARIABLE_HEADER           *VariableStart,
+  IN      VARIABLE_HEADER           *VariableEnd,
+  IN OUT  PROTECTED_VARIABLE_INFO   *VarInfo
+  );
+
+/**
+
+  Retrieve details about a variable and return them in VariableInfo->Header.
+
+  If VariableInfo->Address is given, this function will calculate its offset
+  relative to given variable storage via VariableStore; Otherwise, it will try
+  other internal variable storages or cached copies. It's assumed that, for all
+  copies of NV variable storage, all variables are stored in the same relative
+  position. If VariableInfo->Address is found in the range of any storage copies,
+  its offset relative to that storage should be the same in other copies.
+
+  If VariableInfo->Offset is given (non-zero) but not VariableInfo->Address,
+  this function will return the variable memory address inside VariableStore,
+  if given, via VariableInfo->Address; Otherwise, the address of other storage
+  copies will be returned, if any.
+
+  For a new variable whose offset has not been determined, a value of -1 as
+  VariableInfo->Offset should be passed to skip the offset calculation.
+
+  @param VariableStore            Pointer to a variable storage. It's optional.
+  @param VariableInfo             Pointer to variable information.
+
+  @retval EFI_INVALID_PARAMETER  VariableInfo is NULL or both VariableInfo->Address
+                                 and VariableInfo->Offset are NULL (0).
+  @retval EFI_NOT_FOUND          If given Address or Offset is out of range of
+                                 any given or internal storage copies.
+  @retval EFI_SUCCESS            Variable details are retrieved successfully.
+
+**/
+EFI_STATUS
+EFIAPI
+GetVariableInfo (
+  IN      VARIABLE_STORE_HEADER     *VarStore OPTIONAL,
+  IN OUT  PROTECTED_VARIABLE_INFO   *VarInfo
+  );
+
 #endif

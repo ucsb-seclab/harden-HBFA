@@ -9,7 +9,7 @@
 #  This external input must be validated carefully to avoid security issues such as
 #  buffer overflow or integer overflow.
 #
-# Copyright (c) 2006 - 2019, Intel Corporation. All rights reserved.<BR>
+# Copyright (c) 2006 - 2020, Intel Corporation. All rights reserved.<BR>
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 #
 ##
@@ -52,6 +52,7 @@
 [Packages]
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
+  SecurityPkg/SecurityPkg.dec
 
 [LibraryClasses]
   MemoryAllocationLib
@@ -69,6 +70,7 @@
   TpmMeasurementLib
   AuthVariableLib
   VarCheckLib
+  ProtectedVariableLib
 
 [Protocols]
   gEfiFirmwareVolumeBlockProtocolGuid           ## CONSUMES

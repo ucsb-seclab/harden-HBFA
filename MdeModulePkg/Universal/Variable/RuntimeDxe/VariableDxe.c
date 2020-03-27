@@ -490,6 +490,30 @@ VariableServiceInitialize (
   EFI_EVENT                             ReadyToBootEvent;
   EFI_EVENT                             EndOfDxeEvent;
 
+  PROTECTED_VARIABLE_CONTEXT_IN           ContextIn;
+
+  //
+  // Initialze protected variable service, if enabled.
+  //
+  ContextIn.StructSize      = sizeof(ContextIn);
+  ContextIn.StructVersion   = PROTECTED_VARIABLE_CONTEXT_IN_STRUCT_VERSION;
+
+  ContextIn.InitVariableStore   = NULL;
+  ContextIn.FindVariableSmm     = NULL;
+  ContextIn.GetVariableInfo     = GetVariableInfo;
+  ContextIn.GetNextVariableInfo = GetNextVariableInfo;
+  ContextIn.IsUserVariable      = IsUserVariable;
+  ContextIn.UpdateVariableStore = VariableExLibUpdateNvVariable;
+
+  ContextIn.MaxVariableSize     = (UINT32)GetMaxVariableSize ();
+  ContextIn.VariableServiceUser = FromSmmModule;
+
+  Status = ProtectedVariableLibInitialize (&ContextIn);
+  if (EFI_ERROR (Status) && Status != EFI_UNSUPPORTED) {
+    ASSERT_EFI_ERROR (Status);
+    return Status;
+  }
+
   Status = VariableCommonInitialize ();
   ASSERT_EFI_ERROR (Status);
 

@@ -14,7 +14,7 @@
   VariableServiceSetVariable(), VariableServiceQueryVariableInfo(), ReclaimForOS(),
   SmmVariableGetStatistics() should also do validation based on its own knowledge.
 
-Copyright (c) 2010 - 2019, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2010 - 2020, Intel Corporation. All rights reserved.<BR>
 Copyright (c) 2018, Linaro, Ltd. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -1103,6 +1103,29 @@ MmVariableServiceInitialize (
   EFI_HANDLE                              VariableHandle;
   VOID                                    *SmmFtwRegistration;
   VOID                                    *SmmEndOfDxeRegistration;
+  PROTECTED_VARIABLE_CONTEXT_IN           ContextIn;
+
+  //
+  // Initialize protected variable service, if enabled.
+  //
+  ContextIn.StructSize      = sizeof(ContextIn);
+  ContextIn.StructVersion   = PROTECTED_VARIABLE_CONTEXT_IN_STRUCT_VERSION;
+
+  ContextIn.InitVariableStore   = NULL;
+  ContextIn.FindVariableSmm     = NULL;
+  ContextIn.GetVariableInfo     = GetVariableInfo;
+  ContextIn.GetNextVariableInfo = GetNextVariableInfo;
+  ContextIn.IsUserVariable      = IsUserVariable;
+  ContextIn.UpdateVariableStore = VariableExLibUpdateNvVariable;
+
+  ContextIn.MaxVariableSize     = (UINT32)GetMaxVariableSize ();
+  ContextIn.VariableServiceUser = FromSmmModule;
+
+  Status = ProtectedVariableLibInitialize (&ContextIn);
+  if (EFI_ERROR (Status) && Status != EFI_UNSUPPORTED) {
+    ASSERT_EFI_ERROR (Status);
+    return Status;
+  }
 
   //
   // Variable initialize.

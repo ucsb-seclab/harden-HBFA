@@ -37,8 +37,9 @@ VariableExLibFindVariable (
   )
 {
   EFI_STATUS                    Status;
-  VARIABLE_POINTER_TRACK        Variable;
   AUTHENTICATED_VARIABLE_HEADER *AuthVariable;
+  PROTECTED_VARIABLE_INFO       VarInfo;
+  VARIABLE_POINTER_TRACK        Variable;
 
   Status = FindVariable (
              VariableName,
@@ -68,6 +69,23 @@ VariableExLibFindVariable (
     AuthVariableInfo->PubKeyIndex     = AuthVariable->PubKeyIndex;
     AuthVariableInfo->MonotonicCount  = ReadUnaligned64 (&(AuthVariable->MonotonicCount));
     AuthVariableInfo->TimeStamp       = &AuthVariable->TimeStamp;
+  }
+
+  CopyMem (&VarInfo.Header, AuthVariableInfo, sizeof (VarInfo.Header));
+
+  VarInfo.Address       = Variable.CurrPtr;
+  VarInfo.PlainData     = NULL;
+  VarInfo.PlainDataSize = 0;
+
+  //
+  // In case the variable is encrypted.
+  //
+  Status = ProtectedVariableLibGetDataInfo (&VarInfo);
+  if (!EFI_ERROR (Status)) {
+    if (VarInfo.PlainData != NULL) {
+      AuthVariableInfo->Data      = VarInfo.PlainData;
+      AuthVariableInfo->DataSize  = VarInfo.PlainDataSize;
+    }
   }
 
   return EFI_SUCCESS;
@@ -103,6 +121,7 @@ VariableExLibFindNextVariable (
   VARIABLE_HEADER               *VariablePtr;
   AUTHENTICATED_VARIABLE_HEADER *AuthVariablePtr;
   VARIABLE_STORE_HEADER         *VariableStoreHeader[VariableStoreTypeMax];
+  PROTECTED_VARIABLE_INFO       VarInfo;
 
   VariableStoreHeader[VariableStoreTypeVolatile] = (VARIABLE_STORE_HEADER *) (UINTN) mVariableModuleGlobal->VariableGlobal.VolatileVariableBase;
   VariableStoreHeader[VariableStoreTypeHob]      = (VARIABLE_STORE_HEADER *) (UINTN) mVariableModuleGlobal->VariableGlobal.HobVariableBase;
@@ -138,6 +157,20 @@ VariableExLibFindNextVariable (
     AuthVariableInfo->PubKeyIndex     = AuthVariablePtr->PubKeyIndex;
     AuthVariableInfo->MonotonicCount  = ReadUnaligned64 (&(AuthVariablePtr->MonotonicCount));
     AuthVariableInfo->TimeStamp       = &AuthVariablePtr->TimeStamp;
+  }
+
+  CopyMem (&VarInfo.Header, AuthVariableInfo, sizeof (VarInfo.Header));
+
+  VarInfo.Address       = VariablePtr;
+  VarInfo.PlainData     = NULL;
+  VarInfo.PlainDataSize = 0;
+
+  Status = ProtectedVariableLibGetDataInfo (&VarInfo);
+  if (!EFI_ERROR (Status)) {
+    if (VarInfo.PlainData != NULL) {
+      AuthVariableInfo->Data      = VarInfo.PlainData;
+      AuthVariableInfo->DataSize  = VarInfo.PlainDataSize;
+    }
   }
 
   return EFI_SUCCESS;
@@ -261,3 +294,90 @@ VariableExLibAtRuntime (
 {
   return AtRuntime ();
 }
+
+/**
+  Update partial data of a variable on NV storage and/or cached copy.
+
+  @param[in]  VariableInfo  Pointer to a variable with detailed information.
+  @param[in]  Offset        Offset to write from.
+  @param[in]  Size          Size of data Buffer to update.
+  @param[in]  Buffer        Pointer to data buffer to update.
+
+  @retval EFI_SUCCESS             The variable data was updated successfully.
+  @retval EFI_UNSUPPORTED         If this function is called directly in runtime.
+  @retval EFI_INVALID_PARAMETER   If VariableInfo, Buffer or Size are not valid.
+  @retval Others                  Failed to update NV storage or variable cache.
+
+**/
+EFI_STATUS
+EFIAPI
+VariableExLibUpdateNvVariable (
+  IN  PROTECTED_VARIABLE_INFO     *VariableInfo,
+  IN  UINTN                       Offset,
+  IN  UINT32                      Size,
+  IN  UINT8                       *Buffer
+  )
+{
+  EFI_STATUS                           Status;
+  VARIABLE_GLOBAL                     *Global;
+  VARIABLE_RUNTIME_CACHE              *CacheInstance;
+  VARIABLE_HEADER                     *VariableCache;
+
+  if (mVariableModuleGlobal == NULL || mNvVariableCache == NULL) {
+    return EFI_UNSUPPORTED;
+  }
+
+  if (VariableInfo == NULL || VariableInfo->Offset == 0 || Buffer == NULL || Size == 0) {
+    ASSERT (VariableInfo != NULL);
+    ASSERT (VariableInfo->Offset != 0);
+    ASSERT (Buffer != NULL);
+    ASSERT (Size != 0);
+    return EFI_INVALID_PARAMETER;
+  }
+
+  Global = &mVariableModuleGlobal->VariableGlobal;
+
+  VariableCache = (VARIABLE_HEADER *)((UINTN)mNvVariableCache + VariableInfo->Offset);
+  ASSERT (StrCmp (VariableInfo->Header.VariableName,
+                  GetVariableNamePtr (VariableCache, Global->AuthFormat)) == 0);
+  ASSERT (CompareGuid (VariableInfo->Header.VendorGuid,
+                       GetVendorGuidPtr (VariableCache, Global->AuthFormat)));
+
+  //
+  // Forcibly update part data of flash copy of the variable ...
+  //
+  Status =  UpdateVariableStore (
+              Global,
+              FALSE,
+              FALSE,
+              mVariableModuleGlobal->FvbInstance,
+              (UINTN)(Global->NonVolatileVariableBase + VariableInfo->Offset + Offset),
+              Size,
+              Buffer
+              );
+  if (EFI_ERROR (Status)) {
+    ASSERT_EFI_ERROR (Status);
+    return Status;
+  }
+
+  //
+  // ... as well as the local cached copy.
+  //
+  CopyMem ((VOID *)((UINTN)VariableCache + Offset), Buffer, Size);
+
+  //
+  // Sync remote cached copy.
+  //
+  CacheInstance = &Global->VariableRuntimeCacheContext.VariableRuntimeNvCache;
+  if (CacheInstance->Store != NULL) {
+    Status =  SynchronizeRuntimeVariableCache (
+                CacheInstance,
+                VariableInfo->Offset + Offset,
+                Size
+                );
+    ASSERT_EFI_ERROR (Status);
+  }
+
+  return EFI_SUCCESS;
+}
+

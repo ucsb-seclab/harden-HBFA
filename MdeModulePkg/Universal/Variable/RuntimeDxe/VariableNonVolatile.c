@@ -149,7 +149,18 @@ InitRealNonVolatileVariableStore (
   VOID                                  *FtwProtocol;
 
   mVariableModuleGlobal->FvbInstance = NULL;
+  FvHeader = NULL;
 
+  //
+  // If variables are protected, they might have been verified and copied in
+  // safer place.
+  //
+  Status = ProtectedVariableLibGetStore (&FvHeader, NULL);
+  if (EFI_ERROR (Status) && Status != EFI_UNSUPPORTED && Status != EFI_NOT_FOUND) {
+    return Status;
+  }
+
+  Status = EFI_SUCCESS;
   //
   // Allocate runtime memory used for a memory copy of the FLASH region.
   // Keep the memory and the FLASH in sync as updates occur.
@@ -163,10 +174,21 @@ InitRealNonVolatileVariableStore (
   NvStorageBase = NV_STORAGE_VARIABLE_BASE;
   ASSERT (NvStorageBase != 0);
 
-  //
-  // Copy NV storage data to the memory buffer.
-  //
-  CopyMem (NvStorageData, (UINT8 *) (UINTN) NvStorageBase, NvStorageSize);
+  if (FvHeader != NULL) {
+    //
+    // Variable store is protected. Make the cache copy from verified copy.
+    //
+    VariableStore = (VARIABLE_STORE_HEADER *) ((UINTN) FvHeader + FvHeader->HeaderLength);
+    VariableStoreLength = VariableStore->Size;
+    ASSERT ((VariableStoreLength + FvHeader->HeaderLength) <= NvStorageSize);
+
+    CopyMem (NvStorageData, (VOID *)FvHeader, VariableStoreLength + FvHeader->HeaderLength);
+  } else {
+    //
+    // Variable store is not protected. Make the cache copy from NV storage directly.
+    //
+    CopyMem (NvStorageData, (VOID *)(UINTN)NvStorageBase, NvStorageSize);
+  }
 
   Status = GetFtwProtocol ((VOID **)&FtwProtocol);
   //

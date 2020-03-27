@@ -464,3 +464,95 @@ Done:
 
   return Status;
 }
+
+/**
+
+  Variable store garbage collection and reclaim operation, including support
+  protected variable service.
+
+  @param[in]      VariableBase            Base address of variable store.
+  @param[out]     LastVariableOffset      Offset of last variable.
+  @param[in]      IsVolatile              The variable store is volatile or not;
+                                          if it is non-volatile, need FTW.
+  @param[in, out] UpdatingPtrTrack        Pointer to updating variable pointer track structure.
+  @param[in]      NewVariable             Pointer to buffer of new variable.
+  @param[out]     NewVariable             Pointer to address of new variable on variable storage.
+  @param[in]      NewVariableSize         New variable size.
+
+  @return EFI_SUCCESS                  Reclaim operation has finished successfully.
+  @return EFI_OUT_OF_RESOURCES         No enough memory resources or variable space.
+  @return Others                       Unexpected error happened during reclaim operation.
+
+**/
+EFI_STATUS
+ReclaimEx (
+  IN      EFI_PHYSICAL_ADDRESS         VariableBase,
+      OUT UINTN                        *LastVariableOffset,
+  IN      BOOLEAN                      IsVolatile,
+  IN  OUT VARIABLE_POINTER_TRACK       *UpdatingPtrTrack,
+  IN  OUT VARIABLE_HEADER              **NewVariable,
+  IN      UINTN                        NewVariableSize
+  )
+{
+  EFI_STATUS    Status;
+  UINTN         VariableOffset;
+  UINTN         VariableInDelOffset;
+  UINTN         HwErrVariableTotalSize;
+  UINTN         CommonVariableTotalSize;
+  UINTN         CommonUserVariableTotalSize;
+
+  if (IsVolatile || mVariableModuleGlobal->VariableGlobal.EmuNvMode) {
+    return Reclaim (VariableBase, LastVariableOffset, IsVolatile,
+                    UpdatingPtrTrack, *NewVariable, NewVariableSize);
+  }
+
+  //
+  // Pass max size to ProtectedVariableLibReclaim, which should update
+  // following fields with real total size as return.
+  //
+  HwErrVariableTotalSize = PcdGet32 (PcdHwErrStorageSize);
+  CommonVariableTotalSize = mVariableModuleGlobal->CommonVariableSpace;
+  CommonUserVariableTotalSize = mVariableModuleGlobal->CommonMaxUserVariableSpace;
+
+  //
+  // Do a secure 'reclaim' and put the result in mNvVariableCache.
+  //
+  VariableOffset = (UpdatingPtrTrack->CurrPtr != NULL)
+                   ? (UINTN)UpdatingPtrTrack->CurrPtr - (UINTN)VariableBase
+                   : 0;
+  VariableInDelOffset = (UpdatingPtrTrack->InDeletedTransitionPtr != NULL)
+                        ? (UINTN)UpdatingPtrTrack->InDeletedTransitionPtr - (UINTN)VariableBase
+                        : 0;
+  Status = ProtectedVariableLibReclaim (
+             mNvVariableCache,
+             LastVariableOffset,
+             VariableOffset,
+             VariableInDelOffset,
+             NewVariable,
+             NewVariableSize,
+             &HwErrVariableTotalSize,
+             &CommonVariableTotalSize,
+             &CommonUserVariableTotalSize
+             );
+  if (EFI_ERROR (Status)) {
+    if (Status == EFI_UNSUPPORTED) {
+      Status = Reclaim (VariableBase, LastVariableOffset, IsVolatile,
+                        UpdatingPtrTrack, *NewVariable, NewVariableSize);
+    }
+    return Status;
+  }
+
+  //
+  // Flush the reclaim result to flash.
+  //
+  Status = FtwVariableSpace (VariableBase, mNvVariableCache);
+  if (!EFI_ERROR (Status)) {
+    *NewVariable = (VARIABLE_HEADER *)
+                   ((UINTN)VariableBase + ((UINTN)*NewVariable - (UINTN)mNvVariableCache));
+    mVariableModuleGlobal->HwErrVariableTotalSize = HwErrVariableTotalSize;
+    mVariableModuleGlobal->CommonVariableTotalSize = CommonVariableTotalSize;
+    mVariableModuleGlobal->CommonUserVariableTotalSize = CommonUserVariableTotalSize;
+  }
+
+  return Status;
+}

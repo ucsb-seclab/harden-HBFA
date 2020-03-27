@@ -31,6 +31,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/MemoryAllocationLib.h>
 #include <Library/AuthVariableLib.h>
 #include <Library/VarCheckLib.h>
+#include <Library/ProtectedVariableLib.h>
 #include <Guid/GlobalVariable.h>
 #include <Guid/EventGroup.h>
 #include <Guid/VariableFormat.h>
@@ -926,6 +927,29 @@ ReclaimEx (
   IN  OUT VARIABLE_POINTER_TRACK       *UpdatingPtrTrack,
   IN  OUT VARIABLE_HEADER              **NewVariable,
   IN      UINTN                        NewVariableSize
+  );
+
+/**
+  Update partial data of a variable on NV storage and/or cached copy.
+
+  @param[in]  VariableInfo  Pointer to a variable with detailed information.
+  @param[in]  Offset        Offset to write from.
+  @param[in]  Size          Size of data Buffer to update.
+  @param[in]  Buffer        Pointer to data buffer to update.
+
+  @retval EFI_SUCCESS             The variable data was updated successfully.
+  @retval EFI_UNSUPPORTED         If this function is called directly in runtime.
+  @retval EFI_INVALID_PARAMETER   If VariableInfo, Buffer or Size are not valid.
+  @retval Others                  Failed to update NV storage or variable cache.
+
+**/
+EFI_STATUS
+EFIAPI
+VariableExLibUpdateNvVariable (
+  IN  PROTECTED_VARIABLE_INFO     *VariableInfo,
+  IN  UINTN                       Offset,
+  IN  UINT32                      Size,
+  IN  UINT8                       *Buffer
   );
 
 /**
