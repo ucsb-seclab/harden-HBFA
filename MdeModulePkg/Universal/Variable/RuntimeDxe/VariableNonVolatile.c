@@ -1,7 +1,7 @@
 /** @file
   Common variable non-volatile store routines.
 
-Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2019 - 2020, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -317,7 +317,9 @@ InitNonVolatileVariableStore (
   // Parse non-volatile variable data and get last variable offset.
   //
   Variable  = GetStartPointer (mNvVariableCache);
-  while (IsValidVariableHeader (Variable, GetEndPointer (mNvVariableCache))) {
+  while (IsValidVariableHeader (Variable, GetEndPointer (mNvVariableCache),
+                                mVariableModuleGlobal->VariableGlobal.AuthFormat))
+  {
     NextVariable = GetNextVariablePtr (Variable, mVariableModuleGlobal->VariableGlobal.AuthFormat);
     VariableSize = (UINTN) NextVariable - (UINTN) Variable;
     if ((Variable->Attributes & (EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_HARDWARE_ERROR_RECORD)) == (EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_HARDWARE_ERROR_RECORD)) {

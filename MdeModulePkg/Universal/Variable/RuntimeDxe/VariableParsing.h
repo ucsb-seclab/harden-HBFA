@@ -2,7 +2,7 @@
   Functions in this module are associated with variable parsing operations and
   are intended to be usable across variable driver source files.
 
-Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2019 - 2020, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -11,7 +11,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define _VARIABLE_PARSING_H_
 
 #include <Guid/ImageAuthentication.h>
-#include "Variable.h"
 
 /**
 
@@ -19,6 +18,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
   @param[in] Variable           Pointer to the Variable Header.
   @param[in] VariableStoreEnd   Pointer to the Variable Store End.
+  @param[in] AuthFormat         Auth-variable indicator.
 
   @retval TRUE              Variable header is valid.
   @retval FALSE             Variable header is not valid.
@@ -27,7 +27,8 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 BOOLEAN
 IsValidVariableHeader (
   IN  VARIABLE_HEADER       *Variable,
-  IN  VARIABLE_HEADER       *VariableStoreEnd
+  IN  VARIABLE_HEADER       *VariableStoreEnd,
+  IN  BOOLEAN               AuthFormat
   );
 
 /**
@@ -190,6 +191,28 @@ UINTN
 GetVariableDataOffset (
   IN  VARIABLE_HEADER   *Variable,
   IN  BOOLEAN           AuthFormat
+  );
+
+/**
+  Get variable data payload.
+
+  @param[in]      Variable     Pointer to the Variable Header.
+  @param[out]     Data         Pointer to buffer used to store the variable data.
+  @param[in]      DataSize     Size of buffer passed by Data.
+  @param[out]     DataSize     Size of data copied into Data buffer.
+  @param[in]      AuthFlag     Auth-variable indicator.
+
+  @return EFI_SUCCESS             Data was fetched.
+  @return EFI_INVALID_PARAMETER   DataSize is NULL.
+  @return EFI_BUFFER_TOO_SMALL    DataSize is smaller than size of variable data.
+
+**/
+EFI_STATUS
+GetVariableData (
+  IN      VARIABLE_HEADER   *Variable,
+  IN  OUT VOID              *Data,
+  IN  OUT UINT32            *DataSize,
+  IN      BOOLEAN           AuthFlag
   );
 
 /**

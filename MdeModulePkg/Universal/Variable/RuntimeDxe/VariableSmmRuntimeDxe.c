@@ -13,7 +13,7 @@
 
   InitCommunicateBuffer() is really function to check the variable data size.
 
-Copyright (c) 2010 - 2019, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2010 - 2020, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -39,6 +39,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Guid/SmmVariableCommon.h>
 
 #include "PrivilegePolymorphic.h"
+#include "Variable.h"
 #include "VariableParsing.h"
 
 EFI_HANDLE                       mHandle                    = NULL;
@@ -579,7 +580,6 @@ FindVariableInRuntimeCache (
   )
 {
   EFI_STATUS              Status;
-  UINTN                   TempDataSize;
   VARIABLE_POINTER_TRACK  RtPtrTrack;
   VARIABLE_STORE_TYPE     StoreType;
   VARIABLE_STORE_HEADER   *VariableStoreList[VariableStoreTypeMax];
@@ -630,37 +630,20 @@ FindVariableInRuntimeCache (
 
     if (!EFI_ERROR (Status)) {
       //
-      // Get data size
+      // Get data and its size
       //
-      TempDataSize = DataSizeOfVariable (RtPtrTrack.CurrPtr, mVariableAuthFormat);
-      ASSERT (TempDataSize != 0);
+      Status = GetVariableData (RtPtrTrack.CurrPtr, Data, (UINT32 *)DataSize, mVariableAuthFormat);
 
-      if (*DataSize >= TempDataSize) {
-        if (Data == NULL) {
-          Status = EFI_INVALID_PARAMETER;
-          goto Done;
-        }
-
-        CopyMem (Data, GetVariableDataPtr (RtPtrTrack.CurrPtr, mVariableAuthFormat), TempDataSize);
+      if (!EFI_ERROR (Status)) {
         if (Attributes != NULL) {
           *Attributes = RtPtrTrack.CurrPtr->Attributes;
         }
 
-        *DataSize = TempDataSize;
-
         UpdateVariableInfo (VariableName, VendorGuid, RtPtrTrack.Volatile, TRUE, FALSE, FALSE, TRUE, &mVariableInfo);
-
-        Status = EFI_SUCCESS;
-        goto Done;
-      } else {
-        *DataSize = TempDataSize;
-        Status = EFI_BUFFER_TOO_SMALL;
-        goto Done;
       }
     }
   }
 
-Done:
   mVariableRuntimeCacheReadLock = FALSE;
 
   return Status;

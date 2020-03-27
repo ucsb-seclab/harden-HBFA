@@ -3,13 +3,14 @@
   and volatile storage space and install variable architecture protocol.
 
 Copyright (C) 2013, Red Hat, Inc.
-Copyright (c) 2006 - 2019, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2006 - 2020, Intel Corporation. All rights reserved.<BR>
 (C) Copyright 2015 Hewlett Packard Enterprise Development LP<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
 #include "Variable.h"
+#include "VariableParsing.h"
 
 EFI_HANDLE                          mHandle                    = NULL;
 EFI_EVENT                           mVirtualAddressChangeEvent = NULL;

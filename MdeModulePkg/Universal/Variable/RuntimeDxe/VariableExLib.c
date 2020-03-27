@@ -1,13 +1,14 @@
 /** @file
   Provides variable driver extended services.
 
-Copyright (c) 2015 - 2019, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2015 - 2020, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
 #include "Variable.h"
 #include "VariableParsing.h"
+#include "VariableRuntimeCache.h"
 
 /**
   Finds variable in storage blocks of volatile and non-volatile storage areas.
@@ -56,6 +57,9 @@ VariableExLibFindVariable (
     return Status;
   }
 
+  AuthVariableInfo->NameSize        = NameSizeOfVariable (Variable.CurrPtr, mVariableModuleGlobal->VariableGlobal.AuthFormat);
+  AuthVariableInfo->VariableName    = GetVariableNamePtr (Variable.CurrPtr, mVariableModuleGlobal->VariableGlobal.AuthFormat);
+  AuthVariableInfo->VendorGuid      = GetVendorGuidPtr (Variable.CurrPtr, mVariableModuleGlobal->VariableGlobal.AuthFormat);
   AuthVariableInfo->DataSize        = DataSizeOfVariable (Variable.CurrPtr, mVariableModuleGlobal->VariableGlobal.AuthFormat);
   AuthVariableInfo->Data            = GetVariableDataPtr (Variable.CurrPtr, mVariableModuleGlobal->VariableGlobal.AuthFormat);
   AuthVariableInfo->Attributes      = Variable.CurrPtr->Attributes;
@@ -123,6 +127,7 @@ VariableExLibFindNextVariable (
     return Status;
   }
 
+  AuthVariableInfo->NameSize        = NameSizeOfVariable (VariablePtr, mVariableModuleGlobal->VariableGlobal.AuthFormat);
   AuthVariableInfo->VariableName    = GetVariableNamePtr (VariablePtr, mVariableModuleGlobal->VariableGlobal.AuthFormat);
   AuthVariableInfo->VendorGuid      = GetVendorGuidPtr (VariablePtr, mVariableModuleGlobal->VariableGlobal.AuthFormat);
   AuthVariableInfo->DataSize        = DataSizeOfVariable (VariablePtr, mVariableModuleGlobal->VariableGlobal.AuthFormat);

@@ -2,11 +2,12 @@
   Functions in this module are associated with variable parsing operations and
   are intended to be usable across variable driver source files.
 
-Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2019 - 2020, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include "Variable.h"
 #include "VariableParsing.h"
 
 /**
@@ -23,10 +24,14 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 BOOLEAN
 IsValidVariableHeader (
   IN  VARIABLE_HEADER       *Variable,
-  IN  VARIABLE_HEADER       *VariableStoreEnd
+  IN  VARIABLE_HEADER       *VariableStoreEnd,
+  IN  BOOLEAN               AuthFormat
   )
 {
-  if ((Variable == NULL) || (Variable >= VariableStoreEnd) || (Variable->StartId != VARIABLE_DATA)) {
+  if ((Variable == NULL)
+      || (((UINTN)Variable + GetVariableHeaderSize (AuthFormat)) >= (UINTN)VariableStoreEnd)
+      || (Variable->StartId != VARIABLE_DATA))
+  {
     //
     // Variable is NULL or has reached the end of variable store,
     // or the StartId is not correct.
@@ -334,6 +339,52 @@ GetVariableDataOffset (
 }
 
 /**
+  Get variable data payload.
+
+  @param[in]      Variable     Pointer to the Variable Header.
+  @param[out]     Data         Pointer to buffer used to store the variable data.
+  @param[in]      DataSize     Size of buffer passed by Data.
+  @param[out]     DataSize     Size of data copied into Data buffer.
+  @param[in]      AuthFlag     Auth-variable indicator.
+
+  @return EFI_SUCCESS             Data was fetched.
+  @return EFI_INVALID_PARAMETER   DataSize is NULL.
+  @return EFI_BUFFER_TOO_SMALL    DataSize is smaller than size of variable data.
+
+**/
+EFI_STATUS
+GetVariableData (
+  IN      VARIABLE_HEADER     *Variable,
+  IN  OUT VOID                *Data,
+  IN  OUT UINT32              *DataSize,
+  IN      BOOLEAN             AuthFlag
+  )
+{
+  UINT32            Size;
+
+  if (DataSize == NULL) {
+    ASSERT (DataSize != NULL);
+    return EFI_INVALID_PARAMETER;
+  }
+
+  Size = (UINT32)DataSizeOfVariable (Variable, AuthFlag);
+  if (*DataSize < Size) {
+    *DataSize = Size;
+    return EFI_BUFFER_TOO_SMALL;
+  }
+
+  if (Data == NULL) {
+    ASSERT (Data != NULL);
+    return EFI_INVALID_PARAMETER;
+  }
+
+  CopyMem (Data, GetVariableDataPtr (Variable, AuthFlag), Size);
+  *DataSize = Size;
+
+  return EFI_SUCCESS;
+}
+
+/**
 
   This code gets the pointer to the next variable header.
 
@@ -471,7 +522,7 @@ FindVariableEx (
   InDeletedVariable  = NULL;
 
   for ( PtrTrack->CurrPtr = PtrTrack->StartPtr
-      ; IsValidVariableHeader (PtrTrack->CurrPtr, PtrTrack->EndPtr)
+      ; IsValidVariableHeader (PtrTrack->CurrPtr, PtrTrack->EndPtr, AuthFormat)
       ; PtrTrack->CurrPtr = GetNextVariablePtr (PtrTrack->CurrPtr, AuthFormat)
       ) {
     if (PtrTrack->CurrPtr->State == VAR_ADDED ||
@@ -597,7 +648,7 @@ VariableServiceGetNextVariableInternal (
     //
     // Switch to the next variable store if needed
     //
-    while (!IsValidVariableHeader (Variable.CurrPtr, Variable.EndPtr)) {
+    while (!IsValidVariableHeader (Variable.CurrPtr, Variable.EndPtr, AuthFormat)) {
       //
       // Find current storage index
       //
