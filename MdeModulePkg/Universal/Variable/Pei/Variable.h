@@ -2,7 +2,7 @@
   The internal header file includes the common header files, defines
   internal structure and functions used by PeiVariable module.
 
-Copyright (c) 2006 - 2017, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2006 - 2020, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
