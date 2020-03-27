@@ -112,6 +112,8 @@
   ShellLib|ShellPkg/Library/UefiShellLib/UefiShellLib.inf
   FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
 
+  ProtectedVariableLib|SecurityPkg/Library/ProtectedVariableLibNull/ProtectedVariableLibNull.inf
+
 [LibraryClasses.common.SEC]
   PeiServicesLib|EmulatorPkg/Library/SecPeiServicesLib/SecPeiServicesLib.inf
   PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf

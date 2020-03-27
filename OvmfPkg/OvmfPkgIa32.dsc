@@ -195,6 +195,7 @@
 !endif
   VarCheckLib|MdeModulePkg/Library/VarCheckLib/VarCheckLib.inf
 
+  ProtectedVariableLib|SecurityPkg/Library/ProtectedVariableLibNull/ProtectedVariableLibNull.inf
 
   #
   # Network libraries

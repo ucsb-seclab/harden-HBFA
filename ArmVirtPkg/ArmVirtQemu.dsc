@@ -85,6 +85,8 @@
   TpmMeasurementLib|MdeModulePkg/Library/TpmMeasurementLibNull/TpmMeasurementLibNull.inf
 !endif
 
+  ProtectedVariableLib|SecurityPkg/Library/ProtectedVariableLibNull/ProtectedVariableLibNull.inf
+
 [LibraryClasses.common.PEIM]
   ArmVirtMemInfoLib|ArmVirtPkg/Library/QemuVirtMemInfoLib/QemuVirtMemInfoPeiLib.inf
 

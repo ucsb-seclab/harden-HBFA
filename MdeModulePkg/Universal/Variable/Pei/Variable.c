@@ -44,6 +44,30 @@ PeimInitializeVariableServices (
   IN CONST EFI_PEI_SERVICES          **PeiServices
   )
 {
+  EFI_STATUS                      Status;
+  PROTECTED_VARIABLE_CONTEXT_IN   ContextIn;
+
+  //
+  // If protected variable services are not supported, EFI_UNSUPPORTED should
+  // be always returned. Check it here.
+  //
+  ContextIn.StructVersion = PROTECTED_VARIABLE_CONTEXT_IN_STRUCT_VERSION;
+  ContextIn.StructSize    = sizeof (ContextIn);
+
+  ContextIn.MaxVariableSize     = 0;
+  ContextIn.VariableServiceUser = FromPeiModule;
+  ContextIn.InitVariableStore   = InitNvVariableStore;
+  ContextIn.GetVariableInfo     = GetVariableInfo;
+  ContextIn.GetNextVariableInfo = GetNextVariableInfo;
+  ContextIn.FindVariableSmm     = NULL;
+  ContextIn.UpdateVariableStore = NULL;
+  ContextIn.IsUserVariable      = NULL;
+
+  Status = ProtectedVariableLibInitialize (&ContextIn);
+  if (EFI_ERROR (Status) && Status != EFI_UNSUPPORTED) {
+    return Status;
+  }
+
   return PeiServicesInstallPpi (&mPpiListVariable);
 }
 
@@ -281,6 +305,7 @@ PeiGetVariable (
   EFI_STATUS              Status;
   VARIABLE_STORE_INFO     StoreInfo;
   VARIABLE_HEADER         *VariableHeader;
+  VARIABLE_STORE_HEADER   *StoreHeader;
 
   if (VariableName == NULL || VariableGuid == NULL || DataSize == NULL) {
     return EFI_INVALID_PARAMETER;
@@ -301,27 +326,42 @@ PeiGetVariable (
   }
   GetVariableHeader (&StoreInfo, Variable.CurrPtr, &VariableHeader);
 
-  //
-  // Get data size
-  //
-  VarDataSize = DataSizeOfVariable (VariableHeader, StoreInfo.AuthFlag);
-  if (*DataSize >= VarDataSize) {
-    if (Data == NULL) {
-      return EFI_INVALID_PARAMETER;
-    }
-
-    GetVariableNameOrData (&StoreInfo, GetVariableDataPtr (Variable.CurrPtr, VariableHeader, StoreInfo.AuthFlag), VarDataSize, Data);
-
-    if (Attributes != NULL) {
-      *Attributes = VariableHeader->Attributes;
-    }
-
-    *DataSize = VarDataSize;
-    return EFI_SUCCESS;
+  Status = ProtectedVariableLibGetStore (NULL, &StoreHeader);
+  if (!EFI_ERROR (Status) && StoreInfo.VariableStoreHeader == StoreHeader) {
+    //
+    // Protected (maybe encrypted) variable.
+    //
+    Status = ProtectedVariableLibGetData (
+               VariableHeader,
+               Data,
+               (UINT32 *)DataSize,
+               StoreInfo.AuthFlag
+               );
   } else {
-    *DataSize = VarDataSize;
-    return EFI_BUFFER_TOO_SMALL;
+    //
+    // General variable.
+    //
+    VarDataSize = DataSizeOfVariable (VariableHeader, StoreInfo.AuthFlag);
+    if (*DataSize >= VarDataSize) {
+      if (Data == NULL) {
+        return EFI_INVALID_PARAMETER;
+      }
+
+      GetVariableNameOrData (&StoreInfo, GetVariableDataPtr (Variable.CurrPtr, VariableHeader, StoreInfo.AuthFlag), VarDataSize, Data);
+
+      if (Attributes != NULL) {
+        *Attributes = VariableHeader->Attributes;
+      }
+
+      *DataSize = VarDataSize;
+      Status = EFI_SUCCESS;
+    } else {
+      *DataSize = VarDataSize;
+      Status = EFI_BUFFER_TOO_SMALL;
+    }
   }
+
+  return Status;
 }
 
 /**

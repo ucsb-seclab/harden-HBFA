@@ -217,6 +217,8 @@ GetVariableStore (
   )
 {
   EFI_HOB_GUID_TYPE                     *GuidHob;
+  VARIABLE_STORE_HEADER                 *VariableStoreHeader;
+  EFI_STATUS                            Status;
 
   StoreInfo->VariableStoreHeader  = NULL;
   StoreInfo->IndexTable           = NULL;
@@ -232,7 +234,17 @@ GetVariableStore (
         //
         // Emulated non-volatile variable mode is not enabled.
         //
-        GetNvVariableStore (StoreInfo, NULL);
+        Status = ProtectedVariableLibGetStore (NULL, &VariableStoreHeader);
+        if (EFI_ERROR (Status) || VariableStoreHeader == NULL) {
+          GetNvVariableStore (StoreInfo, NULL);
+        } else {
+          StoreInfo->VariableStoreHeader = VariableStoreHeader;
+          StoreInfo->AuthFlag = CompareGuid (
+                                  &VariableStoreHeader->Signature,
+                                  &gEfiAuthenticatedVariableGuid
+                                  );
+        }
+
         if (StoreInfo->VariableStoreHeader != NULL) {
           GuidHob = GetFirstGuidHob (&gEfiVariableIndexTableGuid);
           if (GuidHob != NULL) {
@@ -262,3 +274,190 @@ GetVariableStore (
   return StoreInfo->VariableStoreHeader;
 }
 
+/**
+  Make a cached copy of NV variable storage.
+
+  To save memory in PEI phase, only valid variables are copied into cache.
+  An IndexTable could be used to store the offset (relative to NV storage
+  base) of each copied variable, in case we need to restore the storage
+  as the same (valid) variables layout as in original one.
+
+  Variables with valid format and following state can be taken as valid:
+    - with state VAR_ADDED;
+    - with state VAR_IN_DELETED_TRANSITION but without the same variable
+      with state VAR_ADDED;
+    - with state VAR_ADDED and/or VAR_IN_DELETED_TRANSITION for variable
+      MetaDataHmacVar.
+
+  @param[out]     StoreCacheBase    Base address of variable storage cache.
+  @param[in,out]  StoreCacheSize    Size of space in StoreCacheBase.
+  @param[out]     IndexTable        Buffer of index (offset) table with entries of
+                                    VariableNumber.
+  @param[out]     VariableNumber    Number of valid variables.
+  @param[out]     AuthFlag          Aut-variable indicator.
+
+  @return EFI_INVALID_PARAMETER Invalid StoreCacheSize and/or StoreCacheBase.
+  @return EFI_VOLUME_CORRUPTED  Invalid or no NV variable storage found.
+  @return EFI_BUFFER_TOO_SMALL  StoreCacheSize is smaller than needed.
+  @return EFI_SUCCESS           NV variable storage is cached successfully.
+**/
+EFI_STATUS
+EFIAPI
+InitNvVariableStore (
+     OUT  EFI_PHYSICAL_ADDRESS              StoreCacheBase OPTIONAL,
+  IN OUT  UINT32                            *StoreCacheSize,
+     OUT  UINT32                            *IndexTable OPTIONAL,
+     OUT  UINT32                            *VariableNumber OPTIONAL,
+     OUT  BOOLEAN                           *AuthFlag OPTIONAL
+  )
+{
+  EFI_STATUS                            Status;
+  EFI_FIRMWARE_VOLUME_HEADER            *VariableFv;
+  VARIABLE_HEADER                       *Variable;
+  VARIABLE_HEADER                       *VariableHeader;
+  VARIABLE_STORE_INFO                   StoreInfo;
+  UINT32                                Size;
+  UINT32                                Index;
+  UINT8                                 *StoreCachePtr;
+  UINT8                                 *StoreCacheEnd;
+
+  if (StoreCacheSize == NULL) {
+    ASSERT (StoreCacheSize != NULL);
+    return EFI_INVALID_PARAMETER;
+  }
+
+  if (*StoreCacheSize != 0 && StoreCacheBase == 0) {
+    ASSERT (*StoreCacheSize != 0 && StoreCacheBase != 0);
+    return EFI_INVALID_PARAMETER;
+  }
+
+  GetNvVariableStore (&StoreInfo, &VariableFv);
+  if (StoreInfo.VariableStoreHeader == NULL) {
+    return EFI_VOLUME_CORRUPTED;
+  }
+
+  StoreCachePtr = (UINT8 *)(UINTN)StoreCacheBase;
+  StoreCacheEnd = StoreCachePtr + (*StoreCacheSize);
+
+  //
+  // Keep both fv and variable store header.
+  //
+  Size = VariableFv->HeaderLength + sizeof (VARIABLE_STORE_HEADER);
+  if ((StoreCachePtr + Size) <= StoreCacheEnd) {
+    CopyMem (
+      StoreCachePtr,
+      (VOID *)VariableFv,
+      Size
+      );
+  }
+  StoreCachePtr += Size;
+
+  Index = 0;
+  Variable = GetStartPointer (StoreInfo.VariableStoreHeader);
+  while (GetVariableHeader (&StoreInfo, Variable, &VariableHeader)) {
+    //
+    // Skip completely deleted variables to save cache space.
+    //
+    if (VariableHeader->State != VAR_ADDED
+        && VariableHeader->State != (VAR_ADDED & VAR_IN_DELETED_TRANSITION))
+    {
+      Variable = GetNextVariablePtr (&StoreInfo, Variable, Variable);
+      continue;
+    }
+
+    //
+    // Record the offset of each variable so that we can restore the full
+    // variable store later when necessary.
+    //
+    if (IndexTable != NULL) {
+      if (StoreInfo.FtwLastWriteData == NULL
+          || ((EFI_PHYSICAL_ADDRESS)(UINTN)Variable
+              < StoreInfo.FtwLastWriteData->SpareAddress)
+          || ((EFI_PHYSICAL_ADDRESS)(UINTN)Variable
+              >= (StoreInfo.FtwLastWriteData->SpareAddress
+                  + StoreInfo.FtwLastWriteData->Length)))
+      {
+        //
+        // Variable starts in original space.
+        //
+        IndexTable[Index] = (UINT32)((UINTN)Variable - (UINTN)StoreInfo.VariableStoreHeader);
+      } else {
+        //
+        // Variables starts in spare space. Calculate the equivalent offset
+        // relative to original store.
+        //
+        IndexTable[Index] =
+          (UINT32)(((UINTN)StoreInfo.FtwLastWriteData->TargetAddress
+                    - (UINTN)StoreInfo.VariableStoreHeader)
+                   + ((UINTN)Variable
+                      - (UINTN)StoreInfo.FtwLastWriteData->SpareAddress));
+      }
+    }
+
+    //
+    // Align variable header.
+    //
+    StoreCachePtr = (UINT8 *)HEADER_ALIGN (StoreCachePtr);
+
+    //
+    // Copy variable header.
+    //
+    Size = (UINT32)GetVariableHeaderSize (StoreInfo.AuthFlag);
+    if ((StoreCachePtr + Size) <= StoreCacheEnd) {
+      CopyMem (StoreCachePtr, VariableHeader, Size);
+    }
+    StoreCachePtr += Size;
+
+    //
+    // Copy variable name string.
+    //
+    Size = (UINT32)NameSizeOfVariable (VariableHeader, StoreInfo.AuthFlag);
+    if ((StoreCachePtr + Size) <= StoreCacheEnd) {
+      GetVariableNameOrData (
+        &StoreInfo,
+        (UINT8 *)GetVariableNamePtr (Variable, StoreInfo.AuthFlag),
+        Size,
+        StoreCachePtr
+        );
+    }
+    StoreCachePtr += Size;
+
+    //
+    // Copy variable data.
+    //
+    Size = (UINT32)DataSizeOfVariable (VariableHeader, StoreInfo.AuthFlag);
+    if ((StoreCachePtr + Size) <= StoreCacheEnd) {
+      GetVariableNameOrData (
+        &StoreInfo,
+        GetVariableDataPtr (Variable, VariableHeader, StoreInfo.AuthFlag),
+        Size,
+        StoreCachePtr
+        );
+    }
+    StoreCachePtr += Size;
+
+    //
+    // Try next variable.
+    //
+    Variable = GetNextVariablePtr (&StoreInfo, Variable, Variable);
+    Index += 1;
+  }
+
+  if (VariableNumber != NULL) {
+    *VariableNumber = Index;
+  }
+
+  if (AuthFlag != NULL) {
+    *AuthFlag = StoreInfo.AuthFlag;
+  }
+
+  if (*StoreCacheSize == 0) {
+    Status = EFI_BUFFER_TOO_SMALL;
+  } else {
+    Status = EFI_SUCCESS;
+  }
+
+  *StoreCacheSize = (UINT32)((EFI_PHYSICAL_ADDRESS)StoreCachePtr - StoreCacheBase);
+
+  return Status;
+}

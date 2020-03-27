@@ -25,6 +25,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
                                        (OFFSET_OF (WIN_CERTIFICATE_UEFI_GUID, CertData)))
 
 typedef struct {
+  UINTN         NameSize;
   CHAR16        *VariableName;
   EFI_GUID      *VendorGuid;
   UINT32        Attributes;
