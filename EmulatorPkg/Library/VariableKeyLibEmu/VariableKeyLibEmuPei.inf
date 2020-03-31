@@ -1,0 +1,45 @@
+## @file
+#  Provides emulated VariableKeyLib for testing protected variable services.
+#
+#  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010029
+  BASE_NAME                      = VariableKeyLibEmu
+  FILE_GUID                      = FD5DE012-00A5-48AF-812F-44B76A7093A0
+  MODULE_TYPE                    = PEIM
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = VariableKeyLib
+  CONSTRUCTOR                    = VariableKeyLibEmuConstructor
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 Arm AArch64
+#
+
+[Sources]
+  VariableKeyLibEmu.c
+  VariableKeyLibEmu.h
+  VariableKeyLibEmuPei.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmulatorPkg/EmulatorPkg.dec
+  SecurityPkg/SecurityPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  PeiServicesLib
+
+[Ppis]
+  gEmuThunkPpiGuid
+
+[Protocols]
+  gEfiSimpleFileSystemProtocolGuid

@@ -33,6 +33,11 @@
   DEFINE NETWORK_HTTP_BOOT_ENABLE = FALSE
   DEFINE NETWORK_ISCSI_ENABLE     = FALSE
 
+  #
+  # ProtectedVariable
+  #
+  DEFINE PROTECTED_VARIABLE_ENABLE  = FALSE
+
 [SkuIds]
   0|DEFAULT
 
@@ -227,6 +232,14 @@
   #  0-PCANSI, 1-VT100, 2-VT00+, 3-UTF8, 4-TTYTERM
   gEfiMdePkgTokenSpaceGuid.PcdDefaultTerminalType|1
 
+  # For protected variable services
+!if $(PROTECTED_VARIABLE_ENABLE)
+  gEfiCryptoPkgTokenSpaceGuid.PcdCryptoServiceFamilyEnable.HmacSha256.Family | PCD_CRYPTO_SERVICE_ENABLE_FAMILY
+  gEfiCryptoPkgTokenSpaceGuid.PcdCryptoServiceFamilyEnable.Random.Family     | PCD_CRYPTO_SERVICE_ENABLE_FAMILY
+  gEfiCryptoPkgTokenSpaceGuid.PcdCryptoServiceFamilyEnable.Sha256.Family     | PCD_CRYPTO_SERVICE_ENABLE_FAMILY
+  gEfiCryptoPkgTokenSpaceGuid.PcdCryptoServiceFamilyEnable.Hkdf.Family       | PCD_CRYPTO_SERVICE_ENABLE_FAMILY
+!endif
+
 [PcdsDynamicDefault.common.DEFAULT]
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase64|0
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase64|0
@@ -273,7 +286,27 @@
 
   EmulatorPkg/BootModePei/BootModePei.inf
   MdeModulePkg/Universal/FaultTolerantWritePei/FaultTolerantWritePei.inf
-  MdeModulePkg/Universal/Variable/Pei/VariablePei.inf
+
+!if $(PROTECTED_VARIABLE_ENABLE)
+  CryptoPkg/Driver/CryptoPei.inf {
+    <LibraryClasses>
+      OpensslLib|CryptoPkg/Library/OpensslLib/OpensslLibCrypto.inf
+      IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
+      BaseCryptLib|CryptoPkg/Library/BaseCryptLib/PeiCryptLib.inf
+      TlsLib|CryptoPkg/Library/TlsLibNull/TlsLibNull.inf
+  }
+!endif
+
+  MdeModulePkg/Universal/Variable/Pei/VariablePei.inf {
+    <LibraryClasses>
+!if $(PROTECTED_VARIABLE_ENABLE)
+      ProtectedVariableLib|SecurityPkg/Library/ProtectedVariableLib/PeiProtectedVariableLib.inf
+      VariableKeyLib|EmulatorPkg/Library/VariableKeyLibEmu/VariableKeyLibEmuPei.inf
+      RpmcLib|EmulatorPkg/Library/RpmcLibEmu/RpmcLibEmuPei.inf
+      BaseCryptLib|CryptoPkg/Library/BaseCryptLibOnProtocolPpi/PeiCryptLib.inf
+      EncryptionVariableLib|SecurityPkg/Library/EncryptionVariableLibNull/EncryptionVariableLibNull.inf
+!endif
+  }
   EmulatorPkg/AutoScanPei/AutoScanPei.inf
   EmulatorPkg/FirmwareVolumePei/FirmwareVolumePei.inf
   EmulatorPkg/FlashMapPei/FlashMapPei.inf
@@ -317,10 +350,26 @@
   EmulatorPkg/PlatformSmbiosDxe/PlatformSmbiosDxe.inf
   EmulatorPkg/TimerDxe/Timer.inf
 
+!if $(PROTECTED_VARIABLE_ENABLE)
+  CryptoPkg/Driver/CryptoDxe.inf {
+    <LibraryClasses>
+      OpensslLib|CryptoPkg/Library/OpensslLib/OpensslLibCrypto.inf
+      IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
+      BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
+      TlsLib|CryptoPkg/Library/TlsLibNull/TlsLibNull.inf
+  }
+!endif
 
   MdeModulePkg/Universal/Variable/RuntimeDxe/VariableRuntimeDxe.inf {
     <LibraryClasses>
       NULL|MdeModulePkg/Library/VarCheckUefiLib/VarCheckUefiLib.inf
+!if $(PROTECTED_VARIABLE_ENABLE)
+      ProtectedVariableLib|SecurityPkg/Library/ProtectedVariableLib/DxeProtectedVariableLib.inf
+      VariableKeyLib|EmulatorPkg/Library/VariableKeyLibEmu/VariableKeyLibEmuDxe.inf
+      RpmcLib|EmulatorPkg/Library/RpmcLibEmu/RpmcLibEmuDxe.inf
+      BaseCryptLib|CryptoPkg/Library/BaseCryptLibOnProtocolPpi/DxeCryptLib.inf
+      EncryptionVariableLib|SecurityPkg/Library/EncryptionVariableLibNull/EncryptionVariableLibNull.inf
+!endif
   }
   MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
   MdeModulePkg/Universal/MonotonicCounterRuntimeDxe/MonotonicCounterRuntimeDxe.inf

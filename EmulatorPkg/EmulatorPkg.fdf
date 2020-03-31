@@ -125,6 +125,9 @@ INF  EmulatorPkg/FirmwareVolumePei/FirmwareVolumePei.inf
 INF  EmulatorPkg/FlashMapPei/FlashMapPei.inf
 INF  EmulatorPkg/ThunkPpiToProtocolPei/ThunkPpiToProtocolPei.inf
 INF  MdeModulePkg/Universal/FaultTolerantWritePei/FaultTolerantWritePei.inf
+!if $(PROTECTED_VARIABLE_ENABLE)
+INF  CryptoPkg/Driver/CryptoPei.inf
+!endif
 INF  MdeModulePkg/Universal/Variable/Pei/VariablePei.inf
 INF  MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf
 
@@ -148,6 +151,9 @@ INF  EmulatorPkg/CpuRuntimeDxe/Cpu.inf
 INF  MdeModulePkg/Universal/FaultTolerantWriteDxe/FaultTolerantWriteDxe.inf
 INF  EmulatorPkg/PlatformSmbiosDxe/PlatformSmbiosDxe.inf
 INF  EmulatorPkg/TimerDxe/Timer.inf
+!if $(PROTECTED_VARIABLE_ENABLE)
+INF  CryptoPkg/Driver/CryptoDxe.inf
+!endif
 INF  MdeModulePkg/Universal/Variable/RuntimeDxe/VariableRuntimeDxe.inf
 INF  MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
 INF  MdeModulePkg/Universal/MonotonicCounterRuntimeDxe/MonotonicCounterRuntimeDxe.inf

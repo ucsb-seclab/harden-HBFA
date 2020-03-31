@@ -1,0 +1,47 @@
+## @file
+#  Provides emulated RpmcLib for testing protected variable services.
+#
+#  Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010029
+  BASE_NAME                      = RpmcLibEmu
+  FILE_GUID                      = AC5C785C-63F3-4438-B2C6-DF3110CF6444
+  MODULE_TYPE                    = PEIM
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = RpmcLib
+  CONSTRUCTOR                    = RpmcLibEmuConstructor
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 Arm AArch64
+#
+
+[Sources]
+  RpmcLibEmu.c
+  RpmcLibEmu.h
+  RpmcLibEmuPei.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmulatorPkg/EmulatorPkg.dec
+  SecurityPkg/SecurityPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  MemoryAllocationLib
+  PeiServicesLib
+
+[Ppis]
+  gEmuThunkPpiGuid
+
+[Protocols]
+  gEfiSimpleFileSystemProtocolGuid
+
