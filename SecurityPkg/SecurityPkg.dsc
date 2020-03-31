@@ -228,6 +228,8 @@
   SecurityPkg/Library/ProtectedVariableLib/DxeProtectedVariableLib.inf
   SecurityPkg/Library/ProtectedVariableLib/SmmProtectedVariableLib.inf
   SecurityPkg/Library/ProtectedVariableLib/SmmRuntimeProtectedVariableLib.inf
+  SecurityPkg/Library/EncryptionVariableLib/EncryptionVariableLib.inf
+
   SecurityPkg/Library/VariableKeyLibNull/VariableKeyLibNull.inf
   SecurityPkg/Library/RpmcLibNull/RpmcLibNull.inf
   SecurityPkg/Library/EncryptionVariableLibNull/EncryptionVariableLibNull.inf
