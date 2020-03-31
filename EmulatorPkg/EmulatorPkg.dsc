@@ -37,6 +37,7 @@
   # ProtectedVariable
   #
   DEFINE PROTECTED_VARIABLE_ENABLE  = FALSE
+  DEFINE ENCRYPTION_VARIABLE_ENABLE = FALSE
 
 [SkuIds]
   0|DEFAULT
@@ -118,6 +119,7 @@
   FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
 
   ProtectedVariableLib|SecurityPkg/Library/ProtectedVariableLibNull/ProtectedVariableLibNull.inf
+  EncryptionVariableLib|SecurityPkg/Library/EncryptionVariableLibNull/EncryptionVariableLibNull.inf
 
 [LibraryClasses.common.SEC]
   PeiServicesLib|EmulatorPkg/Library/SecPeiServicesLib/SecPeiServicesLib.inf
@@ -238,6 +240,9 @@
   gEfiCryptoPkgTokenSpaceGuid.PcdCryptoServiceFamilyEnable.Random.Family     | PCD_CRYPTO_SERVICE_ENABLE_FAMILY
   gEfiCryptoPkgTokenSpaceGuid.PcdCryptoServiceFamilyEnable.Sha256.Family     | PCD_CRYPTO_SERVICE_ENABLE_FAMILY
   gEfiCryptoPkgTokenSpaceGuid.PcdCryptoServiceFamilyEnable.Hkdf.Family       | PCD_CRYPTO_SERVICE_ENABLE_FAMILY
+  !if $(ENCRYPTION_VARIABLE_ENABLE)  
+  gEfiCryptoPkgTokenSpaceGuid.PcdCryptoServiceFamilyEnable.Aes.Family        | PCD_CRYPTO_SERVICE_ENABLE_FAMILY
+  !endif
 !endif
 
 [PcdsDynamicDefault.common.DEFAULT]
@@ -304,7 +309,9 @@
       VariableKeyLib|EmulatorPkg/Library/VariableKeyLibEmu/VariableKeyLibEmuPei.inf
       RpmcLib|EmulatorPkg/Library/RpmcLibEmu/RpmcLibEmuPei.inf
       BaseCryptLib|CryptoPkg/Library/BaseCryptLibOnProtocolPpi/PeiCryptLib.inf
-      EncryptionVariableLib|SecurityPkg/Library/EncryptionVariableLibNull/EncryptionVariableLibNull.inf
+  !if $(ENCRYPTION_VARIABLE_ENABLE)
+      EncryptionVariableLib|SecurityPkg/Library/EncryptionVariableLib/EncryptionVariableLib.inf
+  !endif
 !endif
   }
   EmulatorPkg/AutoScanPei/AutoScanPei.inf
@@ -368,7 +375,9 @@
       VariableKeyLib|EmulatorPkg/Library/VariableKeyLibEmu/VariableKeyLibEmuDxe.inf
       RpmcLib|EmulatorPkg/Library/RpmcLibEmu/RpmcLibEmuDxe.inf
       BaseCryptLib|CryptoPkg/Library/BaseCryptLibOnProtocolPpi/DxeCryptLib.inf
-      EncryptionVariableLib|SecurityPkg/Library/EncryptionVariableLibNull/EncryptionVariableLibNull.inf
+  !if $(ENCRYPTION_VARIABLE_ENABLE)
+      EncryptionVariableLib|SecurityPkg/Library/EncryptionVariableLib/EncryptionVariableLib.inf
+  !endif
 !endif
   }
   MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
