@@ -69,7 +69,7 @@ A UEFI SHELL application might be an intermediate step for this process if the t
 
 ## Intention
 **CdePkg** is a feasibility study on how to provide a complete *Hosted Environment* 
-(according to ANSI C Specification chapter 5.1.2) including all instrisic functions, 
+[(according to ANSI C Specification chapter 5.1.2)](http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=23) including all instrisic functions, 
 which the compiler requires to be a **full featured C-compiler**, in particular the full
 set of C-language operators (specifically `/`, `%`, `<<`, `>>` for 64 bit integers) for the 32 bit code generator, needed in PEI.
 
