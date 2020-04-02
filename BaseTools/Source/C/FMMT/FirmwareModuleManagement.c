@@ -835,7 +835,7 @@ FmmtImageView (
   Status = LibFindFvInFd (InputFile, &LocalFdData);
 
   if (EFI_ERROR(Status)) {
-    Error("FMMT", 0, 1001, "Error while search FV in FD", "");
+    Error("FMMT", 0, 1001, "Error while search FV in FD", FdInName);
     fclose (InputFile);
     return EFI_ABORTED;
   }

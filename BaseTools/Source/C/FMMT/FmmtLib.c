@@ -267,6 +267,11 @@ LibFindFvInFd (
   FdBufferOri = FdBuffer;
   FdBufferEnd = FdBuffer + FdSize;
 
+  if (FdSize < sizeof(EFI_FIRMWARE_VOLUME_HEADER)) {
+    Error ("FMMT", 0, 0002, "Error Check the input FD, Please make sure the FD is valid", "Check FD size error!");
+    return EFI_ABORTED;
+  }
+
   while (FdBuffer <= FdBufferEnd - sizeof (EFI_FIRMWARE_VOLUME_HEADER)) {
     FvHeader = (EFI_FIRMWARE_VOLUME_HEADER *) FdBuffer;
     //
