@@ -1,232 +1,244 @@
-# EDK II Project
+# Variable Integrity and Confidentiality with RPMC
 
-A modern, feature-rich, cross-platform firmware development environment
-for the UEFI and PI specifications from www.uefi.org.
+This staging branch introduces new features, integrity and confidentiality with RPMC (Replay Protected Monotonic Counter), into current variable services. Since this is a big add-on, a separate branch can help users to review, evaluate and/or test the new functionalities and potential backward compatibility issues.
 
-# Build Status
+## Requirement
 
-<table>
-  <tr>
-    <th>Host Type</th>
-    <th>Toolchain</th>
-    <th>Branch</th>
-    <th>Build Status</th>
-    <th>Test Status</th>
-    <th>Code Coverage</th>
-  </tr>
-  <tr>
-    <td>Windows</td>
-    <td>VS2019</td>
-    <td>master</td>
-    <td>
-      <a  href="https://dev.azure.com/tianocore/edk2-ci/_build/latest?definitionId=32&branchName=master">
-      <img src="https://dev.azure.com/tianocore/edk2-ci/_apis/build/status/Windows%20VS2019%20CI?branchName=master"/></a>
-    </td>
-    <td>
-      <a  href="https://dev.azure.com/tianocore/edk2-ci/_build/latest?definitionId=32&branchName=master">
-      <img src="https://img.shields.io/azure-devops/tests/tianocore/edk2-ci/32.svg"/></a>
-    </td>
-    <td>
-      <a  href="https://dev.azure.com/tianocore/edk2-ci/_build/latest?definitionId=32&branchName=master">
-      <img src="https://img.shields.io/badge/coverage-coming_soon-blue"/></a>
-    </td>
-  </tr>
-  <tr>
-    <td>Ubuntu</td>
-    <td>GCC</td>
-    <td>master</td>
-    <td>
-      <a  href="https://dev.azure.com/tianocore/edk2-ci/_build/latest?definitionId=31&branchName=master">
-      <img src="https://dev.azure.com/tianocore/edk2-ci/_apis/build/status/Ubuntu%20GCC5%20CI?branchName=master"/></a>
-    </td>
-    <td>
-      <a  href="https://dev.azure.com/tianocore/edk2-ci/_build/latest?definitionId=31&branchName=master">
-      <img src="https://img.shields.io/azure-devops/tests/tianocore/edk2-ci/31.svg"/></a>
-    </td>
-    <td>
-      <a  href="https://dev.azure.com/tianocore/edk2-ci/_build/latest?definitionId=31&branchName=master">
-      <img src="https://img.shields.io/badge/coverage-coming_soon-blue"/></a>
-    </td>
-  </tr>
-</table>
+From Microsoft Windows 10 [1903](https://go.microsoft.com/fwlink/?linkid=2086856)
 
-[More CI Build information](.pytool/Readme.md)
-
-# License Details
-
-The majority of the content in the EDK II open source project uses a
-[BSD-2-Clause Plus Patent License](License.txt).  The EDK II open source project
-contains the following components that are covered by additional licenses:
-* [BaseTools/Source/C/BrotliCompress](BaseTools/Source/C/BrotliCompress/LICENSE)
-* [MdeModulePkg/Library/BrotliCustomDecompressLib](MdeModulePkg/Library/BrotliCustomDecompressLib/LICENSE)
-* [BaseTools/Source/C/LzmaCompress](BaseTools/Source/C/LzmaCompress/LZMA-SDK-README.txt)
-* [MdeModulePkg/Library/LzmaCustomDecompressLib](MdeModulePkg/Library/LzmaCustomDecompressLib/LZMA-SDK-README.txt)
-* [IntelFrameworkModulePkg/Library/LzmaCustomDecompressLib/Sdk](IntelFrameworkModulePkg/Library/LzmaCustomDecompressLib/LZMA-SDK-README.txt)
-* [BaseTools/Source/C/VfrCompile/Pccts](BaseTools/Source/C/VfrCompile/Pccts/RIGHTS)
-* [MdeModulePkg/Universal/RegularExpressionDxe/Oniguruma](MdeModulePkg/Universal/RegularExpressionDxe/Oniguruma/README)
-* [OvmfPkg](OvmfPkg/License.txt)
-* [CryptoPkg/Library/OpensslLib/openssl](https://github.com/openssl/openssl/blob/50eaac9f3337667259de725451f201e784599687/LICENSE)
-* [ArmPkg/Library/ArmSoftFloatLib/berkeley-softfloat-3](https://github.com/ucb-bar/berkeley-softfloat-3/blob/b64af41c3276f97f0e181920400ee056b9c88037/COPYING.txt)
-
-The EDK II Project is composed of packages.  The maintainers for each package
-are listed in [Maintainers.txt](Maintainers.txt).
-
-# Resources
-* [TianoCore](http://www.tianocore.org)
-* [EDK II](https://github.com/tianocore/tianocore.github.io/wiki/EDK-II)
-* [Getting Started with EDK II](https://github.com/tianocore/tianocore.github.io/wiki/Getting-Started-with-EDK-II)
-* [Mailing Lists](https://github.com/tianocore/tianocore.github.io/wiki/Mailing-Lists)
-* [TianoCore Bugzilla](https://bugzilla.tianocore.org)
-* [How To Contribute](https://github.com/tianocore/tianocore.github.io/wiki/How-To-Contribute)
-* [Release Planning](https://github.com/tianocore/tianocore.github.io/wiki/EDK-II-Release-Planning)
-
-# Code Contributions
-To make a contribution to a TianoCore project, follow these steps.
-1. Create a change description in the format specified below to
-   use in the source control commit log.
-2. Your commit message must include your `Signed-off-by` signature
-3. Submit your code to the TianoCore project using the process
-   that the project documents on its web page.  If the process is
-   not documented, then submit the code on development email list
-   for the project.
-4. It is preferred that contributions are submitted using the same
-   copyright license as the base project. When that is not possible,
-   then contributions using the following licenses can be accepted:
-   * BSD (2-clause): http://opensource.org/licenses/BSD-2-Clause
-   * BSD (3-clause): http://opensource.org/licenses/BSD-3-Clause
-   * MIT: http://opensource.org/licenses/MIT
-   * Python-2.0: http://opensource.org/licenses/Python-2.0
-   * Zlib: http://opensource.org/licenses/Zlib
-
-   For documentation:
-   * FreeBSD Documentation License
-     https://www.freebsd.org/copyright/freebsd-doc-license.html
-
-   Contributions of code put into the public domain can also be
-   accepted.
-
-   Contributions using other licenses might be accepted, but further
-   review will be required.
-
-# Developer Certificate of Origin
-
-Your change description should use the standard format for a
-commit message, and must include your `Signed-off-by` signature.
-
-In order to keep track of who did what, all patches contributed must
-include a statement that to the best of the contributor's knowledge
-they have the right to contribute it under the specified license.
-
-The test for this is as specified in the [Developer's Certificate of
-Origin (DCO) 1.1](https://developercertificate.org/). The contributor
-certifies compliance by adding a line saying
-
-  Signed-off-by: Developer Name <developer@example.org>
-
-where `Developer Name` is the contributor's real name, and the email
-address is one the developer is reachable through at the time of
-contributing.
-
-```
-Developer's Certificate of Origin 1.1
-
-By making a contribution to this project, I certify that:
-
-(a) The contribution was created in whole or in part by me and I
-    have the right to submit it under the open source license
-    indicated in the file; or
-
-(b) The contribution is based upon previous work that, to the best
-    of my knowledge, is covered under an appropriate open source
-    license and I have the right under that license to submit that
-    work with modifications, whether created in whole or in part
-    by me, under the same open source license (unless I am
-    permitted to submit under a different license), as indicated
-    in the file; or
-
-(c) The contribution was provided directly to me by some other
-    person who certified (a), (b) or (c) and I have not modified
-    it.
-
-(d) I understand and agree that this project and the contribution
-    are public and that a record of the contribution (including all
-    personal information I submit with it, including my sign-off) is
-    maintained indefinitely and may be redistributed consistent with
-    this project or the open source license(s) involved.
+```plaintext
+“Confidential & replay-protected storage [Optional until 2020]: External memory for non-volatile storage of all UEFI variables and security-sensitive BIOS settings MUST include protections of that data to insure confidentiality and integrity of the data and to mitigate against rollback attacks. This is generally accomplished by encrypting the data, Confidential & replay-protected storage. This is generally accomplished by encrypting the data, applying a Message Authentication Code, and storing the resulting record in replay-protected storage such as Replay Protected Memory Block or Replay Protected Monotonic Counter.”
 ```
 
-# Sample Change Description / Commit Message
+## Architecture
+
+The main functionalities of integrity and confidentiality are provided through [ProtectedVariableLib](https://github.com/tianocore/edk2-staging/blob/ProtectedVariable/libs/SecurityPkg/Include/Library/ProtectedVariableLib.h) library, which employs [EncryptionVariableLib](https://github.com/tianocore/edk2-staging/blob/ProtectedVariable/libs/SecurityPkg/Include/Library/EncryptionVariableLib.h) to do encryption/description works, [RpmcLib](https://github.com/tianocore/edk2-staging/blob/ProtectedVariable/libs/SecurityPkg/Include/Library/RpmcLib.h) to operate Replay Protected Monotonic Counter for replay protection, and [VariableKeyLib](https://github.com/tianocore/edk2-staging/blob/ProtectedVariable/libs/SecurityPkg/Include/Library/VariableKeyLib.h) to access hardware generated root key for integrity check and data encryption for variables.
+
+``` mermaid
+classDiagram
+
+    class ProtectedVariableLib {
+        <<edk2>>
+        ProtectedVariableLibInitialize()
+        ProtectedVariableLibGetData()
+        ProtectedVariableLibGetDataInfo()
+        ProtectedVariableLibWriteInit()
+        ProtectedVariableLibUpdate()
+        ProtectedVariableLibWriteFinal()
+        ProtectedVariableLibGetStore()
+        ProtectedVariableLibReclaim()
+    }
+    link ProtectedVariableLib "https://github.com/tianocore/edk2-staging/blob/ProtectedVariable/libs/SecurityPkg/Include/Library/ProtectedVariableLib.h"
+
+    class EncryptionVariableLib {
+        <<edk2>>
+        EncryptVariable()
+        DecryptVariable()
+        GetCipherDataInfo()
+        SetCipherDataInfo()
+    }
+    link EncryptionVariableLib "https://github.com/tianocore/edk2-staging/blob/ProtectedVariable/libs/SecurityPkg/Include/Library/EncryptionVariableLib.h"
+
+    class RpmcLib {
+        <<platform>>
+        RequestMonotonicCounter()
+        IncrementMonotonicCounter()
+    }
+    link RpmcLib "https://github.com/tianocore/edk2-staging/blob/ProtectedVariable/libs/SecurityPkg/Include/Library/RpmcLib.h"
+
+    class VariableKeyLib {
+        <<platform>>
+        GetVariableKey()
+        RegenerateVariableKey()
+        LockVariableKeyInterface()
+    }
+    link VariableKeyLib "https://github.com/tianocore/edk2-staging/blob/ProtectedVariable/libs/SecurityPkg/Include/Library/VariableKeyLib.h"
+
+    ProtectedVariableLib ..> EncryptionVariableLib
+    ProtectedVariableLib ..> RpmcLib
+    ProtectedVariableLib ..> VariableKeyLib
 
 ```
-From: Contributor Name <contributor@example.com>
-Subject: [Repository/Branch PATCH] Pkg-Module: Brief-single-line-summary
 
-Full-commit-message
+[RpmcLib](https://github.com/tianocore/edk2-staging/blob/ProtectedVariable/libs/SecurityPkg/Include/Library/RpmcLib.h) and [VariableKeyLib](https://github.com/tianocore/edk2-staging/blob/ProtectedVariable/libs/SecurityPkg/Include/Library/VariableKeyLib.h) rely on platform to provide related functionalities and then should be instantiated by platform. Edk2 only provides null version of instances ([RpmcLibNull](https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/SecurityPkg/Library/RpmcLibNull) and [VariableKeyLib](https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/SecurityPkg/Library/VariableKeyLibNull)) for build purpose. Don't use them in real product.
 
-Signed-off-by: Contributor Name <contributor@example.com>
-```
+ProtectedVariableLib will use the key got from VariableKeyLib to derive two keys:
 
-## Notes for sample patch email
+- MetaDataHmacKey, for variable integrity check via HMAC algorithm;
+- VariableEncryptionKey, for variable encryption/decryption.
 
-* The first line of commit message is taken from the email's subject
-  line following `[Repository/Branch PATCH]`. The remaining portion of the
-  commit message is the email's content.
-* `git format-patch` is one way to create this format
+```mermaid
+graph LR
 
-## Definitions for sample patch email
+    VariableKeyLib.GetVariableKey -. "HKDF_Expand(SHA256, VariableKey, 'HMAC_KEY')" .-> MetaDataHmacKey --> Integrity
 
-* `Repository` is the identifier of the repository the patch applies.
-  This identifier should only be provided for repositories other than
-  `edk2`. For example `edk2-BuildSpecification` or `staging`.
-* `Branch` is the identifier of the branch the patch applies. This
-  identifier should only be provided for branches other than `edk2/master`.
-  For example `edk2/UDK2015`, `edk2-BuildSpecification/release/1.27`, or
-  `staging/edk2-test`.
-* `Module` is a short identifier for the affected code or documentation. For
-  example `MdePkg`, `MdeModulePkg/UsbBusDxe`, `Introduction`, or
-  `EDK II INF File Format`.
-* `Brief-single-line-summary` is a short summary of the change.
-* The entire first line should be less than ~70 characters.
-* `Full-commit-message` a verbose multiple line comment describing
-  the change.  Each line should be less than ~70 characters.
-* `Signed-off-by` is the contributor's signature identifying them
-  by their real/legal name and their email address.
-
-# Submodules
-
-Submodule in EDK II is allowed but submodule chain should be avoided
-as possible as we can. Currently EDK II contains the following submodules
-
-- CryptoPkg/Library/OpensslLib/openssl
-- ArmPkg/Library/ArmSoftFloatLib/berkeley-softfloat-3
-
-ArmSoftFloatLib is actually required by OpensslLib. It's inevitable
-in openssl-1.1.1 (since stable201905) for floating point parameter
-conversion, but should be dropped once there's no such need in future
-release of openssl.
-
-To get a full, buildable EDK II repository, use following steps of git
-command
+    VariableKeyLib.GetVariableKey -. "HKDF_Expand(SHA256, VariableKey, Name||':'||Guid||':'||Attr||'VAR_ENC_KEY')" .-> VariableEncryptionKey --> Confidentiality
 
 ```
-$ git clone https://github.com/tianocore/edk2.git
-$ cd edk2
-$ git submodule update --init
-$ cd ..
+
+Edk2 provides an instance of [EncryptionVariableLib](https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/SecurityPkg/Library/EncryptionVariableLib), which uses AES-CBC algorithm to encrypt/decrypt variable data. A null version [EncryptionVariableLib](https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/SecurityPkg/Library/EncryptionVariableLibNull) can be used to disable the encryption/decryption functionality. This is for those who just want integrity check for variables.
+
+Edk2 provides four instances of ProtectedVariableLib to support variable services in different environment:
+
+- [PeiProtectedVariableLib](https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/SecurityPkg/Library/ProtectedVariableLib), for PEI variable services
+  - Derive MetaDataHmacKey from platform VariableKey
+  - Cache all variables and verify their integrity before accessing any variable data, based on current RPMC value
+  - Read variable data, after decrypted, if encrypted
+  - Pass on all keys and verified variable data via HOB to SMM
+- [SmmProtectedVariableLib](https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/SecurityPkg/Library/ProtectedVariableLib), for SMM variable services
+  - Derive VariableEncryptionKey from VariableKey
+  - Read decrypted variable data from cache
+  - Write encrypted variable data to flash
+  - Refresh HMAC and update MetaDataHmacVar variable with its value, upon updating any other variable
+  - Advance RPMC before the first variable update operation
+  - Advance RPMC after any variable update operation
+- [SmmRuntimeProtectedVariableLib](https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/SecurityPkg/Library/ProtectedVariableLib), for RuntimeService variable interfaces
+  - Read decrypted variable data from cache
+  - Pass variable write operation onto SMM
+- [DxeProtectedVariableLib](https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/SecurityPkg/Library/ProtectedVariableLib), for emulation environment only
+  - Similar to SmmProtectionVariableLib
+
+``` mermaid
+classDiagram
+    ProtectedVariableLib <|-- PeiProtectedVariableLib
+    PeiProtectedVariableLib: ProtectedVariableLibInitialize()
+    PeiProtectedVariableLib: ProtectedVariableLibGetData()
+    PeiProtectedVariableLib: ProtectedVariableLibGetStore()
+
+    ProtectedVariableLib <|-- SmmProtectedVariableLib
+    SmmProtectedVariableLib: ProtectedVariableLibInitialize()
+    SmmProtectedVariableLib: ProtectedVariableLibGetData()
+    SmmProtectedVariableLib: ProtectedVariableLibGetDataInfo()
+    SmmProtectedVariableLib: ProtectedVariableLibWriteInit()
+    SmmProtectedVariableLib: ProtectedVariableLibUpdate()
+    SmmProtectedVariableLib: ProtectedVariableLibWriteFinal()
+    SmmProtectedVariableLib: ProtectedVariableLibGetStore()
+    SmmProtectedVariableLib: ProtectedVariableLibReclaim()
+
+    ProtectedVariableLib <|-- SmmRuntimeProtectedVariableLib
+    SmmRuntimeProtectedVariableLib: ProtectedVariableLibInitialize()
+    SmmRuntimeProtectedVariableLib: ProtectedVariableLibGetData()
+
+    ProtectedVariableLib <|-- DxeRuntimeProtectedVariableLib
+    DxeRuntimeProtectedVariableLib: ProtectedVariableLibInitialize()
+    DxeRuntimeProtectedVariableLib: ProtectedVariableLibGetData()
+    DxeRuntimeProtectedVariableLib: ProtectedVariableLibGetDataInfo()
+    DxeRuntimeProtectedVariableLib: ProtectedVariableLibWriteInit()
+    DxeRuntimeProtectedVariableLib: ProtectedVariableLibUpdate()
+    DxeRuntimeProtectedVariableLib: ProtectedVariableLibWriteFinal()
+    DxeRuntimeProtectedVariableLib: ProtectedVariableLibGetStore()
+    DxeRuntimeProtectedVariableLib: ProtectedVariableLibReclaim()
+
+    VariablePei ..> PeiProtectedVariableLib
+    VariableSmm ..> SmmProtectedVariableLib
+    VariableSmmRuntime ..> SmmRuntimeProtectedVariableLib
+    VariableRuntimeDxe ..> DxeRuntimeProtectedVariableLib
+
+    link PeiProtectedVariableLib "https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/SecurityPkg/Library/ProtectedVariableLib"
+    link SmmProtectedVariableLib "https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/SecurityPkg/Library/ProtectedVariableLib"
+    link SmmRuntimeProtectedVariableLib "https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/SecurityPkg/Library/ProtectedVariableLib"
+    link DxeRuntimeProtectedVariableLib "https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/SecurityPkg/Library/ProtectedVariableLib"
+
+    link VariablePei "https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/MdeModulePkg/Universal/Variable/Pei"
+    link VariableSmm "https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/MdeModulePkg/Universal/Variable/RuntimeDxe"
+    link VariableSmmRuntime "https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/MdeModulePkg/Universal/Variable/RuntimeDxe"
+    link VariableRuntimeDxe "https://github.com/tianocore/edk2-staging/tree/ProtectedVariable/libs/MdeModulePkg/Universal/Variable/RuntimeDxe"
+
 ```
 
-If there's update for submodules, use following git commands to get the
-latest submodules code.
+There're two special variables which must not be encrypted or taken into integrity check:
+- L"MetaDataHmacVar“ (gEdkiiMetaDataHmacVariableGuid)
+  - Store the HMAC value for integrity check
+- L"VarErrorFlag" (gEdkiiVarErrorFlagGuid)
+  - Record error status when out of resource
+
+## Workflow
+
+- PEI variable services initialization flow
+
+```mermaid
+%% Protected variable services (Init) sequence diagram
+sequenceDiagram
+    VariablePei->>+PlatformKeyGen: VariableKey
+    PlatformKeyGen-->>-VariablePei: Key
+    VariablePei->>VariablePei: HKDF_Expand(SHA256,Key,"HMAC_KEY")
+    VariablePei->>+SPI: GetAllVariables
+    SPI-->>-VariablePei: (Var1,..,VarN,MetaDataVar)
+    VariablePei->>+RPMC: RequestMonotonicCounter()
+    RPMC-->>-VariablePei: Counter
+    VariablePei->>VariablePei:HMAC(Key,Var1||..||VarN||Counter)
+    opt 2-MetaDataVar
+        VariablePei->>VariablePei:HMAC(Key,Var1||..||VarN||Counter+1)
+        opt HMAC Matches
+            VariablePei->>RPMC: IncrementMonotonicCounter()
+        end
+    end
+
+    alt HMAC Matches
+        VariablePei-->>UEFI: BuildGuidHob(&gEdkiiProtectedVariableGlobalGuid)
+    else HMAC Mismatches
+        VariablePei-->>Platform: VariableRcbRecovery/ReportStatusCode
+    end
 
 ```
-$ cd edk2
-$ git pull
-$ git submodule update
+
+- GetVariable flow
+
+```mermaid
+%% Protected variable services (Get) sequence diagram
+sequenceDiagram
+    UEFI->>+VariablePei/Smm: GetVariable()
+    VariablePei/Smm->>VariablePei/Smm: Get from Cache
+    opt Encrypted
+        VariablePei/Smm->>VariablePei/Smm: DecryptVariable()
+    end
+    VariablePei/Smm-->>-UEFI: Return Data
+
 ```
 
-Note: When cloning submodule repos, '--recursive' option is not
-recommended. EDK II itself will not use any code/feature from
-submodules in above submodules. So using '--recursive' adds a
-dependency on being able to reach servers we do not actually want
-any code from, as well as needlessly downloading code we will not
-use.
+- SetVariable flow
+
+```mermaid
+%% Protected variable services (Set) sequence diagram
+sequenceDiagram
+    UEFI->>+VariableSmm: SetVariable(Data)
+    opt Write NOT Init-ed
+        VariableSmm->>RPMC: IncrementMonotonicCounter()
+    end
+    VariableSmm->>SPI: UpdateState(OldMetaDataVar,IN_DELETE)
+    note right of RPMC: A
+    opt VarEncEnabled
+        VariableSmm->>VariableSmm: EncryptVariable(Data)
+    end
+    VariableSmm->>+RPMC: RequestMonotonicCounter()
+    RPMC-->>-VariableSmm: Counter
+    VariableSmm->>VariableSmm: HMAC(Key,Var1||..||VarN||Counter+1)
+    VariableSmm->>SPI: AddVariable(NewMetaDataVar,ADDED)
+    note right of RPMC: B
+    VariableSmm->>SPI: AddVariable(VarData,ADDED)
+    note right of RPMC: C
+    VariableSmm->>RPMC: IncrementMonotonicCounter()
+    note right of RPMC: D
+    VariableSmm->>SPI: UpdateState(OldMetaDataVar,DELETED)
+    note right of RPMC: E
+    VariableSmm-->>-UEFI: Return EFI_SUCCESS
+
+```
+
+## Platform Integration Considerations
+
+- Instantiate RpmcLib
+- Instantiate VariableKeyLib
+- Define & implement variable init/recovery policy
+- Enable/disable variable integrity check
+  - Enable:
+    - PEI: SecurityPkg/Library/ProtectedVariableLib/PeiProtectedVariableLib.inf
+    - SMM: SecurityPkg/Library/ProtectedVariableLib/SmmProtectedVariableLib.inf
+    - Runtime: SecurityPkg/Library/ProtectedVariableLib/SmmRuntimeProtectedVariableLib.inf
+  - Disable:
+    - (All): SecurityPkg/Library/ProtectedVariableLibNull/ProtectedVariableLibNull.inf
+- Enable/disable variable encryption
+  - Enable:
+    - SecurityPkg/Library/EncryptionVariableLib/EncryptionVariableLib.inf
+  - Disable:
+    - SecurityPkg/Library/EncryptionVariableLibNull/EncryptionVariableLibNull.inf
