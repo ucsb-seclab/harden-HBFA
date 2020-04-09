@@ -1,0 +1,40 @@
+@startuml LibraryClasses
+
+    package platform {
+      class RpmcLib {
+        +RequestMonotonicCounter()
+        +IncrementMonotonicCounter()
+      }
+
+      class VariableKeyLib {
+        +GetVariableKey()
+        +RegenerateVariableKey()
+        +LockVariableKeyInterface()
+      }
+    }
+
+    package edk2 {
+      class ProtectedVariableLib {
+        +ProtectedVariableLibInitialize()
+        +ProtectedVariableLibGetData()
+        +ProtectedVariableLibGetDataInfo()
+        +ProtectedVariableLibWriteInit()
+        +ProtectedVariableLibUpdate()
+        +ProtectedVariableLibWriteFinal()
+        +ProtectedVariableLibGetStore()
+        +ProtectedVariableLibReclaim()
+      }
+
+      class EncryptionVariableLib {
+        +EncryptVariable()
+        +DecryptVariable()
+        +GetCipherDataInfo()
+        +SetCipherDataInfo()
+      }
+    }
+
+    ProtectedVariableLib --> EncryptionVariableLib
+    ProtectedVariableLib --> RpmcLib
+    ProtectedVariableLib --> VariableKeyLib
+
+@enduml
