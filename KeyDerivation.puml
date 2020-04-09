@@ -1,0 +1,8 @@
+@startuml KeyDerivation
+
+  "VariableKeyLib->GetVariableKey()" -down-> [HKDF_Expand(SHA256, VariableKey, 'HMAC_KEY')] MetaDataHmacKey
+    -down-> Integrity
+  "VariableKeyLib->GetVariableKey()" -down-> [HKDF_Expand(SHA256, VariableKey, Name||':'||Guid||':'||Attr||'VAR_ENC_KEY')] VariableEncryptionKey
+    -down-> Confidentiality
+
+@enduml

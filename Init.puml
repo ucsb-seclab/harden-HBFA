@@ -1,0 +1,29 @@
+@startuml Protected Variable Init
+  VariablePei -> PlatformKeyGen ++ : VariableKey
+  return Key
+
+  VariablePei -> VariablePei: HKDF_Expand(SHA256,Key,"HMAC_KEY")
+
+  VariablePei -> SPI ++ : GetAllVariables
+  return (Var1, .., VarN, MetaDataHmacVar)
+
+  VariablePei -> RPMC ++: RequestMonotonicCounter()
+  return Counter
+
+  VariablePei -> VariablePei : HMAC(Key, Var1||..||VarN||Counter)
+  activate VariablePei
+
+  opt If 2-MetaDataHmacVar
+      VariablePei -> VariablePei:HMAC(Key, Var1||..||VarN||Counter+1)
+      opt If HMAC Matches
+          VariablePei -> RPMC: IncrementMonotonicCounter()
+      end
+  end
+  deactivate VariablePei
+
+  alt If HMAC Matches
+      VariablePei --> UEFI: BuildGuidHob(&gEdkiiProtectedVariableGlobalGuid)
+  else If HMAC Mismatches
+      VariablePei -> Platform: VariableRcbRecovery/ReportStatusCode
+  end
+@enduml

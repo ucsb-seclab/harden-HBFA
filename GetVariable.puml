@@ -1,0 +1,14 @@
+@startuml GetVariable Flow
+
+  UEFI -> "VariablePei/Smm" : GetVariable()
+  "VariablePei/Smm" -> "VariablePei/Smm" : Get from Cache
+
+  activate "VariablePei/Smm"
+  opt Encrypted
+    "VariablePei/Smm" -> "VariablePei/Smm" : DecryptVariable()
+  end
+  deactivate
+
+  "VariablePei/Smm" --> UEFI : Return Data
+
+@enduml

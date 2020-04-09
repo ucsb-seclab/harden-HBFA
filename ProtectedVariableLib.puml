@@ -1,0 +1,35 @@
+@startuml ProtectedVariableLib instances
+    ProtectedVariableLib <|-- PeiProtectedVariableLib
+    PeiProtectedVariableLib : ProtectedVariableLibInitialize()
+    PeiProtectedVariableLib : ProtectedVariableLibGetData()
+    PeiProtectedVariableLib : ProtectedVariableLibGetStore()
+
+    ProtectedVariableLib <|-- SmmProtectedVariableLib
+    SmmProtectedVariableLib : ProtectedVariableLibInitialize()
+    SmmProtectedVariableLib : ProtectedVariableLibGetData()
+    SmmProtectedVariableLib : ProtectedVariableLibGetDataInfo()
+    SmmProtectedVariableLib : ProtectedVariableLibWriteInit()
+    SmmProtectedVariableLib : ProtectedVariableLibUpdate()
+    SmmProtectedVariableLib : ProtectedVariableLibWriteFinal()
+    SmmProtectedVariableLib : ProtectedVariableLibGetStore()
+    SmmProtectedVariableLib : ProtectedVariableLibReclaim()
+
+    ProtectedVariableLib <|-- SmmRuntimeProtectedVariableLib
+    SmmRuntimeProtectedVariableLib : ProtectedVariableLibInitialize()
+    SmmRuntimeProtectedVariableLib : ProtectedVariableLibGetData()
+
+    ProtectedVariableLib <|-- DxeRuntimeProtectedVariableLib
+    DxeRuntimeProtectedVariableLib : ProtectedVariableLibInitialize()
+    DxeRuntimeProtectedVariableLib : ProtectedVariableLibGetData()
+    DxeRuntimeProtectedVariableLib : ProtectedVariableLibGetDataInfo()
+    DxeRuntimeProtectedVariableLib : ProtectedVariableLibWriteInit()
+    DxeRuntimeProtectedVariableLib : ProtectedVariableLibUpdate()
+    DxeRuntimeProtectedVariableLib : ProtectedVariableLibWriteFinal()
+    DxeRuntimeProtectedVariableLib : ProtectedVariableLibGetStore()
+    DxeRuntimeProtectedVariableLib : ProtectedVariableLibReclaim()
+
+    VariablePei ..> PeiProtectedVariableLib
+    VariableSmm ..> SmmProtectedVariableLib
+    VariableSmmRuntime ..> SmmRuntimeProtectedVariableLib
+    VariableRuntimeDxe ..> DxeRuntimeProtectedVariableLib
+@enduml

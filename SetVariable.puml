@@ -1,0 +1,38 @@
+@startuml SetVariable Flow
+  UEFI -> VariableSmm ++ : SetVariable(VarData)
+
+  opt If Write-NOT-Init-ed
+    VariableSmm -> RPMC : IncrementMonotonicCounter()
+  end
+
+  VariableSmm -> SPI : UpdateState(OldMetaDataHmacVar, IN_DELETE)
+  note right of VariableSmm : A
+
+  opt If Encryption-Enabled
+    VariableSmm -> VariableSmm ++ : EncryptVariable(VarData)
+    return
+  end
+
+  VariableSmm -> RPMC ++ : RequestMonotonicCounter()
+  return Counter
+
+  activate VariableSmm
+  VariableSmm -> VariableSmm : HMAC(Key, Var1||..||VarN||Counter+1)
+  VariableSmm -> SPI ++ : AddVariable(NewMetaDataHmacVar, ADDED)
+  note right of VariableSmm : B
+  return
+  deactivate VariableSmm
+
+  VariableSmm -> SPI ++ : AddVariable(VarData, ADDED)
+  note right of VariableSmm : C
+  return
+
+  VariableSmm -> RPMC ++ : IncrementMonotonicCounter()
+  note right of VariableSmm : D
+  return
+
+  VariableSmm -> SPI : UpdateState(OldMetaDataHmacVar, DELETED)
+  note right of VariableSmm : E
+
+  return EFI_SUCCESS
+@enduml
