@@ -42,6 +42,21 @@ The firmware has three key generic drivers to support PRM:
 3. A PRM Module - Not a single driver but a user written PE/COFF image that follows the PRM module authoring process.
    A PRM module groups together cohesive sets of PRM functionality into functions referred to as "PRM handlers".
 
+## PrmPkg Code Organization
+The package follows a standard EDK II style package format. The list below contains some notable areas to
+explore in the package:
+
+* [ACPI Table Definitions](PrmPkg/PrmLoaderDxe/PrmAcpiTable.h)
+* [Common Interface Definitions](PrmPkg/Include)
+* [PRM Config Driver](PrmPkg/PrmConfigDxe)
+* [PRM Loader Driver](PrmPkg/PrmLoaderDxe)
+* [Sample PRM Modules](PrmPkg/Samples)
+
+While the package does provide sample PRM modules to be used as a reference, actual PRM modules should not be
+maintained in PrmPkg. It is intended to only contain PRM infrastructure code and a few samples of how to use
+that infrastructure. The PrmPkg is meant to be used as-is by firmware that supports PRM. Any shortcomings that
+prevent the package from being used as-is should be addressed directly in PrmPkg.
+
 ## PRM Module
 
 By default, the EDK II implementation of UEFI does not allow images with the subsystem type
