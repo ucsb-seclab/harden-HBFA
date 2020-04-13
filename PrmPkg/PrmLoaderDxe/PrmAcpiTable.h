@@ -35,8 +35,14 @@ typedef struct {
   GUID                                Identifier;                 ///< GUID of the PRM handler for this structure
   UINT32                              Reserved;                   ///< Reserved for future use
   UINT64                              PhysicalAddress;            ///< Physical address of this PRM handler
+#ifdef ALLOCATE_CONTEXT_BUFFER_IN_FW
   UINT64                              PrmContextBuffer;           ///< Physical address of the context buffer for this
                                                                   ///< PRM handler (PRM_CONTEXT_BUFFER *)
+#else
+  UINT64                              StaticDataBuffer;           ///< Physical address of the static data buffer for
+                                                                  ///< this PRM handler (PRM_DATA_BUFFER *)
+#endif
+
 } PRM_HANDLER_INFORMATION_STRUCT;
 
 typedef struct {
