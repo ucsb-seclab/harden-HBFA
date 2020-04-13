@@ -21,7 +21,6 @@
   #
   # EDK II Packages
   #
-  BaseBinSecurityLib|MdePkg/Library/BaseBinSecurityLibRng/BaseBinSecurityLibRng.inf
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
   BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
   CpuLib|MdePkg/Library/BaseCpuLib/BaseCpuLib.inf
