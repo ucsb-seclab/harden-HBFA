@@ -87,7 +87,7 @@ GetModuleContextBuffers (
   UINTN                       Index;
   EFI_HANDLE                  *HandleBuffer;
   PRM_CONFIG_PROTOCOL         *PrmConfigProtocol;
-  PRM_CONTEXT_BUFFER          *PrmContextBuffer;
+  CONST PRM_CONTEXT_BUFFER    *PrmContextBuffer;
 
   DEBUG ((DEBUG_INFO, "    %a %a - Entry.\n", _DBGMSGID_, __FUNCTION__));
 
