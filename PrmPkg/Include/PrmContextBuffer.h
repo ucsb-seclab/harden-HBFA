@@ -29,6 +29,11 @@ typedef struct {
   UINT16                                  Version;
 
   ///
+  /// Reserved field.
+  ///
+  UINT16                                  Reserved;
+
+  ///
   /// The GUID of the PRM handler represented by this context instance.
   ///
   EFI_GUID                                HandlerGuid;
