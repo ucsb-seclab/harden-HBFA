@@ -13,6 +13,43 @@ to be leveraged by platform firmware with minimal overhead to integrate PRM func
 formal design and is not validated at product quality. The development of this feature is shared in the edk2-staging
 branch to simplify collaboration by allowing direct code contributions and early feedback throughout its development.
 
+## How to Build PrmPkg
+As noted earlier, resources in `PrmPkg` are intended to be referenced by a platform firmware so it can adopt support
+for PRM. In that case, the platform firmware should add the `PrmConfigDxe` and `PrmLoaderDxe` drivers to its DSC and
+FDF files so they are built in the platform firmware build and dispatched during its runtime. All that is left is to
+add individual PRM modules to the DSC and FDF. These can be built from source or included as binaries into the platform
+firmware flash map.
+
+### PrmPkg Standalone Build
+**All changes to `PrmPkg` must not regress the standalone package build**. Any time a change is made to `PrmPkg`, the
+package build must be tested. Since this is a forward looking package, to ease potential integration into the edk2
+project in the future, the build is tested against the tip of the master branch in the [edk2](https://github.com/tianocore/edk2)
+repository.
+
+To build `PrmPkg` as a standalone package:
+1. If new to EDK II, follow the directions in [Getting Started with EDK II](https://github.com/tianocore/tianocore.github.io/wiki/Getting-Started-with-EDK-II)
+
+2. Clone the *master* branch on the edk2 repository locally \
+   ``git clone https://github.com/tianocore/edk2.git``
+
+3. Clone the *PlatformRuntimeMechanism* branch on the edk2-staging repository locally \
+   ``git clone -b PlatformRuntimeMechanism --single-branch https://github.com/tianocore/edk2-staging.git``
+   > __*Note*__: The *--single-branch* argument is recommended since edk2-staging hosts many branches for completely
+   unrelated features. If you are just interested in PRM, this will avoid fetching all of the other branches.
+
+4. Create a hard link in the edk2 workspace to the edk2-staging workspace. This allows the `PrmPkg` from edk2-staging
+   to appear as if it is like any other package in edk2.
+   * The following commands assume the edk2 and edk2-staging workspaces were cloned in the same directory.
+     * ``cd edk2``
+     * Windows:
+       * ``mklink /J .\PrmPkg .\..\edk2-staging\PrmPkg``
+     * Linux:
+       * ``ln -s "$(pwd)" ./../edk2-staging/PrmPkg``
+
+5. ``build -p PrmPkg/PrmPkg.dsc -a IA32 -a X64``
+   > __*Note*__: Due to the way PRM modules are compiled with exports, **only building on Visual Studio compiler tool
+   chains is currently supported**.
+
 ## Overview
 At a high-level, PRM can be viewed from three levels of granularity:
 
