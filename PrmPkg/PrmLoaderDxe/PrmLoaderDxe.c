@@ -728,6 +728,9 @@ ProcessPrmModules (
               &CurrentModuleContextBuffers
               );
     ASSERT (!EFI_ERROR (Status) || Status == EFI_NOT_FOUND);
+    if (!EFI_ERROR (Status) && CurrentModuleContextBuffers != NULL) {
+      CurrentModuleInfoStruct->RuntimeMmioRanges = (UINT64) (UINTN) CurrentModuleContextBuffers->RuntimeMmioRanges;
+    }
 
     //
     // Iterate across all PRM handlers in the PRM Module
