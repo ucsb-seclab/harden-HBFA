@@ -643,7 +643,7 @@ ProcessPrmModules (
   DEBUG ((DEBUG_INFO, "  %a %a: %d total PRM handlers to process.\n", _DBGMSGID_, __FUNCTION__, mPrmHandlerCount));
 
   PrmAcpiDescriptionTableBufferSize = (OFFSET_OF (PRM_ACPI_DESCRIPTION_TABLE, PrmModuleInfoStructure) +
-                                        (OFFSET_OF (PRM_MODULE_INFORMATION_STRUCT, PrmHandlerInfoStructure) *  mPrmModuleCount) +
+                                        (OFFSET_OF (PRM_MODULE_INFORMATION_STRUCT, HandlerInfoStructure) *  mPrmModuleCount) +
                                         (sizeof (PRM_HANDLER_INFORMATION_STRUCT) * mPrmHandlerCount)
                                         );
   DEBUG ((DEBUG_INFO, "  %a %a: Total PRM ACPI table size: 0x%x.\n", _DBGMSGID_, __FUNCTION__, PrmAcpiDescriptionTableBufferSize));
@@ -662,8 +662,8 @@ ProcessPrmModules (
   PrmAcpiTable->Header.OemRevision      = PRM_TABLE_OEM_REVISION;
   PrmAcpiTable->Header.CreatorId        = PRM_TABLE_CREATOR_ID;
   PrmAcpiTable->Header.CreatorRevision  = PRM_TABLE_CREATOR_REVISION;
-  PrmAcpiTable->OffsetPrmModuleInfo     = OFFSET_OF (PRM_ACPI_DESCRIPTION_TABLE, PrmModuleInfoStructure);
-  PrmAcpiTable->NumberPrmModuleInfo     = mPrmModuleCount;
+  PrmAcpiTable->PrmModuleInfoOffset     = OFFSET_OF (PRM_ACPI_DESCRIPTION_TABLE, PrmModuleInfoStructure);
+  PrmAcpiTable->PrmModuleInfoCount      = mPrmModuleCount;
 
   //
   // Iterate across all PRM Modules on the list
@@ -687,20 +687,20 @@ ProcessPrmModules (
 
     CurrentModuleInfoStruct->StructureRevision = PRM_MODULE_INFORMATION_STRUCT_REVISION;
     CurrentModuleInfoStruct->StructureLength = (
-                                             OFFSET_OF (PRM_MODULE_INFORMATION_STRUCT, PrmHandlerInfoStructure) +
+                                             OFFSET_OF (PRM_MODULE_INFORMATION_STRUCT, HandlerInfoStructure) +
                                              (CurrentExportDescriptorStruct->NumberPrmHandlers * sizeof (PRM_HANDLER_INFORMATION_STRUCT))
                                              );
-    CopyGuid (&CurrentModuleInfoStruct->ModuleGuid, &CurrentExportDescriptorStruct->ModuleGuid);
-    CurrentModuleInfoStruct->NumberPrmHandlerInfo  = (UINT32) CurrentExportDescriptorStruct->NumberPrmHandlers;
-    CurrentModuleInfoStruct->OffsetPrmHandlerInfo  = OFFSET_OF (PRM_MODULE_INFORMATION_STRUCT, PrmHandlerInfoStructure);
+    CopyGuid (&CurrentModuleInfoStruct->Identifier, &CurrentExportDescriptorStruct->ModuleGuid);
+    CurrentModuleInfoStruct->HandlerCount       = (UINT32) CurrentExportDescriptorStruct->NumberPrmHandlers;
+    CurrentModuleInfoStruct->HandlerInfoOffset  = OFFSET_OF (PRM_MODULE_INFORMATION_STRUCT, HandlerInfoStructure);
 
-    CurrentModuleInfoStruct->ModuleMajorRevision = 0;
-    CurrentModuleInfoStruct->ModuleMinorRevision = 0;
+    CurrentModuleInfoStruct->MajorRevision = 0;
+    CurrentModuleInfoStruct->MinorRevision = 0;
     Status =  GetImageVersionInPeCoffImage (
                 (VOID *) (UINTN) CurrentImageAddress,
                 &TempListEntry->Context->PeCoffImageContext,
-                &CurrentModuleInfoStruct->ModuleMajorRevision,
-                &CurrentModuleInfoStruct->ModuleMinorRevision
+                &CurrentModuleInfoStruct->MajorRevision,
+                &CurrentModuleInfoStruct->MinorRevision
                 );
     ASSERT_EFI_ERROR (Status);
 
@@ -724,7 +724,7 @@ ProcessPrmModules (
     // It is currently valid for a PRM module not to use a context buffer
     Status = GetModuleContextBuffers (
               ByModuleGuid,
-              &CurrentModuleInfoStruct->ModuleGuid,
+              &CurrentModuleInfoStruct->Identifier,
               &CurrentModuleContextBuffers
               );
     ASSERT (!EFI_ERROR (Status) || Status == EFI_NOT_FOUND);
@@ -733,19 +733,19 @@ ProcessPrmModules (
     // Iterate across all PRM handlers in the PRM Module
     //
     for (HandlerIndex = 0; HandlerIndex < CurrentExportDescriptorStruct->NumberPrmHandlers; HandlerIndex++) {
-      CurrentHandlerInfoStruct = &(CurrentModuleInfoStruct->PrmHandlerInfoStructure[HandlerIndex]);
+      CurrentHandlerInfoStruct = &(CurrentModuleInfoStruct->HandlerInfoStructure[HandlerIndex]);
 
       CurrentHandlerInfoStruct->StructureRevision = PRM_HANDLER_INFORMATION_STRUCT_REVISION;
       CurrentHandlerInfoStruct->StructureLength = sizeof (PRM_HANDLER_INFORMATION_STRUCT);
       CopyGuid (
-        &CurrentHandlerInfoStruct->HandlerGuid,
+        &CurrentHandlerInfoStruct->Identifier,
         &CurrentExportDescriptorStruct->PrmHandlerExportDescriptors[HandlerIndex].PrmHandlerGuid
         );
 
       CurrentExportDescriptorHandlerName = (CONST CHAR8 *) CurrentExportDescriptorStruct->PrmHandlerExportDescriptors[HandlerIndex].PrmHandlerName;
 
       Status =  GetContextBuffer (
-                  &CurrentHandlerInfoStruct->HandlerGuid,
+                  &CurrentHandlerInfoStruct->Identifier,
                   CurrentModuleContextBuffers,
                   &CurrentContextBuffer
                   );
@@ -757,7 +757,7 @@ ProcessPrmModules (
                   CurrentExportDescriptorHandlerName,
                   CurrentImageAddress,
                   CurrentImageExportDirectory,
-                  &CurrentHandlerInfoStruct->HandlerPhysicalAddress
+                  &CurrentHandlerInfoStruct->PhysicalAddress
                   );
       ASSERT_EFI_ERROR (Status);
       if (!EFI_ERROR (Status)) {
@@ -767,7 +767,7 @@ ProcessPrmModules (
           _DBGMSGID_,
           __FUNCTION__,
           CurrentExportDescriptorHandlerName,
-          CurrentHandlerInfoStruct->HandlerPhysicalAddress
+          CurrentHandlerInfoStruct->PhysicalAddress
           ));
       }
     }
