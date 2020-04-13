@@ -12,6 +12,8 @@
 
 #include <Uefi.h>
 
+#pragma pack(push, 1)
+
 ///
 /// Describes a memory range that needs to be made accessible at OS runtime.
 ///
@@ -37,5 +39,7 @@ typedef struct {
   ///
   PRM_RUNTIME_MMIO_RANGE                  Range[1];
 } PRM_RUNTIME_MMIO_RANGES;
+
+#pragma pack(pop)
 
 #endif

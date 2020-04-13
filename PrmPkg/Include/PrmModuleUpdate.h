@@ -16,6 +16,8 @@
 #define PRM_MODULE_UPDATE_LOCK_DESCRIPTOR_SIGNATURE   SIGNATURE_64 ('P', 'R', 'M', '_', 'M', 'U', 'L', '_')
 #define PRM_MODULE_UPDATE_LOCK_REVISION               0x0
 
+#pragma pack(push, 1)
+
 ///
 /// Maintains the PRM Module Update Lock state
 ///
@@ -38,5 +40,7 @@ typedef struct {
   UINT16                                Revision;
   PRM_MODULE_UPDATE_LOCK                Lock;
 } PRM_MODULE_UPDATE_LOCK_DESCRIPTOR;
+
+#pragma pack(pop)
 
 #endif

@@ -14,6 +14,8 @@
 
 #define PRM_DATA_BUFFER_HEADER_SIGNATURE      SIGNATURE_32('P','R','M','D')
 
+#pragma pack(push, 1)
+
 ///
 /// A generic header that describes the PRM data buffer.
 ///
@@ -42,5 +44,7 @@ typedef struct {
   ///
   UINT8                                   Data[1];
 } PRM_DATA_BUFFER;
+
+#pragma pack(pop)
 
 #endif

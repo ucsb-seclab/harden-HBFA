@@ -26,6 +26,8 @@ VOID
   IN  CONST CHAR8           *String
   );
 
+#pragma pack(push, 1)
+
 //
 // PRM OS Services table
 //
@@ -37,5 +39,7 @@ struct _PRM_OS_SERVICES {
     // OS Services
     PRM_OS_SERVICE_DEBUG_PRINT            DebugPrint;
 };
+
+#pragma pack(pop)
 
 #endif

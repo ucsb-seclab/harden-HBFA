@@ -17,6 +17,8 @@
 #define PRM_CONTEXT_BUFFER_SIGNATURE          SIGNATURE_32('P','R','M','C')
 #define PRM_CONTEXT_BUFFER_INTERFACE_VERSION  1
 
+#pragma pack(push, 1)
+
 typedef struct {
   ///
   /// Signature of this interface.
@@ -77,5 +79,7 @@ typedef struct
   ///
   PRM_RUNTIME_MMIO_RANGES                 *RuntimeMmioRanges;
 } PRM_MODULE_CONTEXT_BUFFERS;
+
+#pragma pack(pop)
 
 #endif
