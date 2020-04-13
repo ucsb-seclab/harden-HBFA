@@ -50,6 +50,14 @@ To build `PrmPkg` as a standalone package:
    > __*Note*__: Due to the way PRM modules are compiled with exports, **only building on Visual Studio compiler tool
    chains is currently supported**.
 
+### Build Flags
+As PRM is a new feature at a proof-of-concept (POC) level of maturity, there's some changes to the normal build
+available as build flags. By default, if no flags are specified, the build is done with the currently expected plan of
+record (POR) configuration.
+
+The following list are the currently defined build flags (if any) that may be passed to the `build` command
+(e.g. -D FLAG=VALUE).
+
 ## Overview
 At a high-level, PRM can be viewed from three levels of granularity:
 
