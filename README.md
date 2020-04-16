@@ -1,4 +1,4 @@
-# CdePkg
+# CdePkg - C Development Environment Package for EDK2
 * [Preface](README.md#preface)
 * [Introduction](README.md#introduction)
 * [Intention](README.md#intention)
@@ -14,7 +14,7 @@
 
 <!-- ![C](https://github.com/JoaquinConoBolillo/CdePkg/blob/master/C.png) -->
 
-C Development Environment Package for EDK2
+
 ## Preface
 The programming language C is standardized by the American National Standards Institute (ANSI) and the
 International Organization for Standardization (ISO) first in 1989 and 1990.
