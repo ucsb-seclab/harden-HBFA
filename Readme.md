@@ -37,18 +37,30 @@ To build `PrmPkg` as a standalone package:
    > __*Note*__: The *--single-branch* argument is recommended since edk2-staging hosts many branches for completely
    unrelated features. If you are just interested in PRM, this will avoid fetching all of the other branches.
 
-4. Create a hard link in the edk2 workspace to the edk2-staging workspace. This allows the `PrmPkg` from edk2-staging
-   to appear as if it is like any other package in edk2.
-   * The following commands assume the edk2 and edk2-staging workspaces were cloned in the same directory.
-     * ``cd edk2``
-     * Windows:
-       * ``mklink /J .\PrmPkg .\..\edk2-staging\PrmPkg``
-     * Linux:
-       * ``ln -s "$(pwd)" ./../edk2-staging/PrmPkg``
+4. Change to the edk2 workspace directory \
+   ``cd edk2``
 
-5. ``build -p PrmPkg/PrmPkg.dsc -a IA32 -a X64``
+5. Run *edksetup* to set local environment variables needed for build
+   * Windows:
+     * ``edksetup.bat``
+   * Linux:
+     * If you have not already built BaseTools:
+       * ``make -C BaseTools``
+     * ``. edksetup.sh``
+
+6. Set the PACKAGES_PATH environment variable to include the directory path that contains `PrmPkg`
+   * Windows example:
+     *  ``set PACKAGES_PATH=c:\src\edk2-staging``
+
+7. Change to the edk2-staging workspace directory \
+   * Example: ``cd ../edk2-staging``
+
+8. Build PrmPkg \
+   ``build -p PrmPkg/PrmPkg.dsc -a IA32 -a X64``
    > __*Note*__: Due to the way PRM modules are compiled with exports, **only building on Visual Studio compiler tool
    chains is currently supported**.
+
+In the future, each new terminal session can start at step #4. Within a terminal session, start at step #8.
 
 ### Build Flags
 As PRM is a new feature at a proof-of-concept (POC) level of maturity, there's some changes to the normal build
