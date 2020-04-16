@@ -52,7 +52,7 @@ To build `PrmPkg` as a standalone package:
    * Windows example:
      *  ``set PACKAGES_PATH=c:\src\edk2-staging``
 
-7. Change to the edk2-staging workspace directory \
+7. Change to the edk2-staging workspace directory
    * Example: ``cd ../edk2-staging``
 
 8. Build PrmPkg \
@@ -81,6 +81,13 @@ The following list are the currently defined build flags (if any) that may be pa
 
    The default is for the OS to allocate and populate the buffer. The alternative option of the firmware doing this
    work is kept in the source code until broader OS testing is completed.
+
+### Build Output
+Like a typical EDK II package, the PrmPkg binary build output can be found in the Build directory in the edk2
+workspace. The organization in that directory follows the same layout as other EDK II packages.
+
+For example, that path to PRM module sample binaries for a DEBUG VS2017 X64 build is: \
+``edk2/Build/Prm/DEBUG_VS2017/X64/PrmPkg/Samples``
 
 ## Overview
 At a high-level, PRM can be viewed from three levels of granularity:
