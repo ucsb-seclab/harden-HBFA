@@ -479,6 +479,8 @@ AddFfs(UINT8 *FdBuffer, UINT32 ImageAddress, EFI_FIRMWARE_VOLUME_HEADER* Fv, EFI
   EFI_STATUS Status;
   EFI_FFS_FILE_HEADER2 *CurrentFile;
   EFI_FFS_FILE_HEADER FreeHeader;
+  EFI_FIRMWARE_VOLUME_HEADER* hdr;
+  EFI_FIRMWARE_VOLUME_EXT_HEADER * FwVolExtHeader;
 
   if (Fv->Attributes & EFI_FVB2_ERASE_POLARITY) {
     memset(&FreeHeader, -1, sizeof(EFI_FFS_FILE_HEADER));
@@ -501,6 +503,16 @@ AddFfs(UINT8 *FdBuffer, UINT32 ImageAddress, EFI_FIRMWARE_VOLUME_HEADER* Fv, EFI
     }
     Status = FvBufFindNextFile(FdBuffer + ImageAddress, &Offset, (VOID **)&CurrentFile);
     if (Status == EFI_NOT_FOUND) {
+      if (FreeOffset == 0) {
+        hdr = ( EFI_FIRMWARE_VOLUME_HEADER*)((UINT8*)FdBuffer + ImageAddress);
+        if (hdr->ExtHeaderOffset != 0) {
+          FwVolExtHeader = (EFI_FIRMWARE_VOLUME_EXT_HEADER *)((UINT8 *)hdr + hdr->ExtHeaderOffset);
+          FreeOffset = (UINTN)hdr->ExtHeaderOffset + FwVolExtHeader->ExtHeaderSize;
+          FreeOffset = (UINTN)ALIGN_POINTER(FreeOffset, 8);
+        } else {
+          FreeOffset = hdr->HeaderLength;
+        }
+      }
       CurrentFile = NULL;
       break;
     }
