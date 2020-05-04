@@ -13,14 +13,9 @@
 #include <Base.h>
 #include <IndustryStandard/Acpi10.h>
 
-#define PRM_TABLE_SIGNATURE         SIGNATURE_32 ('P', 'R', 'M', 'T')
-#define PRM_TABLE_REVISION          0x0
-#define PRM_TABLE_OEM_ID            "MSFT  "
-#define PRM_TABLE_OEM_TABLE_ID      SIGNATURE_64 ('T', 'E', 'S', 'T', 'P', 'R', 'M', 'T')
-#define PRM_TABLE_OEM_REVISION      0x00000001
-#define PRM_TABLE_CREATOR_ID        SIGNATURE_32 ('M', 'S', 'F', 'T')
-#define PRM_TABLE_CREATOR_REVISION  0x00010001
+#define PRM_TABLE_SIGNATURE                       SIGNATURE_32 ('P', 'R', 'M', 'T')
 
+#define PRM_TABLE_REVISION                        0x0
 #define PRM_MODULE_INFORMATION_STRUCT_REVISION    0x00
 #define PRM_HANDLER_INFORMATION_STRUCT_REVISION   0x00
 

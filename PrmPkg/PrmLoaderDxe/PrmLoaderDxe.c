@@ -657,11 +657,11 @@ ProcessPrmModules (
   PrmAcpiTable->Header.Length           = PrmAcpiDescriptionTableBufferSize;
   PrmAcpiTable->Header.Revision         = PRM_TABLE_REVISION;
   PrmAcpiTable->Header.Checksum         = 0x0;
-  CopyMem (&PrmAcpiTable->Header.OemId, PRM_TABLE_OEM_ID, sizeof (PrmAcpiTable->Header.OemId));
-  PrmAcpiTable->Header.OemTableId       = PRM_TABLE_OEM_TABLE_ID;
-  PrmAcpiTable->Header.OemRevision      = PRM_TABLE_OEM_REVISION;
-  PrmAcpiTable->Header.CreatorId        = PRM_TABLE_CREATOR_ID;
-  PrmAcpiTable->Header.CreatorRevision  = PRM_TABLE_CREATOR_REVISION;
+  CopyMem (&PrmAcpiTable->Header.OemId, PcdGetPtr (PcdAcpiDefaultOemId), sizeof (PrmAcpiTable->Header.OemId));
+  PrmAcpiTable->Header.OemTableId       = PcdGet64 (PcdAcpiDefaultOemTableId);
+  PrmAcpiTable->Header.OemRevision      = PcdGet32 (PcdAcpiDefaultOemRevision);
+  PrmAcpiTable->Header.CreatorId        = PcdGet32 (PcdAcpiDefaultCreatorId);
+  PrmAcpiTable->Header.CreatorRevision  = PcdGet32 (PcdAcpiDefaultCreatorRevision);
   PrmAcpiTable->PrmModuleInfoOffset     = OFFSET_OF (PRM_ACPI_DESCRIPTION_TABLE, PrmModuleInfoStructure);
   PrmAcpiTable->PrmModuleInfoCount      = mPrmModuleCount;
 
