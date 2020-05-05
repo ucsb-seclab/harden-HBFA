@@ -427,7 +427,7 @@ PRM_HANDLER_EXPORT (MsrAccessMicrocodeSignaturePrmHandler)
   }
 
   // In the POC, the OS debug print service is assumed to be at the beginning of ParameterBuffer
-  OsServiceDebugPrint = (PRM_OS_SERVICE_DEBUG_PRINT) ParameterBuffer;
+  OsServiceDebugPrint = *((PRM_OS_SERVICE_DEBUG_PRINT *) ParameterBuffer);
   if (OsServiceDebugPrint == NULL) {
     return EFI_INVALID_PARAMETER;
   }
@@ -461,7 +461,7 @@ PRM_HANDLER_EXPORT (MsrAccessMtrrDumpPrmHandler)
   }
 
   // In the POC, the OS debug print service is assumed to be at the beginning of ParameterBuffer
-  OsServiceDebugPrint = (PRM_OS_SERVICE_DEBUG_PRINT) ParameterBuffer;
+  OsServiceDebugPrint = *((PRM_OS_SERVICE_DEBUG_PRINT *) ParameterBuffer);
   if (OsServiceDebugPrint == NULL) {
     return EFI_INVALID_PARAMETER;
   }
@@ -495,7 +495,7 @@ PRM_HANDLER_EXPORT (MmioAccessHpetPrmHandler)
   }
 
   // In the POC, the OS debug print service is assumed to be at the beginning of ParameterBuffer
-  OsServiceDebugPrint = (PRM_OS_SERVICE_DEBUG_PRINT) ParameterBuffer;
+  OsServiceDebugPrint = *((PRM_OS_SERVICE_DEBUG_PRINT *) ParameterBuffer);
   if (OsServiceDebugPrint == NULL) {
     return EFI_INVALID_PARAMETER;
   }

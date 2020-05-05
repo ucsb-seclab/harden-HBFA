@@ -54,7 +54,7 @@ PrmHandler1 (
   }
 
   // In the POC, the OS debug print service is assumed to be at the beginning of ParameterBuffer
-  OsServiceDebugPrint = (PRM_OS_SERVICE_DEBUG_PRINT) ParameterBuffer;
+  OsServiceDebugPrint = *((PRM_OS_SERVICE_DEBUG_PRINT *) ParameterBuffer);
   if (OsServiceDebugPrint == NULL) {
     return EFI_INVALID_PARAMETER;
   }
@@ -91,7 +91,7 @@ PrmHandler2 (
   }
 
   // In the POC, the OS debug print service is assumed to be at the beginning of ParameterBuffer
-  OsServiceDebugPrint = (PRM_OS_SERVICE_DEBUG_PRINT) ParameterBuffer;
+  OsServiceDebugPrint = *((PRM_OS_SERVICE_DEBUG_PRINT *) ParameterBuffer);
   if (OsServiceDebugPrint == NULL) {
     return EFI_INVALID_PARAMETER;
   }
@@ -128,7 +128,7 @@ PrmHandlerN (
   }
 
   // In the POC, the OS debug print service is assumed to be at the beginning of ParameterBuffer
-  OsServiceDebugPrint = (PRM_OS_SERVICE_DEBUG_PRINT) ParameterBuffer;
+  OsServiceDebugPrint = *((PRM_OS_SERVICE_DEBUG_PRINT *) ParameterBuffer);
   if (OsServiceDebugPrint == NULL) {
     return EFI_INVALID_PARAMETER;
   }
