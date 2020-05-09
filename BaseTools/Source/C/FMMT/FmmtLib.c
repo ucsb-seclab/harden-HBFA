@@ -1771,6 +1771,9 @@ FvBufFindNextFile (
     ) {
     fhdr = (EFI_FFS_FILE_HEADER*) ((UINT8*)hdr + *Key);
     fsize = GetFfsFileLength (fhdr);
+    if (fsize == 0xffffff) {
+      break;
+    }
     if (!EFI_TEST_FFS_ATTRIBUTES_BIT(
           FvbAttributes,
           fhdr->State,
