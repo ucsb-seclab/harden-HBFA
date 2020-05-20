@@ -1,0 +1,40 @@
+## @file
+#  PRM SSDT Sample Library.
+#
+#  Copyright (c) Microsoft Corporation
+#  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = DxePrmSsdtInstallLibSample
+  FILE_GUID                      = 35C79531-D09E-4CA5-9FC3-EBE8E8828779
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = PrmSsdtInstallLib
+
+#
+#  VALID_ARCHITECTURES           = IA32 X64 EBC
+#
+
+[Sources]
+  DxePrmSsdtInstallLibSample.c
+  Prm.asl
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  PrmPkg/PrmPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  DxeServicesLib
+  UefiBootServicesTableLib
+
+[Protocols]
+  gEfiAcpiTableProtocolGuid

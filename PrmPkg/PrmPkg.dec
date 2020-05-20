@@ -35,6 +35,7 @@
   ## @libraryclass Provides a general abstraction for PRM context buffer management
   #
   PrmContextBufferLib|Include/Library/PrmContextBufferLib.h
+  PrmSsdtInstallLib|Include/Library/PrmSsdtInstallLib.h
 
 [Protocols]
   ## PRM Configuration Protocol
