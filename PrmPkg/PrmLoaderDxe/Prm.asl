@@ -8,10 +8,10 @@
 DefinitionBlock (
     "Prm.aml",
     "SSDT",
-    0x01,
-    "OEMID",
+    2,
+    "OEMID ",
     "PRMOPREG",
-    0x3000
+    0x1000
     )
 {
     Scope (\_SB)

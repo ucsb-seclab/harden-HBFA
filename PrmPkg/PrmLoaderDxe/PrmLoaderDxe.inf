@@ -24,7 +24,6 @@
   PrmAcpiTable.h
   PrmLoader.h
   PrmLoaderDxe.c
-  Prm.asl
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -41,10 +40,10 @@
   MemoryAllocationLib
   PeCoffLib
   PrmContextBufferLib
+  PrmSsdtInstallLib
   UefiBootServicesTableLib
   UefiDriverEntryPoint
   UefiLib
-  DxeServicesLib
   PcdLib
 
 [Pcd]
