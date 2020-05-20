@@ -36,6 +36,11 @@ typedef struct {
 #else
   UINT64                              StaticDataBuffer;           ///< Physical address of the static data buffer for
                                                                   ///< this PRM handler (PRM_DATA_BUFFER *)
+  UINT64                              AcpiParameterBuffer;        ///< Physical address of the parameter buffer
+                                                                  ///< for this PRM handler (PRM_DATA_BUFFER *)
+                                                                  ///< that is only used in the case of _DSM invocation.
+                                                                  ///< If _DSM invocation is not used, this value is
+                                                                  ///< ignored.
 #endif
 
 } PRM_HANDLER_INFORMATION_STRUCT;
