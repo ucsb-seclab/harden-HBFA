@@ -33,7 +33,6 @@
   PeCoffExtraActionLib|MdePkg/Library/BasePeCoffExtraActionLibNull/BasePeCoffExtraActionLibNull.inf
   PeCoffLib|MdePkg/Library/BasePeCoffLib/BasePeCoffLib.inf
   PrintLib|MdePkg/Library/BasePrintLib/BasePrintLib.inf
-  PrmSsdtInstallLib|$(PLATFORM_PACKAGE)/Library/BasePrmSsdtInstallLibNull/BasePrmSsdtInstallLibNull.inf
   RngLib|MdePkg/Library/BaseRngLib/BaseRngLib.inf
   UefiBootServicesTableLib|MdePkg/Library/UefiBootServicesTableLib/UefiBootServicesTableLib.inf
 
@@ -47,7 +46,6 @@
   HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
   MemoryAllocationLib|MdePkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
   PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
-  PrmSsdtInstallLib|$(PLATFORM_PACKAGE)/Library/DxePrmSsdtInstallLibSample/DxePrmSsdtInstallLibSample.inf
   UefiDriverEntryPoint|MdePkg/Library/UefiDriverEntryPoint/UefiDriverEntryPoint.inf
   UefiLib|MdePkg/Library/UefiLib/UefiLib.inf
   UefiRuntimeServicesTableLib|MdePkg/Library/UefiRuntimeServicesTableLib/UefiRuntimeServicesTableLib.inf
@@ -71,12 +69,6 @@
   $(PLATFORM_PACKAGE)/Library/DxePrmContextBufferLib/DxePrmContextBufferLib.inf
 
   #
-  # PRM SSDT Installation Library
-  #
-  $(PLATFORM_PACKAGE)/Library/BasePrmSsdtInstallLibNull/BasePrmSsdtInstallLibNull.inf
-  $(PLATFORM_PACKAGE)/Library/DxePrmSsdtInstallLibSample/DxePrmSsdtInstallLibSample.inf
-
-  #
   # PRM Configuration Driver
   #
   $(PLATFORM_PACKAGE)/PrmConfigDxe/PrmConfigDxe.inf {
@@ -88,6 +80,11 @@
   # PRM Module Loader Driver
   #
   $(PLATFORM_PACKAGE)/PrmLoaderDxe/PrmLoaderDxe.inf
+
+  #
+  # PRM SSDT Installation Driver
+  #
+  $(PLATFORM_PACKAGE)/PrmSsdtInstallDxe/PrmSsdtInstallDxe.inf
 
   #
   # PRM Sample Modules

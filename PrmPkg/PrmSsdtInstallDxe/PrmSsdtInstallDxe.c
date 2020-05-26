@@ -14,9 +14,10 @@
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
 #include <Library/DxeServicesLib.h>
-#include <Library/PrmSsdtInstallLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Protocol/AcpiTable.h>
+
+#define _DBGMSGID_  "[PRMSSDTINSTALL]"
 
 /**
   Installs the PRM SSDT.
@@ -41,6 +42,8 @@ InstallPrmSsdt (
   EFI_ACPI_TABLE_PROTOCOL                 *AcpiTableProtocol;
   EFI_ACPI_DESCRIPTION_HEADER             *Ssdt;
 
+  DEBUG ((DEBUG_INFO, "%a %a - Entry.\n", _DBGMSGID_, __FUNCTION__));
+
   if (OemId == NULL) {
     return EFI_INVALID_PARAMETER;
   }
@@ -58,7 +61,7 @@ InstallPrmSsdt (
                 &SsdtSize
                 );
     ASSERT_EFI_ERROR (Status);
-    DEBUG ((DEBUG_INFO, "%a: SSDT loaded ...\n", __FUNCTION__));
+    DEBUG ((DEBUG_INFO, "%a %a: SSDT loaded...\n", _DBGMSGID_, __FUNCTION__));
 
     //
     // Update OEM ID in the SSDT
@@ -77,6 +80,31 @@ InstallPrmSsdt (
                                   );
     ASSERT_EFI_ERROR (Status);
   }
+
+  return Status;
+}
+
+/**
+  The entry point for this module.
+
+  @param[in]  ImageHandle    The firmware allocated handle for the EFI image.
+  @param[in]  SystemTable    A pointer to the EFI System Table.
+
+  @retval EFI_SUCCESS    The entry point is executed successfully.
+  @retval Others         An error occurred when executing this entry point.
+
+**/
+EFI_STATUS
+EFIAPI
+PrmSsdtInstallEntryPoint (
+  IN EFI_HANDLE                           ImageHandle,
+  IN EFI_SYSTEM_TABLE                     *SystemTable
+  )
+{
+  EFI_STATUS    Status;
+
+  Status = InstallPrmSsdt ((UINT8 *) PcdGetPtr (PcdAcpiDefaultOemId));
+  ASSERT_EFI_ERROR (Status);
 
   return Status;
 }

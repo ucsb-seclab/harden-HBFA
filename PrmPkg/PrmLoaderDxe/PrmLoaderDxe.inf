@@ -38,13 +38,12 @@
   BaseMemoryLib
   DebugLib
   MemoryAllocationLib
+  PcdLib
   PeCoffLib
   PrmContextBufferLib
-  PrmSsdtInstallLib
   UefiBootServicesTableLib
   UefiDriverEntryPoint
   UefiLib
-  PcdLib
 
 [Pcd]
   gEfiMdeModulePkgTokenSpaceGuid.PcdAcpiDefaultOemId            ## CONSUMES

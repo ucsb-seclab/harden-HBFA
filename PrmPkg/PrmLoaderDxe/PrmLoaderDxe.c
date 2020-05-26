@@ -18,7 +18,6 @@
 #include <Library/DebugLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/PrmContextBufferLib.h>
-#include <Library/PrmSsdtInstallLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiLib.h>
 #include <Protocol/AcpiTable.h>
@@ -830,8 +829,6 @@ PublishPrmAcpiTable (
     }
   }
   ASSERT_EFI_ERROR (Status);
-
-  Status = InstallPrmSsdt ((UINT8 *) PcdGetPtr (PcdAcpiDefaultOemId));
 
   return Status;
 }
