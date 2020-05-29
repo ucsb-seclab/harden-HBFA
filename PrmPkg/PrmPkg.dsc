@@ -73,7 +73,7 @@
   #
   $(PLATFORM_PACKAGE)/PrmConfigDxe/PrmConfigDxe.inf {
     <LibraryClasses>
-      NULL|$(PLATFORM_PACKAGE)/Samples/PrmSampleContextBufferModule/Library/DxePrmSampleContextBufferModuleConfigLib/DxePrmSampleContextBufferModuleConfigLib.inf
+      NULL|$(PLATFORM_PACKAGE)/Samples/PrmSampleContextBufferModule/Library/DxeContextBufferModuleConfigLib/DxeContextBufferModuleConfigLib.inf
   }
 
   #

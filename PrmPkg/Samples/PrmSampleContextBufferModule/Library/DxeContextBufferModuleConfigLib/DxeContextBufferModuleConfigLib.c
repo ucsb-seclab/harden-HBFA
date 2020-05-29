@@ -116,7 +116,7 @@ GetStaticDataBuffer (
 **/
 EFI_STATUS
 EFIAPI
-PrmSampleContextBufferModuleConfigLibConstructor (
+ContextBufferModuleConfigLibConstructor (
   IN  EFI_HANDLE              ImageHandle,
   IN  EFI_SYSTEM_TABLE        *SystemTable
   )
