@@ -631,6 +631,8 @@ ProcessPrmModules (
   UINTN                                   HandlerIndex;
   UINT32                                  PrmAcpiDescriptionTableBufferSize;
 
+  UINT64                                  HandlerPhysicalAddress;
+
   DEBUG ((DEBUG_INFO, "%a %a - Entry.\n", _DBGMSGID_, __FUNCTION__));
 
   if (PrmAcpiDescriptionTable == NULL) {
@@ -747,10 +749,11 @@ ProcessPrmModules (
                   CurrentExportDescriptorHandlerName,
                   CurrentImageAddress,
                   CurrentImageExportDirectory,
-                  &CurrentHandlerInfoStruct->PhysicalAddress
+                  &HandlerPhysicalAddress
                   );
       ASSERT_EFI_ERROR (Status);
       if (!EFI_ERROR (Status)) {
+        CurrentHandlerInfoStruct->PhysicalAddress = HandlerPhysicalAddress;
         DEBUG ((
           DEBUG_INFO,
           "    %a %a: Found %a handler physical address at 0x%016x.\n",
