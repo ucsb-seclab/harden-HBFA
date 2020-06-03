@@ -2,6 +2,7 @@
 
   Definition for the Platform Runtime Mechanism (PRM) ACPI table (PRMT).
 
+  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
   Copyright (c) Microsoft Corporation
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -28,7 +29,6 @@ typedef struct {
   UINT16                              StructureRevision;          ///< Revision of this structure
   UINT16                              StructureLength;            ///< Length in bytes of this structure
   GUID                                Identifier;                 ///< GUID of the PRM handler for this structure
-  UINT32                              Reserved;                   ///< Reserved for future use
   UINT64                              PhysicalAddress;            ///< Physical address of this PRM handler
 #ifdef ALLOCATE_CONTEXT_BUFFER_IN_FW
   UINT64                              PrmContextBuffer;           ///< Physical address of the context buffer for this
@@ -52,7 +52,7 @@ typedef struct {
   GUID                                Identifier;                 ///< GUID of the PRM module for this structure
   UINT16                              MajorRevision;              ///< PRM module major revision
   UINT16                              MinorRevision;              ///< PRM module minor revision
-  UINT32                              HandlerCount;               ///< Number of entries in the Handler Info array
+  UINT16                              HandlerCount;               ///< Number of entries in the Handler Info array
   UINT32                              HandlerInfoOffset;          ///< Offset in bytes from the beginning of this
                                                                   ///< structure to the Handler Info array
   UINT64                              RuntimeMmioRanges;          ///< Physical address of the PRM MMIO Ranges
