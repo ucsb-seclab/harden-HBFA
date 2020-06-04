@@ -169,6 +169,7 @@ LibInitializeFvStruct (
     Fv->FfsAttuibutes[Index].IsHandle             = FALSE;
     Fv->FfsAttuibutes[Index].IsFvStart            = FALSE;
     Fv->FfsAttuibutes[Index].IsFvEnd              = FALSE;
+    Fv->FfsAttuibutes[Index].FvId                 = 0;
   }
 
   Fv->EncapData = NULL;
@@ -832,6 +833,7 @@ LibParseSection (
   CHAR8               *ToolInputFileName;
   CHAR8               *ToolOutputFileName;
   BOOLEAN              HasUiSection;
+  BOOLEAN              FirstInFlag;
 
   DataOffset                 = 0;
   GuidAttr                   = 0;
@@ -867,6 +869,7 @@ LibParseSection (
   EncapDataNeedUpdata        = TRUE;
   LargeHeaderOffset          = 0;
   HasUiSection               = FALSE;
+  FirstInFlag                = TRUE;
 
 
   while (ParsedLength < BufferLength) {
@@ -899,7 +902,9 @@ LibParseSection (
       EncapDataNeedUpdata = TRUE;
       HasUiSection = TRUE;
 
-      Level ++;
+      if (FirstInFlag) {
+        Level ++;
+      }
       NumberOfSections ++;
 
       CurrentFv->FfsAttuibutes[*FfsCount].IsLeaf = FALSE;
@@ -994,7 +999,9 @@ LibParseSection (
       break;
 
     case EFI_SECTION_COMPRESSION:
-      Level ++;
+      if (FirstInFlag) {
+        Level ++;
+      }
       NumberOfSections ++;
 
       EncapDataNeedUpdata = TRUE;
@@ -1029,6 +1036,7 @@ LibParseSection (
 
         LocalEncapData->Level = Level;
         LocalEncapData->Type  = FMMT_ENCAP_TREE_COMPRESS_SECTION;
+        LocalEncapData->FvId = *FvCount;
 
         //
         // Store the compress type
@@ -1054,6 +1062,7 @@ LibParseSection (
 
         LocalEncapData->Level = Level;
         LocalEncapData->Type  = FMMT_ENCAP_TREE_COMPRESS_SECTION;
+        LocalEncapData->FvId  = *FvCount;
 
         //
         // Store the compress type
@@ -1174,7 +1183,9 @@ LibParseSection (
       // looks up the appropriate tool to use for extracting
       // a GUID defined FV section.
       //
-      Level ++;
+      if (FirstInFlag) {
+        Level ++;
+      }
       NumberOfSections++;
       EncapDataNeedUpdata = TRUE;
       HasUiSection = TRUE;
@@ -1184,6 +1195,9 @@ LibParseSection (
       LocalEncapData = *CurrentFvEncapData;
       if (LocalEncapData->NextNode != NULL) {
         EncapDataNeedUpdata = FALSE;
+        while (Level != LocalEncapData->Level) {
+          LocalEncapData = LocalEncapData->NextNode;
+        }
         while (LocalEncapData->RightNode != NULL) {
           LocalEncapData = LocalEncapData->RightNode;
         }
@@ -1239,6 +1253,7 @@ LibParseSection (
         LocalEncapData->Depex = NULL;
         LocalEncapData->DepexLen = 0;
         LocalEncapData->UiNameSize = 0;
+        LocalEncapData->FvId  = *FvCount;
         //
         // We don't need additional data for encapsulate this FFS but type.
         // include DataOffset + Attributes
@@ -1271,6 +1286,7 @@ LibParseSection (
         LocalEncapData->Depex = NULL;
         LocalEncapData->DepexLen = 0;
         LocalEncapData->UiNameSize = 0;
+        LocalEncapData->FvId = *FvCount;
         //
         // We don't need additional data for encapsulate this FFS but type.
         // include DataOffset + Attributes
@@ -1510,6 +1526,9 @@ LibParseSection (
     //Leaf sections
     //
     case EFI_SECTION_RAW:
+      if (FirstInFlag) {
+        Level++;
+      }
       NumberOfSections ++;
       CurrentFv->FfsAttuibutes[*FfsCount].Level = Level;
       if (!ViewFlag) {
@@ -1671,6 +1690,7 @@ LibParseSection (
     }
 
     ParsedLength += SectionLength;
+    FirstInFlag  = FALSE;
     //
     // We make then next section begin on a 4-byte boundary
     //
@@ -1960,6 +1980,7 @@ LibGetFileInfo (
       LocalEncapData->Depex = NULL;
       LocalEncapData->DepexLen = 0;
       LocalEncapData->UiNameSize = 0;
+      LocalEncapData->FvId = *FvCount;
       //
       // Store the header of FFS file.
       //
@@ -2007,6 +2028,7 @@ LibGetFileInfo (
       LocalEncapData->Depex = NULL;
       LocalEncapData->DepexLen = 0;
       LocalEncapData->UiNameSize = 0;
+      LocalEncapData->FvId = *FvCount;
       //
       // Store the header of FFS file.
       //
@@ -2327,6 +2349,7 @@ LibGetFvInfo (
     CurrentFv->FfsAttuibutes[*FfsCount].Offset = Key - GetFfsFileLength ((EFI_FFS_FILE_HEADER *) CurrentFile);
 
     CurrentFv->FfsAttuibutes[*FfsCount].FvLevel = CurrentFv->FvLevel;
+    CurrentFv->FfsAttuibutes[*FfsCount].FvId    = *FvCount;
      if (CurrentFv->FvLevel > CurrentFv->MulFvLevel) {
       CurrentFv->MulFvLevel = CurrentFv->FvLevel;
    }
@@ -4172,6 +4195,8 @@ LibEncapNewFvFile(
   UINT32                      InputFileSize;
   UINT32                      OutputFileSize;
   UINT32                      LargeFileSize;
+  UINT32                      TmpFileSize;
+  UINT32                      AlignmentFileSize;
   UINT8                       *Buffer = NULL;
   UINT8                       SectionHeader[4] = { 0x00, 0x00, 0x00, 0x00 };
   UINT32                      Id;
@@ -4182,6 +4207,7 @@ LibEncapNewFvFile(
   AlignN                      = 0;
   Id                          = 0;
   InputFileSize               = 0;
+  TmpFileSize                 = 0;
   EncapFvIndex                = 0;
   Index                       = 0;
   OuterIndex                  = 0;
@@ -4206,7 +4232,7 @@ LibEncapNewFvFile(
   LargeFileSize               = 0x1000000;
 
 
-  OutputFileNameList = (FFS_INFORMATION *)malloc(sizeof(FV_INFORMATION));
+  OutputFileNameList = (FFS_INFORMATION *)malloc(sizeof(FFS_INFORMATION));
   if (OutputFileNameList == NULL) {
     Error ("FMMT", 0, 0004, "Out of resource, memory allocation failed! \n", "");
     return EFI_OUT_OF_RESOURCES;
@@ -4221,7 +4247,7 @@ LibEncapNewFvFile(
   OutputFileNameList->DepexLen = 0;
   OutputFileNameList->FfsFoundFlag = FALSE;
 
-  ChildFileNameList = (FFS_INFORMATION *)malloc(sizeof(FV_INFORMATION));
+  ChildFileNameList = (FFS_INFORMATION *)malloc(sizeof(FFS_INFORMATION));
   if (ChildFileNameList == NULL) {
     Error ("FMMT", 0, 0004, "Out of resource, memory allocation failed! \n", "");
     return EFI_OUT_OF_RESOURCES;
@@ -4270,6 +4296,32 @@ LibEncapNewFvFile(
         }
       }
 
+      //
+      //One Fv include multiple GUIDED SECTION
+      //
+      if (LocalEncapData->Type == FMMT_ENCAP_TREE_GUIDED_SECTION) {
+        LocalEncapDataTemp = LocalEncapData->RightNode;
+        while (LocalEncapDataTemp != NULL) {
+          LocalEncapDataNext = LocalEncapDataTemp->NextNode;
+          if (LocalEncapDataNext != NULL && LocalEncapDataNext->NextNode != NULL) {
+            LibEncapNewFvFile(FvInFd, TemDir, LocalEncapDataTemp, LocalEncapDataTemp->Level-1, &ChildFileNameList);
+            ChildFileNameList->ParentLevel = LocalEncapDataTemp->Level - 1;
+            ChildFileNameList->FfsFoundFlag = FALSE;
+            ChildFileNameList->InFvId = 0;
+            if (FvInFd->ChildGuid == NULL) {
+              FvInFd->ChildGuid = ChildFileNameList;
+            } else {
+              NewFileNameList = FvInFd->ChildGuid;
+              while (NewFileNameList->Next != NULL) {
+                NewFileNameList = NewFileNameList->Next;
+              }
+              NewFileNameList->Next = ChildFileNameList;
+            }
+          }
+          LocalEncapDataTemp = LocalEncapDataTemp->RightNode;
+        }
+      }
+
       if (LocalEncapData->Level > Level) {
         if (LocalEncapData->Type == FMMT_ENCAP_TREE_FFS) {
             ParentLevel = Level;
@@ -4283,15 +4335,35 @@ LibEncapNewFvFile(
   } else {
     LocalEncapData = CurrentEncapData;
     while (LocalEncapData != NULL) {
-        if (LocalEncapData->Level > Level) {
-            if (LocalEncapData->Type == FMMT_ENCAP_TREE_FFS) {
-                ParentLevel = Level;
-                ParentType  = Type;
+      if (LocalEncapData->Type == FMMT_ENCAP_TREE_FFS) {
+        LocalEncapDataTemp = LocalEncapData->RightNode;
+        while (LocalEncapDataTemp != NULL) {
+            LocalEncapDataNext = LocalEncapDataTemp->NextNode;
+            if (LocalEncapDataNext != NULL && LocalEncapDataNext->NextNode != NULL) {
+                LibEncapNewFvFile(FvInFd, TemDir, LocalEncapDataTemp, LocalEncapDataTemp->Level-1, &ChildFileNameList);
+                //ChildFileNameList->ParentLevel = LocalEncapDataTemp->Level -1;
+                if (FvInFd->ChildFvFFS == NULL) {
+                    FvInFd->ChildFvFFS = ChildFileNameList;
+                } else {
+                    NewFileNameList = FvInFd->ChildFvFFS;
+                    while (NewFileNameList->Next != NULL) {
+                        NewFileNameList = NewFileNameList->Next;
+                    }
+                    NewFileNameList->Next = ChildFileNameList;
+                }
             }
-            Level       = LocalEncapData->Level;
-            Type        = LocalEncapData->Type;
+            LocalEncapDataTemp = LocalEncapDataTemp->RightNode;
         }
-        LocalEncapData = LocalEncapData->NextNode;
+      }
+      if (LocalEncapData->Level > Level) {
+        if (LocalEncapData->Type == FMMT_ENCAP_TREE_FFS) {
+          ParentLevel = Level;
+          ParentType  = Type;
+        }
+        Level       = LocalEncapData->Level;
+        Type        = LocalEncapData->Type;
+      }
+      LocalEncapData = LocalEncapData->NextNode;
     }
   }
 
@@ -4403,8 +4475,12 @@ LibEncapNewFvFile(
         }
 
         if (CurrentEncapData != NULL) {
+          LocalEncapData = CurrentEncapData;
+          while (LocalEncapData->Level != ParentLevel) {
+            LocalEncapData = LocalEncapData->NextNode;
+          }
             for (Index = 0; Index <= FvInFd->FfsNumbers; Index++) {
-                if ((memcmp(&FvInFd->FfsAttuibutes[Index].GuidName, &(CurrentEncapData->FvExtHeader->FvName), sizeof(EFI_GUID)) == 0)) {
+                if ((memcmp(&FvInFd->FfsAttuibutes[Index].GuidName, &(LocalEncapData->FvExtHeader->FvName), sizeof(EFI_GUID)) == 0)) {
                     SubFvId = Index;
                     break;
                 }
@@ -4439,7 +4515,7 @@ LibEncapNewFvFile(
 
             NewFileNameList = FvInFd->ChildFvFFS;
             while (NewFileNameList != NULL && NewFileNameList -> FFSName != NULL) {
-                if (NewFileNameList -> ParentLevel == ParentLevel && Index == NewFileNameList->InFvId && NewFileNameList->FfsFoundFlag==TRUE) {
+                if (NewFileNameList->FvId == LocalEncapData->FvId && NewFileNameList -> ParentLevel == ParentLevel && Index == NewFileNameList->InFvId && NewFileNameList->FfsFoundFlag==TRUE) {
                     if (FirstInFlag) {
                         Status = LibAddFfsFileToFvInf (NewFileNameList->FFSName, InfFile, TRUE);
                         FirstInFlag = FALSE;
@@ -4453,6 +4529,7 @@ LibEncapNewFvFile(
                         free (ChildFileNameList);
                         return Status;
                     }
+                  NewFileNameList->FfsFoundFlag = FALSE;
                 }
                 NewFileNameList = NewFileNameList->Next;
             }
@@ -4473,7 +4550,7 @@ LibEncapNewFvFile(
               IsLeafFlagIgnore = FvInFd->FfsAttuibutes[Index].IsLeaf;
             }
 
-          if (FvInFd->FfsAttuibutes[Index].Level >= ParentLevel + 1 && IsLeafFlagIgnore) {
+          if (FvInFd->FfsAttuibutes[Index].FvId == LocalEncapData->FvId  && FvInFd->FfsAttuibutes[Index].Level >= ParentLevel + 1 && IsLeafFlagIgnore) {
             if (FirstInFlag) {
         if (FvInFd->FfsAttuibutes[Index].Level < 0xFF) {
           FfsFoundFlag = TRUE;
@@ -4495,24 +4572,24 @@ LibEncapNewFvFile(
                 IsRootFv = TRUE;
               }
             } else {
-          if (FvInFd->FfsAttuibutes[Index].Level < 0xFF) {
-          FfsFoundFlag = TRUE;
-          Status = LibAddFfsFileToFvInf (FvInFd->FfsAttuibutes[Index].FfsName, InfFile, FALSE);
-          FvInFd->FfsAttuibutes[Index].IsHandle=TRUE;
-        }
-
-                if (EFI_ERROR (Status)) {
-                  Error ("FMMT", 0, 0004, "error while encapsulate FD Image", "Generate FV inf file [files] section failed!");
-                  fclose (InfFile);
-                  free (OutputFileNameList);
-                  free (ChildFileNameList);
-                  return Status;
-                }
-                if (Index == 0) {
-                  // Root FV need to include all FFS files.
-                  IsRootFv = TRUE;
-                }
+              if (FvInFd->FfsAttuibutes[Index].Level < 0xFF) {
+                FfsFoundFlag = TRUE;
+                Status = LibAddFfsFileToFvInf (FvInFd->FfsAttuibutes[Index].FfsName, InfFile, FALSE);
+                FvInFd->FfsAttuibutes[Index].IsHandle=TRUE;
               }
+
+              if (EFI_ERROR (Status)) {
+                Error ("FMMT", 0, 0004, "error while encapsulate FD Image", "Generate FV inf file [files] section failed!");
+                fclose (InfFile);
+                free (OutputFileNameList);
+                free (ChildFileNameList);
+                return Status;
+              }
+              if (Index == 0) {
+                // Root FV need to include all FFS files.
+                IsRootFv = TRUE;
+              }
+            }
 
 
       //avoid a FV contain too many ffs files
@@ -4574,6 +4651,8 @@ LibEncapNewFvFile(
             OutputFileNameList->Depex = FvInFd->FfsAttuibutes[EncapFvIndex - 1].Depex;
             OutputFileNameList->DepexLen = FvInFd->FfsAttuibutes[EncapFvIndex - 1].DepexLen;
             OutputFileNameList->FfsFoundFlag = FfsFoundFlag;
+            OutputFileNameList->FvId = FvInFd->FfsAttuibutes[EncapFvIndex - 1].FvId;
+            OutputFileNameList->ParentLevel = ParentLevel - 1;
         }
       }
     }
@@ -4744,6 +4823,7 @@ LibEncapNewFvFile(
       }
       memcpy((char *)OutputFileNameList->FFSName, (char *)OutputFileName, strlen(OutputFileName)+1);
       OutputFileNameList->IsFFS = TRUE;
+      OutputFileNameList->ParentLevel = ParentLevel - 1;
       if (OutputFileNameList->Next == NULL){
           break;
       }
@@ -4756,6 +4836,65 @@ LibEncapNewFvFile(
         // Create the guided section original data, do compress operation.
         //
         InputFileName  = OutputFileNameList->FFSName;
+        //
+        //Fv include multiple Guided section
+        //
+        if (CurrentEncapData == NULL && FvInFd->ChildGuid != NULL) {
+          NewFileNameList = FvInFd->ChildGuid;
+          while (NewFileNameList != NULL) {
+            if (NewFileNameList->FFSName != NULL && NewFileNameList->ParentLevel == ParentLevel) {
+              InputFile = fopen(InputFileName, "rb+");
+              if (InputFile == NULL) {
+                Error("FMMT", 0, 0004, "Could not open input file %s! \n", InputFileName);
+                return EFI_ABORTED;
+              }
+              fseek(InputFile, 0, SEEK_SET);
+              fseek(InputFile, 0, SEEK_END);
+              InputFileSize = ftell(InputFile);
+              fseek(InputFile, 0, SEEK_SET);
+              TmpFile = fopen(NewFileNameList->FFSName, "rb+");
+              if (TmpFile == NULL) {
+                Error("FMMT", 0, 0004, "Could not open input file %s! \n", NewFileNameList->FFSName);
+                return EFI_ABORTED;
+              }
+              fseek(TmpFile, 0, SEEK_SET);
+              fseek(TmpFile, 0, SEEK_END);
+              TmpFileSize = ftell(TmpFile);
+              fseek(TmpFile, 0, SEEK_SET);
+              //
+              //Guided section need 4 bytes alignment
+              //
+              AlignmentFileSize = (InputFileSize + 3) & (UINT32)~3;
+              Buffer = malloc(AlignmentFileSize + TmpFileSize);
+              //
+              //Alignment filled 00
+              //
+              memset(Buffer, 0, AlignmentFileSize+ TmpFileSize);
+              if (fread (Buffer, 1, InputFileSize, InputFile) != InputFileSize) {
+                Error("FMMT", 0, 0004, "Could not open guided file %s to add GUIDED section information! \n", InputFileName);
+                fclose(InputFile);
+                fclose(TmpFile);
+                free (Buffer);
+                return EFI_ABORTED;
+              }
+              fseek(InputFile, 0, SEEK_SET);
+              if (fread (Buffer + AlignmentFileSize, 1, TmpFileSize, TmpFile) != TmpFileSize) {
+                Error("FMMT", 0, 0004, "Could not open guided file %s to add GUIDED section information! \n", NewFileNameList->FFSName);
+                fclose(InputFile);
+                fclose(TmpFile);
+                free (Buffer);
+                return EFI_ABORTED;
+              }
+              fwrite(Buffer, 1, AlignmentFileSize + TmpFileSize, InputFile);
+              free(NewFileNameList->FFSName);
+              NewFileNameList->FFSName = NULL;
+              free(Buffer);
+              fclose(TmpFile);
+              fclose(InputFile);
+            }
+            NewFileNameList = NewFileNameList->Next;
+          }
+        }
         OutputFileName= LibFilenameStrExtended (strrchr(GenTempFile (), OS_SEP), TemDir, "compressed");
 
         //
@@ -4821,6 +4960,7 @@ LibEncapNewFvFile(
           free (ChildFileNameList);
           return Status;
         }
+        OutputFileNameList->ParentLevel = ParentLevel - 1;
         if (OutputFileNameList->Next == NULL){
           break;
        }
@@ -4857,6 +4997,7 @@ LibEncapNewFvFile(
             free (ChildFileNameList);
             return Status;
           }
+          OutputFileNameList->ParentLevel = ParentLevel - 1;
           if (OutputFileNameList->Next == NULL){
             break;
           }
@@ -4912,6 +5053,7 @@ LibEncapNewFvFile(
           free (ChildFileNameList);
           return Status;
         }
+        OutputFileNameList->ParentLevel = ParentLevel - 1;
         if (OutputFileNameList->Next == NULL){
            break;
         }
@@ -4930,6 +5072,8 @@ LibEncapNewFvFile(
                 OutputFileNameList->FfsFoundFlag = TRUE;
                 OutputFileNameList->IsFFS = TRUE;
                 OutputFileNameList->InFvId = Id;
+                OutputFileNameList->FvId = FvInFd->FfsAttuibutes[Id].FvId;
+                OutputFileNameList->ParentLevel = ParentLevel - 1;
                 *OutputFile = OutputFileNameList;
                 return EFI_SUCCESS;
             }
