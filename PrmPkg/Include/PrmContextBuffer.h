@@ -19,6 +19,16 @@
 
 #pragma pack(push, 1)
 
+//
+// This is the context buffer structure that is passed to a PRM handler.
+//
+// At OS runtime, the OS will allocate and populate this structure and
+// place virtual addresses in the pointer fields.
+//
+// It is also reused internally in FW (in the PRM_MODULE_CONTEXT_BUFFERS structure)
+// to track context buffers within a given PRM module. In that internal usage,
+// the addresses will be physical addresses.
+//
 typedef struct {
   ///
   /// Signature of this interface.
@@ -41,7 +51,7 @@ typedef struct {
   EFI_GUID                                HandlerGuid;
 
   ///
-  /// A physical address pointer to the static data buffer allocated for
+  /// A virtual address pointer to the static data buffer allocated for
   /// the PRM handler represented by this context instance.
   ///
   /// The static buffer is intended to be populated in the PRM module
@@ -52,6 +62,10 @@ typedef struct {
   PRM_DATA_BUFFER                         *StaticDataBuffer;
 } PRM_CONTEXT_BUFFER;
 
+//
+// A firmware internal data structure used to track context buffer and
+// runtime MMIO range usage across a PRM module.
+//
 typedef struct
 {
   ///
