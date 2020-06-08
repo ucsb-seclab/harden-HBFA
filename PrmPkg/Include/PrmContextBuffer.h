@@ -60,6 +60,26 @@ typedef struct {
   /// This pointer may be NULL if a static data buffer is not needed.
   ///
   PRM_DATA_BUFFER                         *StaticDataBuffer;
+
+  ///
+  /// A virtual address pointer to an array of PRM_RUNTIME_MMIO_RANGE
+  /// structures that describe MMIO physical address ranges mapped to
+  /// virtual memory addresses for access at OS runtime.
+  ///
+  /// This pointer is ignored in firmware internal usage of this structure
+  /// as this field is present to allow a PRM handler to get the list
+  /// of MMIO ranges described as accessible by its PRM module.
+  ///
+  /// The module list of MMIO ranges is specified by the PRM configuration
+  /// code as a single array in PRM_MODULE_CONTEXT_BUFFERS.
+  ///
+  /// The OS is responsible for ensuring the pointer to the array in this
+  /// structure is converted to a virtual address during construction of
+  /// of the context buffer in the OS.
+  ///
+  /// This pointer may be NULL if runtime memory ranges are not needed.
+  ///
+  PRM_RUNTIME_MMIO_RANGES                 *RuntimeMmioRanges;
 } PRM_CONTEXT_BUFFER;
 
 //
@@ -84,10 +104,22 @@ typedef struct
   ///
   PRM_CONTEXT_BUFFER                      *Buffer;
 
+  /// The MMIO ranges are defined in the firmware boot environment.
+  /// The addresses within the PRM_RUNTIME_MMIO_RANGES structure will
+  /// be converted to virtual addresses by firmware.
+
   ///
   /// A physical address pointer to an array of PRM_RUNTIME_MMIO_RANGE
   /// structures that describe memory ranges that need to be mapped to
   /// virtual memory addresses for access at OS runtime.
+  ///
+  /// This is a consolidated array of MMIO ranges accessed by any PRM
+  /// handler in the PRM module at OS runtime. The MMIO range physical
+  /// addresses registered here will automatically be converted to the
+  /// corresponding virtual address in the structure by PRM infrastructure
+  /// code. No action is required to convert MMIO range base physical
+  /// addresses to virtual addresses by either the PRM configuration code
+  /// or the OS.
   ///
   /// This pointer may be NULL if runtime memory ranges are not needed.
   ///
