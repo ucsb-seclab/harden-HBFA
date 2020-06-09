@@ -189,7 +189,6 @@ GetContextBuffer (
     }
   } else {
     ContextBuffers = PrmModuleContextBuffers;
-    DEBUG ((DEBUG_INFO, "      %a %a: Found context buffer physical address at 0x%016x.\n", _DBGMSGID_, __FUNCTION__));
   }
   Status = FindContextBufferInModuleBuffers (PrmHandlerGuid, ContextBuffers, PrmContextBuffer);
 
