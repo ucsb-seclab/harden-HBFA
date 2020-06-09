@@ -18,7 +18,7 @@
 #include <PrmContextBuffer.h>
 #include <PrmDataBuffer.h>
 
-EFI_HANDLE  mPrmConfigProtocolHandle;
+STATIC EFI_HANDLE  mPrmConfigProtocolHandle;
 
 // {5a6cf42b-8bb4-472c-a233-5c4dc4033dc7}
 STATIC CONST EFI_GUID mPrmModuleGuid = {0x5a6cf42b, 0x8bb4, 0x472c, {0xa2, 0x33, 0x5c, 0x4d, 0xc4, 0x03, 0x3d, 0xc7}};
