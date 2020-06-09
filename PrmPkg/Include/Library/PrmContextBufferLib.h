@@ -7,12 +7,12 @@
 
 **/
 
+#ifndef __PRM_CONTEXT_BUFFER_LIB_H__
+#define __PRM_CONTEXT_BUFFER_LIB_H__
+
 #include <Base.h>
 #include <PrmContextBuffer.h>
 #include <Uefi.h>
-
-#ifndef __PRM_CONTEXT_BUFFER_LIB_H__
-#define __PRM_CONTEXT_BUFFER_LIB_H__
 
 typedef enum {
   ///
