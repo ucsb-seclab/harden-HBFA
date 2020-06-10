@@ -22,7 +22,7 @@
 typedef struct {
   EFI_PHYSICAL_ADDRESS                    PhysicalBaseAddress;
   EFI_PHYSICAL_ADDRESS                    VirtualBaseAddress;
-  UINTN                                   Length;
+  UINT32                                  Length;
 } PRM_RUNTIME_MMIO_RANGE;
 
 ///
@@ -33,7 +33,7 @@ typedef struct {
   ///
   /// The number of runtime memory range elements in this buffer.
   ///
-  UINTN                                   Count;
+  UINT64                                  Count;
   ///
   /// The beginning of the runtime memory range data.
   ///

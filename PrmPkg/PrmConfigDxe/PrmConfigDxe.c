@@ -45,7 +45,7 @@ ConvertRuntimeMemoryRangeAddresses (
     return;
   }
 
-  for (Index = 0; Index < RuntimeMmioRanges->Count; Index++) {
+  for (Index = 0; Index < (UINTN) RuntimeMmioRanges->Count; Index++) {
     RuntimeMmioRanges->Range[Index].VirtualBaseAddress = RuntimeMmioRanges->Range[Index].PhysicalBaseAddress;
     gRT->ConvertPointer (0x0, (VOID **) &(RuntimeMmioRanges->Range[Index].VirtualBaseAddress));
   }
@@ -75,7 +75,7 @@ SetRuntimeMemoryRangeAttributes (
     return;
   }
 
-  for (Index = 0; Index < RuntimeMmioRanges->Count; Index++) {
+  for (Index = 0; Index < (UINTN) RuntimeMmioRanges->Count; Index++) {
     DEBUG ((
       DEBUG_INFO, "      %a %a: Runtime MMIO Range [%d].\n", _DBGMSGID_, __FUNCTION__, Index));
     DEBUG ((
@@ -108,7 +108,7 @@ SetRuntimeMemoryRangeAttributes (
 
     Status = gDS->SetMemorySpaceAttributes (
                     RuntimeMmioRanges->Range[Index].PhysicalBaseAddress,
-                    RuntimeMmioRanges->Range[Index].Length,
+                    (UINT64) RuntimeMmioRanges->Range[Index].Length,
                     Descriptor.Attributes | EFI_MEMORY_RUNTIME
                     );
     ASSERT_EFI_ERROR (Status);
