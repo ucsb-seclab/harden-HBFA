@@ -66,6 +66,7 @@ SetRuntimeMemoryRangeAttributes (
   )
 {
   EFI_STATUS                        Status;
+  EFI_STATUS                        Status2;
   UINTN                             Index;
   EFI_GCD_MEMORY_SPACE_DESCRIPTOR   Descriptor;
 
@@ -86,9 +87,46 @@ SetRuntimeMemoryRangeAttributes (
       RuntimeMmioRanges->Range[Index].PhysicalBaseAddress,
       RuntimeMmioRanges->Range[Index].Length
       ));
-    //
-    // Check if the range has already been registered for runtime access
-    //
+
+    // Runtime memory ranges should cover ranges on a page boundary
+    ASSERT ((RuntimeMmioRanges->Range[Index].PhysicalBaseAddress & EFI_PAGE_MASK) == 0);
+    ASSERT ((RuntimeMmioRanges->Range[Index].Length & EFI_PAGE_MASK) == 0);
+
+    Status2 = EFI_NOT_FOUND;
+    Status = gDS->GetMemorySpaceDescriptor (RuntimeMmioRanges->Range[Index].PhysicalBaseAddress, &Descriptor);
+    if (!EFI_ERROR (Status) &&
+      (
+        (Descriptor.GcdMemoryType != EfiGcdMemoryTypeMemoryMappedIo && Descriptor.GcdMemoryType != EfiGcdMemoryTypeReserved) ||
+        ((Descriptor.Length & EFI_PAGE_MASK) != 0)
+        )
+      ) {
+      Status2 =  gDS->RemoveMemorySpace (
+                        RuntimeMmioRanges->Range[Index].PhysicalBaseAddress,
+                        Descriptor.Length
+                        );
+    }
+
+    if (Status == EFI_NOT_FOUND || !EFI_ERROR (Status2)) {
+      Status = gDS->AddMemorySpace (
+                      EfiGcdMemoryTypeMemoryMappedIo,
+                      RuntimeMmioRanges->Range[Index].PhysicalBaseAddress,
+                      (UINT64) RuntimeMmioRanges->Range[Index].Length,
+                      EFI_MEMORY_UC | EFI_MEMORY_RUNTIME
+                      );
+      ASSERT_EFI_ERROR (Status);
+
+      Status = gDS->AllocateMemorySpace (
+                      EfiGcdAllocateAddress,
+                      EfiGcdMemoryTypeMemoryMappedIo,
+                      0,
+                      (UINT64) RuntimeMmioRanges->Range[Index].Length,
+                      &RuntimeMmioRanges->Range[Index].PhysicalBaseAddress,
+                      gImageHandle,
+                      NULL
+                      );
+      ASSERT_EFI_ERROR (Status);
+    }
+
     Status = gDS->GetMemorySpaceDescriptor (RuntimeMmioRanges->Range[Index].PhysicalBaseAddress, &Descriptor);
     ASSERT_EFI_ERROR (Status);
     if (EFI_ERROR (Status)) {
