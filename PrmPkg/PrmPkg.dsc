@@ -54,6 +54,9 @@
   # PRM Package
   #
   PrmContextBufferLib|$(PLATFORM_PACKAGE)/Library/DxePrmContextBufferLib/DxePrmContextBufferLib.inf
+  PrmModuleDiscoveryLib|$(PLATFORM_PACKAGE)/Library/DxePrmModuleDiscoveryLib/DxePrmModuleDiscoveryLib.inf
+  PrmPeCoffLib|$(PLATFORM_PACKAGE)/Library/DxePrmPeCoffLib/DxePrmPeCoffLib.inf
+
 
 ###################################################################################################
 #
@@ -67,6 +70,16 @@
   # PRM Context Buffer Library
   #
   $(PLATFORM_PACKAGE)/Library/DxePrmContextBufferLib/DxePrmContextBufferLib.inf
+
+  #
+  # PRM Module Discovery Library
+  #
+  $(PLATFORM_PACKAGE)/Library/DxePrmModuleDiscoveryLib/DxePrmModuleDiscoveryLib.inf
+
+  #
+  # PRM PE/COFF Library
+  #
+  $(PLATFORM_PACKAGE)/Library/DxePrmPeCoffLib/DxePrmPeCoffLib.inf
 
   #
   # PRM Configuration Driver
