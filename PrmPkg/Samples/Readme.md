@@ -196,7 +196,9 @@ and interact with their PRM modules.
 
 * Context Buffer Required: No
 
-* Runtime MMIO Range(s) Required: No
+* Runtime MMIO Range(s) Required: Yes
+  * Physical Base Address: 0xFED00000
+  * Length: 0x1000
 
 #### Handler: MSR Print Microcode Signature PRM Handler
 * Name: `MsrPrintMicrocodeSignaturePrmHandler`
@@ -256,4 +258,6 @@ and interact with their PRM modules.
 
 * Context Buffer Required: No
 
-* Runtime MMIO Range(s) Required: No
+* Runtime MMIO Range(s) Required: Yes
+  * Physical Base Address: 0xFED00000
+  * Length: 0x1000
