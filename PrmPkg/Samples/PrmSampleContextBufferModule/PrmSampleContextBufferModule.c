@@ -37,7 +37,7 @@
 **/
 PRM_HANDLER_EXPORT (CheckStaticDataBufferPrmHandler)
 {
-  if (ContextBuffer == NULL || ParameterBuffer == NULL) {
+  if (ContextBuffer == NULL) {
     return EFI_INVALID_PARAMETER;
   }
 
