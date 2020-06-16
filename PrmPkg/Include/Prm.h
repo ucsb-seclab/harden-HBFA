@@ -13,7 +13,11 @@
 #include <Uefi.h>
 #include <PrmContextBuffer.h>
 
-#define PRM_EXPORT_API                            __declspec(dllexport)
+#if defined(_MSC_VER)
+  #define PRM_EXPORT_API                          __declspec(dllexport)
+#else
+  #define PRM_EXPORT_API
+#endif
 
 #define PRM_HANDLER_NAME_MAXIMUM_LENGTH           128
 
