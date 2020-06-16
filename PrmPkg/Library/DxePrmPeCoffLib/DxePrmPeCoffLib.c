@@ -154,7 +154,6 @@ GetExportDirectoryInPeCoffImage (
   EFI_IMAGE_OPTIONAL_HEADER_PTR_UNION     OptionalHeaderPtrUnion;
   EFI_IMAGE_DATA_DIRECTORY                *DirectoryEntry;
   EFI_IMAGE_EXPORT_DIRECTORY              *ExportDirectory;
-  EFI_IMAGE_SECTION_HEADER                *SectionHeader;
 
   if (Image == NULL || PeCoffLoaderImageContext == NULL || ImageExportDirectory == NULL) {
     return EFI_INVALID_PARAMETER;
@@ -208,13 +207,6 @@ GetExportDirectoryInPeCoffImage (
     return EFI_UNSUPPORTED;
   }
 
-  SectionHeader = (EFI_IMAGE_SECTION_HEADER *) (
-                    (UINTN) Image +
-                    PeCoffLoaderImageContext->PeCoffHeaderOffset +
-                    sizeof (UINT32) +
-                    sizeof (EFI_IMAGE_FILE_HEADER) +
-                    PeCoffLoaderImageContext->SizeOfHeaders
-                    );
   if (Magic == EFI_IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
     //
     // Use the PE32 offset to get the Export Directory Entry
