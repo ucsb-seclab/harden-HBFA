@@ -249,6 +249,46 @@ DiscoverPrmModules (
 }
 
 /**
+  The destructor function for this library instance.
+
+  Frees global resources allocated by this library instance.
+
+  @param  ImageHandle   The firmware allocated handle for the EFI image.
+  @param  SystemTable   A pointer to the EFI System Table.
+
+  @retval EFI_SUCCESS   The destructor always returns EFI_SUCCESS.
+
+**/
+EFI_STATUS
+EFIAPI
+PrmModuleDiscoveryLibDestructor (
+  IN EFI_HANDLE           ImageHandle,
+  IN EFI_SYSTEM_TABLE     *SystemTable
+  )
+{
+  LIST_ENTRY                              *Link;
+  LIST_ENTRY                              *NextLink;
+  PRM_MODULE_IMAGE_CONTEXT_LIST_ENTRY     *ListEntry;
+
+  if (IsListEmpty (&mPrmModuleList)) {
+    return EFI_SUCCESS;
+  }
+
+  Link = GetFirstNode (&mPrmModuleList);
+  while (!IsNull (&mPrmModuleList, Link)) {
+    ListEntry = CR (Link, PRM_MODULE_IMAGE_CONTEXT_LIST_ENTRY, Link, PRM_MODULE_IMAGE_CONTEXT_LIST_ENTRY_SIGNATURE);
+    NextLink = GetNextNode (&mPrmModuleList, Link);
+
+    RemoveEntryList (Link);
+    FreePool (ListEntry);
+
+    Link = NextLink;
+  }
+
+  return EFI_SUCCESS;
+}
+
+/**
   The constructor function for this library instance.
 
   Internally initializes data structures used later during library execution.

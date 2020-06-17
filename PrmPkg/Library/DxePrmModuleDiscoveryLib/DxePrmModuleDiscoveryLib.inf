@@ -17,6 +17,7 @@
   VERSION_STRING      = 1.0
   LIBRARY_CLASS       = PrmModuleDiscoveryLib|DXE_DRIVER UEFI_DRIVER UEFI_APPLICATION
   CONSTRUCTOR         = PrmModuleDiscoveryLibConstructor
+  DESTRUCTOR          = PrmModuleDiscoveryLibDestructor
 
 [Sources]
   PrmModuleDiscovery.h
