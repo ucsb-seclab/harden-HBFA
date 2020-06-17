@@ -2,7 +2,7 @@
 
  FMMT main routine.
 
-Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2019 - 2020, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -752,6 +752,12 @@ ParseSection (
   SectionLength       = 0;
   ParsedLength        = GetFfsHeaderLength((EFI_FFS_FILE_HEADER *)InputFfs);
   FfsFileSize         = GetFfsFileLength((EFI_FFS_FILE_HEADER *)InputFfs);
+  //
+  //if RAW ffs, return FALSE
+  //
+  if (((EFI_FFS_FILE_HEADER*)InputFfs)->Type == EFI_FV_FILETYPE_RAW) {
+    return UISectionFlag;
+  }
 
   while (ParsedLength < FfsFileSize) {
     Ptr           = (UINT8 *)InputFfs + ParsedLength;
