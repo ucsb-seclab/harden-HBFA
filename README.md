@@ -227,6 +227,15 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
 |[Visual HWTools for UEFI Shell](https://github.com/KilianKegel/Visual-HWTools-for-UEFI-Shell#visual-hwtools-for-uefi-shell)|HWTools: PCI- and GPIOSpy for Baytrail. MemSpy for all.|
 
 ## Revision history
+### 20200712
+* update EDK2 source to `edk2-stable202005`
+* fix ["Error 4000" EDK II Build Issue ](https://edk2.groups.io/g/devel/message/62295?p=,,,20,0,0,0::Created,,4000,20,2,0,75394040)
+    * add to PlatformPkgX64.dsc `[LibraryClasses.common]` to prevent build failure: 
+        * `  FmpDependencyLib|FmpDevicePkg\Library\FmpDependencyLib\FmpDependencyLib.inf`
+        * `  FmpDependencyCheckLib|FmpDevicePkg\Library\FmpDependencyCheckLibNull\FmpDependencyCheckLibNull.inf`
+        * `  FmpDependencyDeviceLib|FmpDevicePkg\Library\FmpDependencyDeviceLibNull\FmpDependencyDeviceLibNull.inf`
+* add workaround for suddenly disappeared `https://indy.fulgan.com/SSL/openssl-1.0.2r-x64_86-win64.zip`
+
 ### 20191202
 * add ASSERT.H and LOCALE.H function validation for EmulationMode and MinnowBoard for PEI and DXE POST drivers
 * assert(), setlocale(), localeconv()

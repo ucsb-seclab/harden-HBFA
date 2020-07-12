@@ -66,6 +66,10 @@
 #
 ################################################################################
 [LibraryClasses.common]
+  FmpDependencyLib|FmpDevicePkg\Library\FmpDependencyLib\FmpDependencyLib.inf
+  FmpDependencyCheckLib|FmpDevicePkg\Library\FmpDependencyCheckLibNull\FmpDependencyCheckLibNull.inf
+  FmpDependencyDeviceLib|FmpDevicePkg\Library\FmpDependencyDeviceLibNull\FmpDependencyDeviceLibNull.inf
+
   #
   # Entry point
   #
