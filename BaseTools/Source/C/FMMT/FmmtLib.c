@@ -2,7 +2,7 @@
 
  Library to parse and generate FV image.
 
- Copyright (c)  2019, Intel Corporation. All rights reserved.<BR>
+ Copyright (c)  2019 - 2020, Intel Corporation. All rights reserved.<BR>
  SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -902,9 +902,7 @@ LibParseSection (
       EncapDataNeedUpdata = TRUE;
       HasUiSection = TRUE;
 
-      if (FirstInFlag) {
-        Level ++;
-      }
+      Level ++;
       NumberOfSections ++;
 
       CurrentFv->FfsAttuibutes[*FfsCount].IsLeaf = FALSE;
@@ -1195,9 +1193,6 @@ LibParseSection (
       LocalEncapData = *CurrentFvEncapData;
       if (LocalEncapData->NextNode != NULL) {
         EncapDataNeedUpdata = FALSE;
-        while (Level != LocalEncapData->Level) {
-          LocalEncapData = LocalEncapData->NextNode;
-        }
         while (LocalEncapData->RightNode != NULL) {
           LocalEncapData = LocalEncapData->RightNode;
         }
@@ -1526,9 +1521,6 @@ LibParseSection (
     //Leaf sections
     //
     case EFI_SECTION_RAW:
-      if (FirstInFlag) {
-        Level++;
-      }
       NumberOfSections ++;
       CurrentFv->FfsAttuibutes[*FfsCount].Level = Level;
       if (!ViewFlag) {
@@ -2151,6 +2143,7 @@ LibGetFvInfo (
   ENCAP_INFO_DATA             *LocalEncapData;
   EFI_FIRMWARE_VOLUME_EXT_HEADER *ExtHdrPtr;
   EFI_FIRMWARE_VOLUME_HEADER *FvHdr;
+  UINT8                      PreFvId;
 
   NumberOfFiles  = 0;
   Key            = 0;
@@ -2326,6 +2319,7 @@ LibGetFvInfo (
     Error ("FMMT", 0, 0003, "error parsing FV image", "cannot find the first file in the FV image");
     return Status;
   }
+  PreFvId = *FvCount;
 
   while (CurrentFile != NULL) {
 
@@ -2349,7 +2343,7 @@ LibGetFvInfo (
     CurrentFv->FfsAttuibutes[*FfsCount].Offset = Key - GetFfsFileLength ((EFI_FFS_FILE_HEADER *) CurrentFile);
 
     CurrentFv->FfsAttuibutes[*FfsCount].FvLevel = CurrentFv->FvLevel;
-    CurrentFv->FfsAttuibutes[*FfsCount].FvId    = *FvCount;
+    CurrentFv->FfsAttuibutes[*FfsCount].FvId    = PreFvId;
      if (CurrentFv->FvLevel > CurrentFv->MulFvLevel) {
       CurrentFv->MulFvLevel = CurrentFv->FvLevel;
    }
@@ -4335,7 +4329,7 @@ LibEncapNewFvFile(
   } else {
     LocalEncapData = CurrentEncapData;
     while (LocalEncapData != NULL) {
-      if (LocalEncapData->Type == FMMT_ENCAP_TREE_FFS) {
+      if (Level_Break > 1 && LocalEncapData->Type == FMMT_ENCAP_TREE_FFS) {
         LocalEncapDataTemp = LocalEncapData->RightNode;
         while (LocalEncapDataTemp != NULL) {
             LocalEncapDataNext = LocalEncapDataTemp->NextNode;
@@ -4515,7 +4509,7 @@ LibEncapNewFvFile(
 
             NewFileNameList = FvInFd->ChildFvFFS;
             while (NewFileNameList != NULL && NewFileNameList -> FFSName != NULL) {
-                if (NewFileNameList->FvId == LocalEncapData->FvId && NewFileNameList -> ParentLevel == ParentLevel && Index == NewFileNameList->InFvId && NewFileNameList->FfsFoundFlag==TRUE) {
+                if (NewFileNameList -> ParentLevel == ParentLevel && Index == NewFileNameList->InFvId && NewFileNameList->FfsFoundFlag==TRUE) {
                     if (FirstInFlag) {
                         Status = LibAddFfsFileToFvInf (NewFileNameList->FFSName, InfFile, TRUE);
                         FirstInFlag = FALSE;
