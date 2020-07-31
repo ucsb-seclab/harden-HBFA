@@ -16,7 +16,7 @@
 #include <Library/UefiLib.h>
 
 #include <Register/Intel/ArchitecturalMsr.h>
-#include <Register/Intel/CpuId.h>
+#include <Register/Intel/Cpuid.h>
 
 #include "Hpet.h"
 
