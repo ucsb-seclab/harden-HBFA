@@ -3,6 +3,7 @@
   This file contains the implementation for a Platform Runtime Mechanism (PRM) configuration driver.
 
   Copyright (c) Microsoft Corporation
+  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -341,8 +342,6 @@ PrmConfigVirtualAddressChangeEvent (
   )
 {
   UINTN   Index;
-
-  DEBUG ((DEBUG_INFO, "%a %a - Entry.\n", _DBGMSGID_, __FUNCTION__));
 
   //
   // Convert runtime MMIO ranges
