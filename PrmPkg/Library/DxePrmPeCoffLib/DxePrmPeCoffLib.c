@@ -4,6 +4,7 @@
   Platform Runtime Mechanism (PRM) modules.
 
   Copyright (c) Microsoft Corporation
+  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -52,14 +53,14 @@ GetPrmModuleExportDescriptorTable (
 
   DEBUG ((DEBUG_INFO, "%a %a - Entry.\n", _DBGMSGID_, __FUNCTION__));
 
-  *ExportDescriptor = NULL;
-
   if (ImageExportDirectory == NULL ||
       PeCoffLoaderImageContext == NULL ||
       PeCoffLoaderImageContext->ImageAddress == 0 ||
       ExportDescriptor == NULL) {
     return EFI_INVALID_PARAMETER;
   }
+
+  *ExportDescriptor = NULL;
 
   DEBUG ((
     DEBUG_INFO,

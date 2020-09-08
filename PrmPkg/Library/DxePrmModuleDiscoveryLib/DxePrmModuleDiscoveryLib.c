@@ -3,6 +3,7 @@
   The PRM Module Discovery library provides functionality to discover PRM modules installed by platform firmware.
 
   Copyright (c) Microsoft Corporation
+  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -214,7 +215,7 @@ DiscoverPrmModules (
               &TempPrmModuleImageContext.PeCoffImageContext,
               &TempPrmModuleImageContext.ExportDescriptor
               );
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR (Status) || TempPrmModuleImageContext.ExportDescriptor == NULL) {
       continue;
     }
     // A PRM Module Export Descriptor was successfully found, this is considered a PRM Module.
