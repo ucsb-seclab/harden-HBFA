@@ -94,10 +94,12 @@ typedef struct {
   );                                                                                                      \
                                                                                                           \
   PRM_EXPORT_API PRM_MODULE_EXPORT_DESCRIPTOR_STRUCT_ PRM_MODULE_EXPORT_DESCRIPTOR_NAME = {               \
-    PRM_MODULE_EXPORT_DESCRIPTOR_SIGNATURE,                                                               \
-    PRM_MODULE_EXPORT_REVISION,                                                                           \
-    VA_ARG_COUNT(__VA_ARGS__),                                                                            \
-    EFI_CALLER_ID_GUID,                                                                                   \
+    {                                                                                                     \
+      PRM_MODULE_EXPORT_DESCRIPTOR_SIGNATURE,                                                             \
+      PRM_MODULE_EXPORT_REVISION,                                                                         \
+      VA_ARG_COUNT(__VA_ARGS__),                                                                          \
+      EFI_CALLER_ID_GUID                                                                                  \
+    },                                                                                                    \
     { __VA_ARGS__ }                                                                                       \
   }                                                                                                       \
 
