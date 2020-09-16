@@ -120,7 +120,7 @@ cd %WORKSPACE%\edk2
 rem ######################################################################
 rem ### checkout latest stable tag
 rem ######################################################################
-git checkout edk2-stable202005
+git checkout edk2-stable202008
 
 call edksetup.bat Rebuild
 

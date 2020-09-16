@@ -227,6 +227,14 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
 |[Visual HWTools for UEFI Shell](https://github.com/KilianKegel/Visual-HWTools-for-UEFI-Shell#visual-hwtools-for-uefi-shell)|HWTools: PCI- and GPIOSpy for Baytrail. MemSpy for all.|
 
 ## Revision history
+
+### 20200916
+* update EDK2 source to `edk2-stable202008`
+    * add to FmpMinnowMaxSystem.dsc, FmpBlueSampleDevice.dsc, FmpGreenSampleDevice.dsc, FmpRedSampleDevice.dsc `[LibraryClasses.common]` to prevent build failure: 
+        * `  FmpDependencyLib|FmpDevicePkg\Library\FmpDependencyLib\FmpDependencyLib.inf`
+        * `  FmpDependencyCheckLib|FmpDevicePkg\Library\FmpDependencyCheckLibNull\FmpDependencyCheckLibNull.inf`
+        * `  FmpDependencyDeviceLib|FmpDevicePkg\Library\FmpDependencyDeviceLibNull\FmpDependencyDeviceLibNull.inf`
+
 ### 20200712
 * update EDK2 source to `edk2-stable202005`
 * fix ["Error 4000" EDK II Build Issue ](https://edk2.groups.io/g/devel/message/62295?p=,,,20,0,0,0::Created,,4000,20,2,0,75394040)

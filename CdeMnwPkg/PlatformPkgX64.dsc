@@ -66,10 +66,6 @@
 #
 ################################################################################
 [LibraryClasses.common]
-  FmpDependencyLib|FmpDevicePkg\Library\FmpDependencyLib\FmpDependencyLib.inf
-  FmpDependencyCheckLib|FmpDevicePkg\Library\FmpDependencyCheckLibNull\FmpDependencyCheckLibNull.inf
-  FmpDependencyDeviceLib|FmpDevicePkg\Library\FmpDependencyDeviceLibNull\FmpDependencyDeviceLibNull.inf
-
   #
   # Entry point
   #
@@ -168,6 +164,7 @@
   LocalApicLib|UefiCpuPkg/Library/BaseXApicX2ApicLib/BaseXApicX2ApicLib.inf
   CpuExceptionHandlerLib|UefiCpuPkg/Library/CpuExceptionHandlerLib/DxeCpuExceptionHandlerLib.inf
   MpInitLib|UefiCpuPkg/Library/MpInitLib/DxeMpInitLib.inf
+  VmgExitLib|UefiCpuPkg/Library/VmgExitLibNull/VmgExitLibNull.inf
 
   #
   # ICH
@@ -440,12 +437,6 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdSupportUpdateCapsuleReset|FALSE
 !endif
   gEfiMdeModulePkgTokenSpaceGuid.PcdPeiCoreImageLoaderSearchTeSectionFirst|FALSE
-!if $(TARGET) == RELEASE
-  gEfiMdeModulePkgTokenSpaceGuid.PcdStatusCodeUseSerial|FALSE
-!else
-  gEfiMdeModulePkgTokenSpaceGuid.PcdStatusCodeUseSerial|FALSE
-!endif
-  gEfiMdeModulePkgTokenSpaceGuid.PcdStatusCodeUseMemory|FALSE
 !if $(ISA_SERIAL_STATUS_CODE_ENABLE) == TRUE
   gEfiSerialPortTokenSpaceGuid.PcdStatusCodeUseIsaSerial|TRUE
 !else
@@ -491,6 +482,12 @@
 !else
   gEfiMdeModulePkgTokenSpaceGuid.PcdResetOnMemoryTypeInformationChange|FALSE
 !endif
+!if $(TARGET) == RELEASE
+  gEfiMdeModulePkgTokenSpaceGuid.PcdStatusCodeUseSerial|FALSE
+!else
+  gEfiMdeModulePkgTokenSpaceGuid.PcdStatusCodeUseSerial|FALSE
+!endif
+  gEfiMdeModulePkgTokenSpaceGuid.PcdStatusCodeUseMemory|FALSE
 !if $(TARGET) == RELEASE
   gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x0
   gEfiMdePkgTokenSpaceGuid.PcdReportStatusCodePropertyMask|0x3
@@ -1271,10 +1268,10 @@
 !endif
 
 !if $(CAPSULE_ENABLE)
-  !include Vlv2TbltDevicePkg/FmpMinnowMaxSystem.dsc
-  !include Vlv2TbltDevicePkg/FmpGreenSampleDevice.dsc
-  !include Vlv2TbltDevicePkg/FmpBlueSampleDevice.dsc
-  !include Vlv2TbltDevicePkg/FmpRedSampleDevice.dsc
+  !include FmpMinnowMaxSystem.dsc
+  !include FmpGreenSampleDevice.dsc
+  !include FmpBlueSampleDevice.dsc
+  !include FmpRedSampleDevice.dsc
 !endif
 
 !if $(MICOCODE_CAPSULE_ENABLE)
