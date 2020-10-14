@@ -1717,11 +1717,6 @@ FmmtImageExtract (
   FV_INFORMATION              *FvInFd;
   UINT32                      Index;
   UINT32                      FfsFoundFlag;
-  FFS_INFORMATION             *OutputFileName;
-  FILE*                       NewFdFile;
-  FILE*                       NewFvFile;
-  UINT64                      NewFvLength;
-  VOID*                       Buffer;
   CHAR8                       *TemDir;
   UINT8                       FvNumInFd;
   UINT32                      Offset;
@@ -1736,23 +1731,18 @@ FmmtImageExtract (
   UINT32                      FfsSize;
   UINT32                      FdSize;
   int                         j;
-  CHAR8                       FfsOutputFileName[_MAX_DIR];
+  CHAR8                       FfsOutputFileName[_MAX_PATH];
 
   FdSize                      = 0;
   Index                       = 0;
-  NewFvLength                 = 0;
   FfsFoundFlag                = 0;
   FdData                      = NULL;
   FvInFd                      = NULL;
-  OutputFileName              = NULL;
-  NewFdFile                   = NULL;
-  NewFvFile                   = NULL;
-  Buffer                      = NULL;
   TemDir                      = NULL;
   FvNumInFd                   = 0;
   Offset                      = 0;
   FdBuffer                    = NULL;
-  if (sizeof(FfsOutFileOrDirName) > _MAX_DIR) {
+  if (strlen(FfsOutFileOrDirName) > _MAX_PATH - 1) {
     Error("FMMT", 0, 0004, "error while input file name", "Output directory path is too long" );
     return EFI_ABORTED;
   }
