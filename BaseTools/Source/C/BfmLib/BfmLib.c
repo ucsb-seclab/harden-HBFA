@@ -166,17 +166,17 @@ LibFindFvInFd (
   FIRMWARE_DEVICE             *LocalFdData;
   UINT16                      Index;
   CHAR8                       Ffs2Guid[16];
-  CHAR8                       SignatureCheck[4];
+  CHAR8                       SignatureCheck[5] = "";
   CHAR8                       Signature[5] = "_FVH";
   FV_INFORMATION              *CurrentFv;
   FV_INFORMATION              *NewFoundFv;
   BOOLEAN                     FirstMatch;
   UINT32                      FdSize;
   UINT16                      FvCount;
-  VOID                        *FdBuffer;
-  VOID                        *FdBufferOri;
-  UINT32                      Count;
-
+  UINT8                       *FdBuffer;
+  UINT8                       *FdBufferEnd;
+  UINT8                       *FdBufferOri;
+  EFI_FIRMWARE_VOLUME_HEADER  *FvHeader;
 
   CurrentFv      = NULL;
   NewFoundFv     = NULL;
@@ -186,10 +186,10 @@ LibFindFvInFd (
   Index          = 0;
   FdSize         = 0;
   FvCount        = 0;
-  Count          = 0;
   LocalFdData    = NULL;
 
   if (InputFile == NULL) {
+    Error ("BFM", 0, 0001, "Error opening the input file", "");
     return EFI_ABORTED;
   }
 
@@ -206,15 +206,18 @@ LibFindFvInFd (
   //
   // Create an FD structure to store useful information.
   //
-  LocalFdData     = (FIRMWARE_DEVICE *) calloc (sizeof (FIRMWARE_DEVICE), sizeof(UINT8));
+  LocalFdData     = (FIRMWARE_DEVICE *) malloc (sizeof (FIRMWARE_DEVICE));
   if (LocalFdData == NULL) {
+    Error ("BFM", 0, 0002, "Error searching FVs in the input fd", "Allocate memory error");
     return EFI_OUT_OF_RESOURCES;
   }
-  LocalFdData->Fv = (FV_INFORMATION *)  calloc (sizeof (FV_INFORMATION), sizeof(UINT8));
+  LocalFdData->Fv = (FV_INFORMATION *)  malloc (sizeof (FV_INFORMATION));
   if (LocalFdData->Fv == NULL) {
+    Error ("BFM", 0, 0002, "Error searching FVs in the input fd", "Allocate memory error");
     free (LocalFdData);
     return EFI_OUT_OF_RESOURCES;
   }
+
   LibInitializeFvStruct (LocalFdData->Fv);
 
   //
@@ -223,12 +226,14 @@ LibFindFvInFd (
   FdBuffer = malloc (FdSize);
 
   if (FdBuffer == NULL) {
+    Error ("BFM", 0, 0002, "Error searching FVs in the input fd", "Allocate memory error");
     free (LocalFdData->Fv);
     free (LocalFdData);
     return EFI_OUT_OF_RESOURCES;
   }
 
   if (fread (FdBuffer, 1, FdSize, InputFile) != FdSize) {
+    Error ("BFM", 0, 0002, "Error searching FVs in the input fd", "Read FD file error!");
     free (LocalFdData->Fv);
     free (LocalFdData);
     free (FdBuffer);
@@ -236,22 +241,27 @@ LibFindFvInFd (
   }
 
   FdBufferOri = FdBuffer;
+  FdBufferEnd = FdBuffer + FdSize;
 
-  for (Count=0; Count < FdSize - 4; Count++) {
+  if (FdSize < sizeof(EFI_FIRMWARE_VOLUME_HEADER)) {
+    Error ("BFM", 0, 0002, "Error Check the input FD, Please make sure the FD is valid", "Check FD size error!");
+    return EFI_ABORTED;
+  }
+
+  while (FdBuffer <= FdBufferEnd - sizeof (EFI_FIRMWARE_VOLUME_HEADER)) {
+    FvHeader = (EFI_FIRMWARE_VOLUME_HEADER *) FdBuffer;
     //
     // Copy 4 bytes of fd data to check the _FVH signature
     //
-    memcpy (SignatureCheck, FdBuffer, 4);
-    FdBuffer =(UINT8 *)FdBuffer + 4;
+    memcpy (SignatureCheck, &FvHeader->Signature, 4);
 
     if (strncmp(SignatureCheck, Signature, 4) == 0){
       //
       // Still need to determine the FileSystemGuid in EFI_FIRMWARE_VOLUME_HEADER equal to
-      // EFI_FIRMWARE_FILE_SYSTEM2_GUID.
+      // EFI_FIRMWARE_FILE_SYSTEM2_GUID or EFI_FIRMWARE_FILE_SYSTEM3_GUID.
       // Turn back 28 bytes to find the GUID.
       //
-      FdBuffer = (UINT8 *)FdBuffer - 28;
-      memcpy (Ffs2Guid, FdBuffer, 16);
+      memcpy (Ffs2Guid, &FvHeader->FileSystemGuid, 16);
 
       //
       // Compare GUID.
@@ -270,16 +280,11 @@ LibFindFvInFd (
     }
 
       //
-      // Point to the original address
-      //
-      FdBuffer = (UINT8 *)FdBuffer + 28;
-
-      //
       // Here we found an FV.
       //
-      if (Index == 16) {
+      if ((Index == 16) && ((FdBuffer + FvHeader->FvLength) <= FdBufferEnd)) {
         if (FirstMatch) {
-          LocalFdData->Fv->ImageAddress = (UINTN)((UINT8 *)FdBuffer - (UINT8 *)FdBufferOri) - 0x2c;
+          LocalFdData->Fv->ImageAddress = (UINTN)((UINT8 *)FdBuffer - (UINT8 *)FdBufferOri);
           CurrentFv                     = LocalFdData->Fv;
           CurrentFv->FvNext             = NULL;
           //
@@ -290,7 +295,8 @@ LibFindFvInFd (
           FirstMatch = FALSE;
           } else {
             NewFoundFv = (FV_INFORMATION *) malloc (sizeof (FV_INFORMATION));
-            if (NULL == NewFoundFv) {
+            if (NewFoundFv == NULL) {
+              Error ("BFM", 0, 0002, "Error searching FVs in the input fd", "Allocate memory error");
               free (LocalFdData->Fv);
               free (LocalFdData);
               free (FdBuffer);
@@ -302,7 +308,7 @@ LibFindFvInFd (
             //
             // Need to turn back 0x2c bytes
             //
-            NewFoundFv->ImageAddress = (UINTN)((UINT8 *)FdBuffer - (UINT8 *)FdBufferOri) - 0x2c;
+            NewFoundFv->ImageAddress = (UINTN)((UINT8 *)FdBuffer - (UINT8 *)FdBufferOri);
 
             //
             // Store the FV name by found sequence
@@ -322,15 +328,14 @@ LibFindFvInFd (
           }
 
         FvCount ++;
-        Index = 0;
+        FdBuffer = FdBuffer + FvHeader->FvLength;
+      } else {
+        FdBuffer ++;
       }
 
+    } else {
+      FdBuffer ++;
     }
-
-    //
-    // We need to turn back 3 bytes.
-    //
-    FdBuffer = (UINT8 *)FdBuffer - 3;
   }
 
   LocalFdData->Size = FdSize;
