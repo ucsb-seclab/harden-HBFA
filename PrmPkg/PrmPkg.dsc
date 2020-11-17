@@ -124,10 +124,7 @@
   # PRM Sample Modules
   #
   $(PLATFORM_PACKAGE)/Samples/PrmSampleAcpiParameterBufferModule/PrmSampleAcpiParameterBufferModule.inf
-  $(PLATFORM_PACKAGE)/Samples/PrmSampleHardwareAccessModule/PrmSampleHardwareAccessModule.inf {
-    <LibraryClasses>
-      DebugLib|MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
-  }
+  $(PLATFORM_PACKAGE)/Samples/PrmSampleHardwareAccessModule/PrmSampleHardwareAccessModule.inf
   $(PLATFORM_PACKAGE)/Samples/PrmSampleContextBufferModule/PrmSampleContextBufferModule.inf
 
   #
