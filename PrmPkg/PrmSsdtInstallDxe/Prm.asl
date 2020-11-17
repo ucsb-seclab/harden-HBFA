@@ -26,10 +26,8 @@ DefinitionBlock (
             Name (_DDN, "PRM Test Device")
             Name (_STA, 0xF)
 
-            // PrmSamplePrintModule handler GUIDs
-            Name (BUF1, ToUUID("d5f2ad5f-a347-4d3e-87bc-c2ce63029cc8"))
-            Name (BUF2, ToUUID("a9e7adc3-8cd0-429a-8915-10946ebde318"))
-            Name (BUFN, ToUUID("b688c214-4081-4eeb-8d26-1eb5a3bcf11a"))
+            // PrmSampleContextBufferModule handler GUID
+            Name (BUF1, ToUUID("e1466081-7562-430f-896b-b0e523dc335a"))
 
             //PRM operation region format
             OperationRegion (PRMR, PlatformRtMechanism, 0, 1)
@@ -111,7 +109,7 @@ DefinitionBlock (
             */
             Method (TST2, 0)
             {
-              \_SB.PRMT.RUNS(BUFN)
+              \_SB.PRMT.RUNS(BUF1)
             }
 
             /*
@@ -129,7 +127,7 @@ DefinitionBlock (
             */
             Method (ULKN, 0)
             {
-              Return(\_SB.PRMT.ULCK(BUF2))
+              Return(\_SB.PRMT.ULCK(BUF1))
             }
         }
     }
