@@ -26,9 +26,6 @@ DefinitionBlock (
             Name (_DDN, "PRM Test Device")
             Name (_STA, 0xF)
 
-            // PrmSampleContextBufferModule handler GUID
-            Name (BUF1, ToUUID("e1466081-7562-430f-896b-b0e523dc335a"))
-
             //PRM operation region format
             OperationRegion (PRMR, PlatformRtMechanism, 0, 1)
             Field (PRMR, BufferAcc, NoLock, Preserve) //Make it ByteAcc for parameter validation
@@ -102,32 +99,6 @@ DefinitionBlock (
 
                /* Note STAT contains the return status */
                 Return (STAT)
-            }
-
-            /*
-            * Control method to test invoke PRM handler
-            */
-            Method (TST2, 0)
-            {
-              \_SB.PRMT.RUNS(BUF1)
-            }
-
-            /*
-            * Control method to test lock a PRM transaction
-            * If Local0 is not zero, just return the STAT
-            */
-            Method (LCKN, 0)
-            {
-              Return(\_SB.PRMT.LCKH(BUF1))
-            }
-
-            /*
-            * Control method to test unlock a PRM transaction
-            * If Local0 is not zero, just return the STAT
-            */
-            Method (ULKN, 0)
-            {
-              Return(\_SB.PRMT.ULCK(BUF1))
             }
         }
     }
