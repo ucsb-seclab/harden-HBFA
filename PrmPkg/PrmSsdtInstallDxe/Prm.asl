@@ -1,7 +1,7 @@
 /** @file
   The definition block in ACPI table for PRM Operation Region
 
-  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2020-2021, Intel Corporation. All rights reserved.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
@@ -24,7 +24,6 @@ DefinitionBlock (
             Name (_HID, "80860223")
             Name (_CID, "80860223")
             Name (_DDN, "PRM Test Device")
-            Name (_STA, 0xF)
 
             //PRM operation region format
             OperationRegion (PRMR, PlatformRtMechanism, 0, 1)
@@ -99,6 +98,17 @@ DefinitionBlock (
 
                /* Note STAT contains the return status */
                 Return (STAT)
+            }
+
+            /*
+            *Bit [0] Set if the device is present.
+            *Bit [1] Set if the device is enabled and decoding its resources.
+            *Bit [2] Set if the device should be shown in the UI.
+            *Bit [3] Set if the device is functioning properly (cleared if device failed its diagnostics).
+            */
+            Method (_STA, 0, NotSerialized)
+            {
+                Return (0x0B) // Device present, but not shown
             }
         }
     }
