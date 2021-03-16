@@ -2,7 +2,7 @@
 
  Library to parse and generate FV image.
 
- Copyright (c)  2019 - 2020, Intel Corporation. All rights reserved.<BR>
+ Copyright (c)  2019 - 2021, Intel Corporation. All rights reserved.<BR>
  SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -494,7 +494,7 @@ LibReadFvHeader (
     if ((FvLevel -1) == 0) {
       printf ("\n%s :\n", FvName);
     } else {
-      printf ("%sChild FV named FV%d of %s\n", BlankSpace, FvCount, FvName);
+      printf ("\n%sChild FV named FV%d of %s\n", BlankSpace, FvCount, FvName);
     }
   }
 
@@ -502,7 +502,7 @@ LibReadFvHeader (
   // Print FV header information
   //
   if (ViewFlag) {
-    printf ("\n%sAttributes:            %X\n", BlankSpace, (unsigned) VolumeHeader->Attributes);
+    printf ("%sAttributes:            %X\n", BlankSpace, (unsigned) VolumeHeader->Attributes);
     printf ("%sTotal Volume Size:     0x%08X\n", BlankSpace, (unsigned) VolumeHeader->FvLength);
     printf ("%sFree Volume Size:      0x%08X\n", BlankSpace, (unsigned) (VolumeHeader->FvLength - GetFreeOffset(InputFv)));
   }
@@ -789,7 +789,8 @@ LibParseSection (
   UINT8                  *FvCount,
   BOOLEAN                ViewFlag,
   BOOLEAN                ErasePolarity,
-  BOOLEAN                *IsFfsGenerated
+  BOOLEAN                *IsFfsGenerated,
+  BOOLEAN                IsFfs
   )
 {
   UINT32              ParsedLength;
@@ -997,8 +998,12 @@ LibParseSection (
       break;
 
     case EFI_SECTION_COMPRESSION:
-      if (FirstInFlag) {
+      if (IsFfs){
         Level ++;
+      } else {
+        if (FirstInFlag) {
+          Level ++;
+        }
       }
       NumberOfSections ++;
 
@@ -1159,7 +1164,9 @@ LibParseSection (
                                   FvCount,
                                   ViewFlag,
                                   ErasePolarity,
-                                  IsFfsGenerated);
+                                  IsFfsGenerated,
+                                  FALSE
+                                  );
 
       if (CompressionType == EFI_STANDARD_COMPRESSION) {
         //
@@ -1181,8 +1188,12 @@ LibParseSection (
       // looks up the appropriate tool to use for extracting
       // a GUID defined FV section.
       //
-      if (FirstInFlag) {
+      if (IsFfs) {
         Level ++;
+      } else {
+        if (FirstInFlag) {
+          Level ++;
+        }
       }
       NumberOfSections++;
       EncapDataNeedUpdata = TRUE;
@@ -1216,7 +1227,8 @@ LibParseSection (
                 FvCount,
                 ViewFlag,
                 ErasePolarity,
-                IsFfsGenerated
+                IsFfsGenerated,
+                FALSE
                 );
         if (EFI_ERROR(Status)) {
           Error(NULL, 0, 0003, "parse of decoded GUIDED section failed", NULL);
@@ -1471,7 +1483,8 @@ LibParseSection (
                   FvCount,
                   ViewFlag,
                   ErasePolarity,
-                  IsFfsGenerated
+                  IsFfsGenerated,
+                  FALSE
                   );
         if (EFI_ERROR (Status)) {
           Error (NULL, 0, 0003, "parse of decoded GUIDED section failed", NULL);
@@ -1491,7 +1504,8 @@ LibParseSection (
             FvCount,
             ViewFlag,
             ErasePolarity,
-            IsFfsGenerated
+            IsFfsGenerated,
+            FALSE
             );
           if (ExtractionTool != NULL) {
             free (ExtractionTool);
@@ -2016,7 +2030,7 @@ LibGetFileInfo (
 
       LocalEncapData->Level = Level;
       LocalEncapData->Type  = FMMT_ENCAP_TREE_FFS;
-    LocalEncapData->FvExtHeader = NULL;
+      LocalEncapData->FvExtHeader = NULL;
       LocalEncapData->Depex = NULL;
       LocalEncapData->DepexLen = 0;
       LocalEncapData->UiNameSize = 0;
@@ -2099,7 +2113,8 @@ LibGetFileInfo (
       FvCount,
       ViewFlag,
       ErasePolarity,
-      &IsGeneratedFfs
+      &IsGeneratedFfs,
+      TRUE
       );
     }
     if (EFI_ERROR (Status)) {
@@ -4198,10 +4213,13 @@ LibEncapNewFvFile(
   UINT32                      header;
   UINT8                       AlignN;
   UINT8                       AlignV[1] = {0xFF};
+  UINT32                      EntryFvId;
+
   AlignN                      = 0;
   Id                          = 0;
   InputFileSize               = 0;
   TmpFileSize                 = 0;
+  AlignmentFileSize           = 0;
   EncapFvIndex                = 0;
   Index                       = 0;
   OuterIndex                  = 0;
@@ -4224,7 +4242,7 @@ LibEncapNewFvFile(
   IsLargeFile                 = FALSE;
   OutputFileSize              = 0;
   LargeFileSize               = 0x1000000;
-
+  EntryFvId                   = 0;
 
   OutputFileNameList = (FFS_INFORMATION *)malloc(sizeof(FFS_INFORMATION));
   if (OutputFileNameList == NULL) {
@@ -4261,6 +4279,9 @@ LibEncapNewFvFile(
     LocalEncapData = CurrentEncapData;
     if (LocalEncapData == NULL) {
         LocalEncapData = FvInFd->EncapData;
+        EntryFvId = 0xFFFFFFFF;
+    } else {
+      EntryFvId = LocalEncapData->FvId;
     }
     Level = LocalEncapData->Level;
     Type = LocalEncapData->Type;
@@ -4274,7 +4295,7 @@ LibEncapNewFvFile(
             LocalEncapDataNext = LocalEncapDataTemp->NextNode;
             if (LocalEncapDataNext != NULL && LocalEncapDataNext->NextNode != NULL) {
 
-                LibEncapNewFvFile(FvInFd, TemDir, LocalEncapDataTemp, 1, &ChildFileNameList);
+                LibEncapNewFvFile(FvInFd, TemDir, LocalEncapDataTemp,LocalEncapDataTemp->Level - 1, &ChildFileNameList);
                 ChildFileNameList->ParentLevel = LocalEncapDataTemp->Level -1;
                 if (FvInFd->ChildFvFFS == NULL) {
                     FvInFd->ChildFvFFS = ChildFileNameList;
@@ -4329,7 +4350,7 @@ LibEncapNewFvFile(
   } else {
     LocalEncapData = CurrentEncapData;
     while (LocalEncapData != NULL) {
-      if (Level_Break > 1 && LocalEncapData->Type == FMMT_ENCAP_TREE_FFS) {
+      if ((LocalEncapData->FvId > EntryFvId) && (LocalEncapData->Type == FMMT_ENCAP_TREE_FFS)) {
         LocalEncapDataTemp = LocalEncapData->RightNode;
         while (LocalEncapDataTemp != NULL) {
             LocalEncapDataNext = LocalEncapDataTemp->NextNode;
@@ -4818,6 +4839,7 @@ LibEncapNewFvFile(
       memcpy((char *)OutputFileNameList->FFSName, (char *)OutputFileName, strlen(OutputFileName)+1);
       OutputFileNameList->IsFFS = TRUE;
       OutputFileNameList->ParentLevel = ParentLevel - 1;
+      OutputFileNameList->InFvId = Id;
       if (OutputFileNameList->Next == NULL){
           break;
       }
@@ -5077,10 +5099,6 @@ LibEncapNewFvFile(
     if (CurrentEncapData == NULL) {
        LocalEncapData = FvInFd->EncapData;
     } else {
-        if (OutputFileNameList != NULL && OutputFileNameList->FFSName != NULL && OutputFileNameList->IsFFS == TRUE) {
-          *OutputFile = OutputFileNameList;
-          return EFI_SUCCESS;
-        }
         LocalEncapData = CurrentEncapData;
     }
     ParentLevel -= 1;
