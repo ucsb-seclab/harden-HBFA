@@ -2,7 +2,7 @@
 
  Structures and functions declaration.
 
- Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
+ Copyright (c) 2019 - 2021, Intel Corporation. All rights reserved.<BR>
  SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -195,7 +195,7 @@ typedef struct {
   // UI Name for this FFS file, if has.
   //
   CHAR16           UiName[_MAX_PATH];
-   UINT32           UiNameSize;
+  UINT32           UiNameSize;
   //
   // Total section number in this FFS.
   //
@@ -223,8 +223,12 @@ typedef struct {
   UINT32                  Offset;
   UINT8                   FvLevel;
   EFI_GUID                GuidName;
-  UINT8                   *Depex;
-  UINT32                  DepexLen;
+  UINT8                   *PeiDepex;
+  UINT32                  PeiDepexLen;
+  UINT8                   *DxeDepex;
+  UINT32                  DxeDepexLen;
+  UINT8                   *SmmDepex;
+  UINT32                  SmmDepexLen;
   BOOLEAN                 IsHandle;
   BOOLEAN                 IsFvStart;
   BOOLEAN                 IsFvEnd;
@@ -259,8 +263,12 @@ typedef struct __ENCAP_INFO_DATA{
 
   CHAR16           UiName[_MAX_PATH];
   UINT32           UiNameSize;
-  UINT8            *Depex;
-  UINT32           DepexLen;
+  UINT8            *PeiDepex;
+  UINT32           PeiDepexLen;
+  UINT8            *DxeDepex;
+  UINT32           DxeDepexLen;
+  UINT8            *SmmDepex;
+  UINT32           SmmDepexLen;
 
   //
   // Next node.
@@ -281,8 +289,12 @@ typedef struct _FFS_INFOMATION{
   BOOLEAN                    IsFFS;
   CHAR16                     UiName[_MAX_PATH];
   UINT32                     UiNameSize;
-  UINT8                      *Depex;
-  UINT32                     DepexLen;
+  UINT8                      *PeiDepex;
+  UINT32                     PeiDepexLen;
+  UINT8                      *DxeDepex;
+  UINT32                     DxeDepexLen;
+  UINT8                      *SmmDepex;
+  UINT32                     SmmDepexLen;
   BOOLEAN                    FfsFoundFlag;
   struct _FFS_INFOMATION     *Next;
 } FFS_INFORMATION;

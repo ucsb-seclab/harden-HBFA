@@ -164,8 +164,12 @@ LibInitializeFvStruct (
     Fv->FfsAttuibutes[Index].IsLeaf               = TRUE;
     Fv->FfsAttuibutes[Index].Level                = 0xFF;
     Fv->FfsAttuibutes[Index].TotalSectionNum      = 0;
-    Fv->FfsAttuibutes[Index].Depex                = NULL;
-    Fv->FfsAttuibutes[Index].DepexLen             = 0;
+    Fv->FfsAttuibutes[Index].PeiDepex                = NULL;
+    Fv->FfsAttuibutes[Index].PeiDepexLen             = 0;
+    Fv->FfsAttuibutes[Index].DxeDepex                = NULL;
+    Fv->FfsAttuibutes[Index].DxeDepexLen             = 0;
+    Fv->FfsAttuibutes[Index].SmmDepex                = NULL;
+    Fv->FfsAttuibutes[Index].SmmDepexLen             = 0;
     Fv->FfsAttuibutes[Index].IsHandle             = FALSE;
     Fv->FfsAttuibutes[Index].IsFvStart            = FALSE;
     Fv->FfsAttuibutes[Index].IsFvEnd              = FALSE;
@@ -835,6 +839,7 @@ LibParseSection (
   CHAR8               *ToolOutputFileName;
   BOOLEAN              HasUiSection;
   BOOLEAN              FirstInFlag;
+  UINT32               KeepFfsCount;
 
   DataOffset                 = 0;
   GuidAttr                   = 0;
@@ -871,6 +876,7 @@ LibParseSection (
   LargeHeaderOffset          = 0;
   HasUiSection               = FALSE;
   FirstInFlag                = TRUE;
+  KeepFfsCount               = *FfsCount;
 
 
   while (ParsedLength < BufferLength) {
@@ -945,9 +951,13 @@ LibParseSection (
         LocalEncapData->Data        = NULL;
         LocalEncapData->FvExtHeader = NULL;
         LocalEncapData->NextNode    = NULL;
-    LocalEncapData->RightNode = NULL;
-        LocalEncapData->Depex = NULL;
-        LocalEncapData->DepexLen = 0;
+        LocalEncapData->RightNode = NULL;
+        LocalEncapData->PeiDepex = NULL;
+        LocalEncapData->PeiDepexLen = 0;
+        LocalEncapData->DxeDepex = NULL;
+        LocalEncapData->DxeDepexLen = 0;
+        LocalEncapData->SmmDepex = NULL;
+        LocalEncapData->SmmDepexLen = 0;
         LocalEncapData->UiNameSize = 0;
         LocalEncapData->FvId  = *FvCount;
       }
@@ -972,13 +982,19 @@ LibParseSection (
                     if ((memcmp(&CurrentFv->FfsAttuibutes[*FfsCount - 1].GuidName, &(LocalEncapDataTemp->FvExtHeader->FvName), sizeof(EFI_GUID)) == 0)) {
                         memcpy(LocalEncapDataTemp->UiName, CurrentFv->FfsAttuibutes[*FfsCount - 1].UiName, _MAX_PATH);
                         LocalEncapDataTemp->UiNameSize = CurrentFv->FfsAttuibutes[*FfsCount - 1].UiNameSize;
-                        LocalEncapDataTemp->DepexLen = CurrentFv->FfsAttuibutes[*FfsCount - 1].DepexLen;
-                        LocalEncapDataTemp->Depex = malloc (LocalEncapDataTemp->DepexLen);
-                        if (LocalEncapDataTemp->Depex == NULL) {
+                        LocalEncapDataTemp->PeiDepexLen = CurrentFv->FfsAttuibutes[*FfsCount - 1].PeiDepexLen;
+                        LocalEncapDataTemp->PeiDepex = malloc (LocalEncapDataTemp->PeiDepexLen);
+                        LocalEncapDataTemp->DxeDepexLen = CurrentFv->FfsAttuibutes[*FfsCount - 1].DxeDepexLen;
+                        LocalEncapDataTemp->DxeDepex = malloc (LocalEncapDataTemp->DxeDepexLen);
+                        LocalEncapDataTemp->SmmDepexLen = CurrentFv->FfsAttuibutes[*FfsCount - 1].SmmDepexLen;
+                        LocalEncapDataTemp->SmmDepex = malloc (LocalEncapDataTemp->SmmDepexLen);
+                        if ((LocalEncapDataTemp->SmmDepex == NULL) || (LocalEncapDataTemp->SmmDepex == NULL) || (LocalEncapDataTemp->SmmDepex == NULL)){
                             Error(NULL, 0, 4001, "Resource: Memory can't be allocated", NULL);
                             return EFI_ABORTED;
                         }
-                        memcpy(LocalEncapDataTemp->Depex, CurrentFv->FfsAttuibutes[*FfsCount - 1].Depex, LocalEncapDataTemp->DepexLen);
+                        memcpy(LocalEncapDataTemp->PeiDepex, CurrentFv->FfsAttuibutes[*FfsCount - 1].PeiDepex, LocalEncapDataTemp->PeiDepexLen);
+                        memcpy(LocalEncapDataTemp->DxeDepex, CurrentFv->FfsAttuibutes[*FfsCount - 1].DxeDepex, LocalEncapDataTemp->DxeDepexLen);
+                        memcpy(LocalEncapDataTemp->SmmDepex, CurrentFv->FfsAttuibutes[*FfsCount - 1].SmmDepex, LocalEncapDataTemp->SmmDepexLen);
                     }
                  }
              }
@@ -1257,8 +1273,12 @@ LibParseSection (
 
         LocalEncapData->Level = Level;
         LocalEncapData->Type  = FMMT_ENCAP_TREE_GUIDED_SECTION;
-        LocalEncapData->Depex = NULL;
-        LocalEncapData->DepexLen = 0;
+        LocalEncapData->PeiDepex = NULL;
+        LocalEncapData->PeiDepexLen = 0;
+        LocalEncapData->DxeDepex = NULL;
+        LocalEncapData->DxeDepexLen = 0;
+        LocalEncapData->SmmDepex = NULL;
+        LocalEncapData->SmmDepexLen = 0;
         LocalEncapData->UiNameSize = 0;
         LocalEncapData->FvId  = *FvCount;
         //
@@ -1290,8 +1310,12 @@ LibParseSection (
         LocalEncapData        = LocalEncapData->RightNode;
         LocalEncapData->Level = Level;
         LocalEncapData->Type  = FMMT_ENCAP_TREE_GUIDED_SECTION;
-        LocalEncapData->Depex = NULL;
-        LocalEncapData->DepexLen = 0;
+        LocalEncapData->PeiDepex = NULL;
+        LocalEncapData->PeiDepexLen = 0;
+        LocalEncapData->DxeDepex = NULL;
+        LocalEncapData->DxeDepexLen = 0;
+        LocalEncapData->SmmDepex = NULL;
+        LocalEncapData->SmmDepexLen = 0;
         LocalEncapData->UiNameSize = 0;
         LocalEncapData->FvId = *FvCount;
         //
@@ -1608,25 +1632,25 @@ LibParseSection (
       NumberOfSections ++;
       CurrentFv->FfsAttuibutes[*FfsCount].Level = Level;
       HasDepexSection = TRUE;
-      CurrentFv->FfsAttuibutes[*FfsCount].Depex = malloc (SectionLength);
-      memcpy(CurrentFv->FfsAttuibutes[*FfsCount].Depex, Ptr, SectionLength);
-      CurrentFv->FfsAttuibutes[*FfsCount].DepexLen = SectionLength;
+      CurrentFv->FfsAttuibutes[*FfsCount].PeiDepex = malloc (SectionLength);
+      memcpy(CurrentFv->FfsAttuibutes[*FfsCount].PeiDepex, Ptr, SectionLength);
+      CurrentFv->FfsAttuibutes[*FfsCount].PeiDepexLen = SectionLength;
       break;
     case EFI_SECTION_DXE_DEPEX:
       NumberOfSections ++;
       CurrentFv->FfsAttuibutes[*FfsCount].Level = Level;
       HasDepexSection = TRUE;
-      CurrentFv->FfsAttuibutes[*FfsCount].Depex = malloc (SectionLength);
-      memcpy(CurrentFv->FfsAttuibutes[*FfsCount].Depex, Ptr, SectionLength);
-      CurrentFv->FfsAttuibutes[*FfsCount].DepexLen = SectionLength;
+      CurrentFv->FfsAttuibutes[*FfsCount].DxeDepex = malloc (SectionLength);
+      memcpy(CurrentFv->FfsAttuibutes[*FfsCount].DxeDepex, Ptr, SectionLength);
+      CurrentFv->FfsAttuibutes[*FfsCount].DxeDepexLen = SectionLength;
       break;
     case EFI_SECTION_SMM_DEPEX:
       NumberOfSections ++;
       CurrentFv->FfsAttuibutes[*FfsCount].Level = Level;
       HasDepexSection = TRUE;
-      CurrentFv->FfsAttuibutes[*FfsCount].Depex = malloc (SectionLength);
-      memcpy(CurrentFv->FfsAttuibutes[*FfsCount].Depex, Ptr, SectionLength);
-      CurrentFv->FfsAttuibutes[*FfsCount].DepexLen = SectionLength;
+      CurrentFv->FfsAttuibutes[*FfsCount].SmmDepex = malloc (SectionLength);
+      memcpy(CurrentFv->FfsAttuibutes[*FfsCount].SmmDepex, Ptr, SectionLength);
+      CurrentFv->FfsAttuibutes[*FfsCount].SmmDepexLen = SectionLength;
       break;
 
     case EFI_SECTION_USER_INTERFACE:
@@ -1686,6 +1710,10 @@ LibParseSection (
         CurrentFv->FfsAttuibutes[*FfsCount].UiNameSize = UINameSize;
       }
 
+      if (IsFfs) {
+        memcpy (CurrentFv->FfsAttuibutes[KeepFfsCount].UiName, UIName, UINameSize);
+        CurrentFv->FfsAttuibutes[KeepFfsCount].UiNameSize = UINameSize;
+      }
       HasDepexSection = FALSE;
     free(UIName);
     UINameSize = 0;
@@ -1983,8 +2011,12 @@ LibGetFileInfo (
       LocalEncapData->Level = Level;
       LocalEncapData->Type  = FMMT_ENCAP_TREE_FFS;
       LocalEncapData->FvExtHeader = NULL;
-      LocalEncapData->Depex = NULL;
-      LocalEncapData->DepexLen = 0;
+      LocalEncapData->PeiDepex = NULL;
+      LocalEncapData->PeiDepexLen = 0;
+      LocalEncapData->DxeDepex = NULL;
+      LocalEncapData->DxeDepexLen = 0;
+      LocalEncapData->SmmDepex = NULL;
+      LocalEncapData->SmmDepexLen = 0;
       LocalEncapData->UiNameSize = 0;
       LocalEncapData->FvId = *FvCount;
       //
@@ -2031,8 +2063,12 @@ LibGetFileInfo (
       LocalEncapData->Level = Level;
       LocalEncapData->Type  = FMMT_ENCAP_TREE_FFS;
       LocalEncapData->FvExtHeader = NULL;
-      LocalEncapData->Depex = NULL;
-      LocalEncapData->DepexLen = 0;
+      LocalEncapData->PeiDepex = NULL;
+      LocalEncapData->PeiDepexLen = 0;
+      LocalEncapData->DxeDepex = NULL;
+      LocalEncapData->DxeDepexLen = 0;
+      LocalEncapData->SmmDepex = NULL;
+      LocalEncapData->SmmDepexLen = 0;
       LocalEncapData->UiNameSize = 0;
       LocalEncapData->FvId = *FvCount;
       //
@@ -2235,8 +2271,12 @@ LibGetFvInfo (
     }
 
     CurrentFv->EncapData->FvExtHeader = NULL;
-    CurrentFv->EncapData->Depex = NULL;
-    CurrentFv->EncapData->DepexLen = 0;
+    CurrentFv->EncapData->PeiDepex = NULL;
+    CurrentFv->EncapData->PeiDepexLen = 0;
+    CurrentFv->EncapData->DxeDepex = NULL;
+    CurrentFv->EncapData->DxeDepexLen = 0;
+    CurrentFv->EncapData->SmmDepex = NULL;
+    CurrentFv->EncapData->SmmDepexLen = 0;
     CurrentFv->EncapData->UiNameSize = 0;
     CurrentFv->EncapData->Level = Level;
     CurrentFv->EncapData->Type  = FMMT_ENCAP_TREE_FV;
@@ -2292,8 +2332,12 @@ LibGetFvInfo (
       LocalEncapData->Type  = FMMT_ENCAP_TREE_FV;
       LocalEncapData->Data  = (EFI_FIRMWARE_VOLUME_HEADER *) malloc (sizeof (EFI_FIRMWARE_VOLUME_HEADER));
       LocalEncapData->FvExtHeader = NULL;
-      LocalEncapData->Depex = NULL;
-      LocalEncapData->DepexLen = 0;
+      LocalEncapData->PeiDepex = NULL;
+      LocalEncapData->PeiDepexLen = 0;
+      LocalEncapData->DxeDepex = NULL;
+      LocalEncapData->DxeDepexLen = 0;
+      LocalEncapData->SmmDepex = NULL;
+      LocalEncapData->SmmDepexLen = 0;
       LocalEncapData->UiNameSize = 0;
       LocalEncapData->FvId  = *FvCount;
       if (LocalEncapData->Data == NULL) {
@@ -4255,8 +4299,12 @@ LibEncapNewFvFile(
   OutputFileNameList->ParentLevel = 0;
   OutputFileNameList->Next = NULL;
   OutputFileNameList->UiNameSize = 0;
-  OutputFileNameList->Depex = NULL;
-  OutputFileNameList->DepexLen = 0;
+  OutputFileNameList->PeiDepex = NULL;
+  OutputFileNameList->PeiDepexLen = 0;
+  OutputFileNameList->DxeDepex = NULL;
+  OutputFileNameList->DxeDepexLen = 0;
+  OutputFileNameList->SmmDepex = NULL;
+  OutputFileNameList->SmmDepexLen = 0;
   OutputFileNameList->FfsFoundFlag = FALSE;
 
   ChildFileNameList = (FFS_INFORMATION *)malloc(sizeof(FFS_INFORMATION));
@@ -4270,8 +4318,12 @@ LibEncapNewFvFile(
   ChildFileNameList->Next = NULL;
   ChildFileNameList->IsFFS = FALSE;
   ChildFileNameList->UiNameSize = 0;
-  ChildFileNameList->Depex = NULL;
-  ChildFileNameList->DepexLen = 0;
+  ChildFileNameList->PeiDepex = NULL;
+  ChildFileNameList->PeiDepexLen = 0;
+  ChildFileNameList->DxeDepex = NULL;
+  ChildFileNameList->DxeDepexLen = 0;
+  ChildFileNameList->SmmDepex = NULL;
+  ChildFileNameList->SmmDepexLen = 0;
   ChildFileNameList->FfsFoundFlag = FALSE;
   //
   // Encapsulate from the lowest FFS file level.
@@ -4663,8 +4715,12 @@ LibEncapNewFvFile(
         if (EncapFvIndex > 0) {
             memcpy(OutputFileNameList->UiName,FvInFd->FfsAttuibutes[EncapFvIndex - 1].UiName, FvInFd->FfsAttuibutes[EncapFvIndex - 1].UiNameSize);
             OutputFileNameList->UiNameSize = FvInFd->FfsAttuibutes[EncapFvIndex - 1].UiNameSize;
-            OutputFileNameList->Depex = FvInFd->FfsAttuibutes[EncapFvIndex - 1].Depex;
-            OutputFileNameList->DepexLen = FvInFd->FfsAttuibutes[EncapFvIndex - 1].DepexLen;
+            OutputFileNameList->PeiDepex = FvInFd->FfsAttuibutes[EncapFvIndex - 1].PeiDepex;
+            OutputFileNameList->PeiDepexLen = FvInFd->FfsAttuibutes[EncapFvIndex - 1].PeiDepexLen;
+            OutputFileNameList->DxeDepex = FvInFd->FfsAttuibutes[EncapFvIndex - 1].DxeDepex;
+            OutputFileNameList->DxeDepexLen = FvInFd->FfsAttuibutes[EncapFvIndex - 1].DxeDepexLen;
+            OutputFileNameList->SmmDepex = FvInFd->FfsAttuibutes[EncapFvIndex - 1].SmmDepex;
+            OutputFileNameList->SmmDepexLen = FvInFd->FfsAttuibutes[EncapFvIndex - 1].SmmDepexLen;
             OutputFileNameList->FfsFoundFlag = FfsFoundFlag;
             OutputFileNameList->FvId = FvInFd->FfsAttuibutes[EncapFvIndex - 1].FvId;
             OutputFileNameList->ParentLevel = ParentLevel - 1;
@@ -4683,13 +4739,13 @@ LibEncapNewFvFile(
           }
           while (LocalEncapData->NextNode != NULL) {
             if (LocalEncapData->Level == ParentLevel) {
-        for(;LocalEncapData->NextNode != NULL;) {
-          if(LocalEncapData->FvExtHeader != NULL) {
-            break;
-          }
-          LocalEncapData = LocalEncapData->NextNode;
-        }
-                break;
+              for(;LocalEncapData->NextNode != NULL;) {
+                if(LocalEncapData->FvExtHeader != NULL) {
+                  break;
+                }
+                LocalEncapData = LocalEncapData->NextNode;
+              }
+              break;
             }
             LocalEncapData = LocalEncapData->NextNode;
           }
@@ -4701,100 +4757,225 @@ LibEncapNewFvFile(
             return EFI_ABORTED;
           }
 
-          if (OutputFileNameList->UiNameSize > 0) {
-              TmpFileName = LibFilenameStrExtended(strrchr(GenTempFile (), OS_SEP), TemDir, "tmp");
-              TmpFile = fopen(TmpFileName, "wb+");
-              if (TmpFile == NULL) {
-                 Error("FMMT", 0, 0004, "Could not open tmp file %s to store UI section information! \n", "");
-                 free (OutputFileNameList);
-                 free (ChildFileNameList);
-                 return EFI_ABORTED;
+          for (Id = 0; Id <= FvInFd->FfsNumbers; Id++) {
+            if ((memcmp(&FvInFd->FfsAttuibutes[Id].GuidName, &(LocalEncapData->FvExtHeader->FvName), sizeof(EFI_GUID)) == 0)){
+              if (&FvInFd->FfsAttuibutes[Id].UiNameSize > 0){
+                OutputFileNameList->UiNameSize = FvInFd->FfsAttuibutes[Id].UiNameSize;
+                memcpy(OutputFileNameList->UiName, FvInFd->FfsAttuibutes[Id].UiName, FvInFd->FfsAttuibutes[Id].UiNameSize);
               }
-             header = (OutputFileNameList->UiNameSize+4) | (EFI_SECTION_USER_INTERFACE << 24);
-             Index = 0;
-             while (header) {
-                 SectionHeader[Index] = header % 0x100;
-                 header /= 0x100;
-                 Index ++;
-             }
-             InputFile = fopen(InputFileName, "rb+");
-             if (InputFile == NULL) {
-               Error("FMMT", 0, 0004, "Could not open input file %s! \n", "");
-               fclose(TmpFile);
-               free (OutputFileNameList);
-               free (ChildFileNameList);
-               return EFI_ABORTED;
-             }
-             fseek(InputFile, 0, SEEK_SET);
-             fseek(InputFile, 0, SEEK_END);
-             InputFileSize = ftell(InputFile);
-             fseek(InputFile, 0, SEEK_SET);
-
-             Buffer = malloc(InputFileSize+OutputFileNameList->UiNameSize+4);
-             memcpy(Buffer, (CHAR16 *)SectionHeader, 4);
-             memcpy(Buffer + 4, (CHAR16 *)(OutputFileNameList->UiName), OutputFileNameList->UiNameSize);
-             if (fread(Buffer+4+OutputFileNameList->UiNameSize, 1, InputFileSize, InputFile) != InputFileSize) {
-               Error("FMMT", 0, 0004, "Could not open sec file %s to add UI section information! \n", "");
-               fclose(TmpFile);
-               fclose(InputFile);
-               free(Buffer);
-               free (OutputFileNameList);
-               free (ChildFileNameList);
-               return EFI_ABORTED;
-             }
-             fwrite(Buffer, 1, InputFileSize + OutputFileNameList->UiNameSize + 4, TmpFile);
-             free(Buffer);
-             fclose(TmpFile);
-             fclose(InputFile);
-             InputFileName = TmpFileName;
+              if (&FvInFd->FfsAttuibutes[Id].PeiDepexLen > 0){
+                OutputFileNameList->PeiDepexLen = FvInFd->FfsAttuibutes[Id].PeiDepexLen;
+                OutputFileNameList->PeiDepex    = FvInFd->FfsAttuibutes[Id].PeiDepex;
+              }
+              if (&FvInFd->FfsAttuibutes[Id].DxeDepexLen > 0){
+                OutputFileNameList->DxeDepexLen = FvInFd->FfsAttuibutes[Id].DxeDepexLen;
+                OutputFileNameList->DxeDepex    = FvInFd->FfsAttuibutes[Id].DxeDepex;
+              }
+              if (&FvInFd->FfsAttuibutes[Id].SmmDepexLen > 0){
+                OutputFileNameList->SmmDepexLen = FvInFd->FfsAttuibutes[Id].SmmDepexLen;
+                OutputFileNameList->SmmDepex    = FvInFd->FfsAttuibutes[Id].SmmDepex;
+              }
+            }
           }
-          if (OutputFileNameList->DepexLen > 0) {
-              TmpFileName = LibFilenameStrExtended(strrchr(GenTempFile (), OS_SEP), TemDir, "tmp");
-              TmpFile = fopen(TmpFileName, "wb+");
-              if (TmpFile == NULL) {
-                  Error("FMMT", 0, 0004, "Could not open tmp file %s to store Depex section information! \n", "");
-                  free (OutputFileNameList);
-                  free (ChildFileNameList);
-                  return EFI_ABORTED;
+
+          if (OutputFileNameList->UiNameSize > 0) {
+            TmpFileName = LibFilenameStrExtended(strrchr(GenTempFile (), OS_SEP), TemDir, "tmp");
+            TmpFile = fopen(TmpFileName, "wb+");
+            if (TmpFile == NULL) {
+              Error("FMMT", 0, 0004, "Could not open tmp file %s to store UI section information! \n", "");
+              free (OutputFileNameList);
+              free (ChildFileNameList);
+              return EFI_ABORTED;
+            }
+            header = (OutputFileNameList->UiNameSize+4) | (EFI_SECTION_USER_INTERFACE << 24);
+            Index = 0;
+            while (header) {
+              SectionHeader[Index] = header % 0x100;
+              header /= 0x100;
+              Index ++;
+            }
+            InputFile = fopen(InputFileName, "rb+");
+            if (InputFile == NULL) {
+              Error("FMMT", 0, 0004, "Could not open input file %s! \n", "");
+              fclose(TmpFile);
+              free (OutputFileNameList);
+              free (ChildFileNameList);
+              return EFI_ABORTED;
+            }
+            fseek(InputFile, 0, SEEK_SET);
+            fseek(InputFile, 0, SEEK_END);
+            InputFileSize = ftell(InputFile);
+            fseek(InputFile, 0, SEEK_SET);
+
+            if (InputFileSize % 4 != 0) {
+              AlignN = 4 - InputFileSize % 4;
+            }
+
+            Buffer = malloc(InputFileSize + AlignN + OutputFileNameList->UiNameSize + 4);
+            memcpy(Buffer + InputFileSize + AlignN , (CHAR16 *)SectionHeader, 4);
+            memcpy(Buffer + InputFileSize + AlignN + 4, (CHAR16 *)(OutputFileNameList->UiName), OutputFileNameList->UiNameSize);
+            if (fread(Buffer, 1, InputFileSize, InputFile) != InputFileSize) {
+              Error("FMMT", 0, 0004, "Could not open sec file %s to add UI section information! \n", "");
+              fclose(TmpFile);
+              fclose(InputFile);
+              free(Buffer);
+              free (OutputFileNameList);
+              free (ChildFileNameList);
+              return EFI_ABORTED;
+            }
+            fwrite(Buffer, 1, InputFileSize + AlignN + OutputFileNameList->UiNameSize + 4, TmpFile);
+            free(Buffer);
+            fclose(TmpFile);
+            fclose(InputFile);
+            InputFileName = TmpFileName;
+          }
+
+          if (OutputFileNameList->DxeDepexLen > 0) {
+            TmpFileName = LibFilenameStrExtended(strrchr(GenTempFile (), OS_SEP), TemDir, "tmp");
+            TmpFile = fopen(TmpFileName, "wb+");
+            if (TmpFile == NULL) {
+              Error("FMMT", 0, 0004, "Could not open tmp file %s to store Depex section information! \n", "");
+              free (OutputFileNameList);
+              free (ChildFileNameList);
+              return EFI_ABORTED;
+            }
+            InputFile = fopen(InputFileName, "rb+");
+            if (InputFile == NULL) {
+              Error("FMMT", 0, 0004, "Could not open input file %s! \n", "");
+              fclose(TmpFile);
+              free (OutputFileNameList);
+              free (ChildFileNameList);
+              return EFI_ABORTED;
+            }
+            fseek(InputFile, 0, SEEK_SET);
+            fseek(InputFile, 0, SEEK_END);
+            InputFileSize = ftell(InputFile);
+            fseek(InputFile, 0, SEEK_SET);
+            //
+            // make sure the section is 4 byte align
+            //
+            if (OutputFileNameList->DxeDepexLen % 4 != 0) {
+                AlignN = 4 - OutputFileNameList->DxeDepexLen % 4;
+            }
+            Buffer = malloc(InputFileSize + OutputFileNameList->DxeDepexLen + AlignN);
+            memcpy(Buffer, OutputFileNameList->DxeDepex, OutputFileNameList->DxeDepexLen);
+            if (AlignN != 0) {
+              for (Index = 0; Index < AlignN; Index ++) {
+                memcpy(Buffer + OutputFileNameList->DxeDepexLen + Index, AlignV, 1);
               }
-              InputFile = fopen(InputFileName, "rb+");
-              if (InputFile == NULL) {
-                Error("FMMT", 0, 0004, "Could not open input file %s! \n", "");
-                fclose(TmpFile);
+            }
+            if (fread(Buffer + OutputFileNameList->DxeDepexLen + AlignN, 1, InputFileSize, InputFile) != InputFileSize) {
+              Error("FMMT", 0, 0004, "Could not open sec file %s to add Depex section information! \n", "");
+              fclose(TmpFile);
+              fclose(InputFile);
+              free(Buffer);
+              free (OutputFileNameList);
+              free (ChildFileNameList);
+              return EFI_ABORTED;
+            }
+            fwrite(Buffer, 1, InputFileSize + OutputFileNameList->DxeDepexLen + AlignN, TmpFile);
+            free(Buffer);
+            fclose(TmpFile);
+            fclose(InputFile);
+            InputFileName = TmpFileName;
+          }
+
+          if (OutputFileNameList->PeiDepexLen > 0) {
+            TmpFileName = LibFilenameStrExtended(strrchr(GenTempFile (), OS_SEP), TemDir, "tmp");
+            TmpFile = fopen(TmpFileName, "wb+");
+            if (TmpFile == NULL) {
+                Error("FMMT", 0, 0004, "Could not open tmp file %s to store Depex section information! \n", "");
                 free (OutputFileNameList);
                 free (ChildFileNameList);
                 return EFI_ABORTED;
+            }
+            InputFile = fopen(InputFileName, "rb+");
+            if (InputFile == NULL) {
+              Error("FMMT", 0, 0004, "Could not open input file %s! \n", "");
+              fclose(TmpFile);
+              free (OutputFileNameList);
+              free (ChildFileNameList);
+              return EFI_ABORTED;
+            }
+            fseek(InputFile, 0, SEEK_SET);
+            fseek(InputFile, 0, SEEK_END);
+            InputFileSize = ftell(InputFile);
+            fseek(InputFile, 0, SEEK_SET);
+            // make sure the section is 4 byte align
+            if (OutputFileNameList->PeiDepexLen % 4 != 0) {
+                AlignN = 4 - OutputFileNameList->PeiDepexLen % 4;
+            }
+            Buffer = malloc(InputFileSize + OutputFileNameList->PeiDepexLen + AlignN);
+            memcpy(Buffer, OutputFileNameList->PeiDepex, OutputFileNameList->PeiDepexLen);
+            if (AlignN != 0) {
+              for (Index = 0; Index < AlignN; Index ++) {
+                memcpy(Buffer + OutputFileNameList->PeiDepexLen + Index, AlignV, 1);
               }
-              fseek(InputFile, 0, SEEK_SET);
-              fseek(InputFile, 0, SEEK_END);
-              InputFileSize = ftell(InputFile);
-              fseek(InputFile, 0, SEEK_SET);
-              // make sure the section is 4 byte align
-              if (OutputFileNameList->DepexLen % 4 != 0) {
-                  AlignN = 4 - OutputFileNameList->DepexLen % 4;
-              }
-              Buffer = malloc(InputFileSize + OutputFileNameList->DepexLen + AlignN);
-              memcpy(Buffer, OutputFileNameList->Depex, OutputFileNameList->DepexLen);
-              if (AlignN != 0) {
-                  for (Index = 0; Index < AlignN; Index ++) {
-                      memcpy(Buffer + OutputFileNameList->DepexLen + Index, AlignV, 1);
-                  }
-              }
-              if (fread(Buffer + OutputFileNameList->DepexLen + AlignN, 1, InputFileSize, InputFile) != InputFileSize) {
-                  Error("FMMT", 0, 0004, "Could not open sec file %s to add Depex section information! \n", "");
-                  fclose(TmpFile);
-                  fclose(InputFile);
-                  free(Buffer);
-                  free (OutputFileNameList);
-                  free (ChildFileNameList);
-                  return EFI_ABORTED;
-              }
-              fwrite(Buffer, 1, InputFileSize + OutputFileNameList->DepexLen + AlignN, TmpFile);
-              free(Buffer);
+            }
+            if (fread(Buffer + OutputFileNameList->PeiDepexLen + AlignN, 1, InputFileSize, InputFile) != InputFileSize) {
+              Error("FMMT", 0, 0004, "Could not open sec file %s to add Depex section information! \n", "");
               fclose(TmpFile);
               fclose(InputFile);
-              InputFileName = TmpFileName;
-         }
+              free(Buffer);
+              free (OutputFileNameList);
+              free (ChildFileNameList);
+              return EFI_ABORTED;
+            }
+            fwrite(Buffer, 1, InputFileSize + OutputFileNameList->PeiDepexLen + AlignN, TmpFile);
+            free(Buffer);
+            fclose(TmpFile);
+            fclose(InputFile);
+            InputFileName = TmpFileName;
+          }
+
+          if (OutputFileNameList->SmmDepexLen > 0) {
+            TmpFileName = LibFilenameStrExtended(strrchr(GenTempFile (), OS_SEP), TemDir, "tmp");
+            TmpFile = fopen(TmpFileName, "wb+");
+            if (TmpFile == NULL) {
+              Error("FMMT", 0, 0004, "Could not open tmp file %s to store Depex section information! \n", "");
+              free (OutputFileNameList);
+              free (ChildFileNameList);
+              return EFI_ABORTED;
+            }
+            InputFile = fopen(InputFileName, "rb+");
+            if (InputFile == NULL) {
+              Error("FMMT", 0, 0004, "Could not open input file %s! \n", "");
+              fclose(TmpFile);
+              free (OutputFileNameList);
+              free (ChildFileNameList);
+              return EFI_ABORTED;
+            }
+            fseek(InputFile, 0, SEEK_SET);
+            fseek(InputFile, 0, SEEK_END);
+            InputFileSize = ftell(InputFile);
+            fseek(InputFile, 0, SEEK_SET);
+            // make sure the section is 4 byte align
+            if (OutputFileNameList->SmmDepexLen % 4 != 0) {
+                AlignN = 4 - OutputFileNameList->SmmDepexLen % 4;
+            }
+            Buffer = malloc(InputFileSize + OutputFileNameList->SmmDepexLen + AlignN);
+            memcpy(Buffer, OutputFileNameList->SmmDepex, OutputFileNameList->SmmDepexLen);
+            if (AlignN != 0) {
+              for (Index = 0; Index < AlignN; Index ++) {
+                memcpy(Buffer + OutputFileNameList->SmmDepexLen + Index, AlignV, 1);
+              }
+            }
+            if (fread(Buffer + OutputFileNameList->SmmDepexLen + AlignN, 1, InputFileSize, InputFile) != InputFileSize) {
+              Error("FMMT", 0, 0004, "Could not open sec file %s to add Depex section information! \n", "");
+              fclose(TmpFile);
+              fclose(InputFile);
+              free(Buffer);
+              free (OutputFileNameList);
+              free (ChildFileNameList);
+              return EFI_ABORTED;
+            }
+            fwrite(Buffer, 1, InputFileSize + OutputFileNameList->SmmDepexLen + AlignN, TmpFile);
+            free(Buffer);
+            fclose(TmpFile);
+            fclose(InputFile);
+            InputFileName = TmpFileName;
+          }
+
          for (Id = FvInFd->FfsNumbers; Id <= FvInFd->FfsNumbers; Id--) {
              if ((memcmp(&FvInFd->FfsAttuibutes[Id].GuidName, &(LocalEncapData->FvExtHeader->FvName), sizeof(EFI_GUID)) == 0)){
                  if (access(FvInFd->FfsAttuibutes[Id].FfsName, 0) != -1) {
@@ -5083,8 +5264,12 @@ LibEncapNewFvFile(
                 memcpy(OutputFileNameList->UiName, FvInFd->FfsAttuibutes[Id].UiName, FvInFd->FfsAttuibutes[Id].UiNameSize);
                 OutputFileNameList->UiNameSize = FvInFd->FfsAttuibutes[Id].UiNameSize;
                 OutputFileNameList->FFSName = FvInFd->FfsAttuibutes[Id].FfsName;
-                OutputFileNameList->Depex = FvInFd->FfsAttuibutes[Id].Depex;
-                OutputFileNameList->DepexLen = FvInFd->FfsAttuibutes[Id].DepexLen;
+                OutputFileNameList->PeiDepex = FvInFd->FfsAttuibutes[Id].PeiDepex;
+                OutputFileNameList->PeiDepexLen = FvInFd->FfsAttuibutes[Id].PeiDepexLen;
+                OutputFileNameList->DxeDepex = FvInFd->FfsAttuibutes[Id].DxeDepex;
+                OutputFileNameList->DxeDepexLen = FvInFd->FfsAttuibutes[Id].DxeDepexLen;
+                OutputFileNameList->SmmDepex = FvInFd->FfsAttuibutes[Id].SmmDepex;
+                OutputFileNameList->SmmDepexLen = FvInFd->FfsAttuibutes[Id].SmmDepexLen;
                 OutputFileNameList->FfsFoundFlag = TRUE;
                 OutputFileNameList->IsFFS = TRUE;
                 OutputFileNameList->InFvId = Id;
