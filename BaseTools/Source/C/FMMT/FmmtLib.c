@@ -4546,12 +4546,14 @@ LibEncapNewFvFile(
           while (LocalEncapData->Level != ParentLevel) {
             LocalEncapData = LocalEncapData->NextNode;
           }
+          if (LocalEncapData->FvExtHeader !=NULL) {
             for (Index = 0; Index <= FvInFd->FfsNumbers; Index++) {
                 if ((memcmp(&FvInFd->FfsAttuibutes[Index].GuidName, &(LocalEncapData->FvExtHeader->FvName), sizeof(EFI_GUID)) == 0)) {
                     SubFvId = Index;
                     break;
                 }
             }
+          }
         }
         //
         // Found FFSs from Fv structure.
