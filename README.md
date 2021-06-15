@@ -19,7 +19,7 @@
 The programming language C is standardized by the American National Standards Institute (ANSI) and the
 International Organization for Standardization (ISO) first in 1989 and 1990.
 The latest publicly available version of the standard from 1999 is to be found here: [C99](http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1256.pdf).
-The original [ANSI C](https://www.pdf-archive.com/2014/10/02/ansi-iso-9899-1990-1/ansi-iso-9899-1990-1.pdf), also known as C89 or
+The original [ANSI C](https://1drv.ms/b/s!AmMwYrfjYfPyhmLlWx7oT5rO6UDg?e=ijKu1J), also known as C89 or
 C90 is not officially available anymore for free.
 
 Both, the *language* (operators, expressions, declarations, specifiers, e.g. `if`, `while`,
