@@ -1,0 +1,31 @@
+## @file
+# App utilizing CStdLib. Used for engineer testing.
+#
+# Copyright (c) 2021, Intel Corporation. All rights reserved.<BR>
+#
+#    SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = DevApp
+  FILE_GUID                      = 445400d6-3cab-4ada-8df5-9c65af9c8b8a
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = UefiMain
+
+[Sources]
+  Main.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  StdLibPkg/StdLibPkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiBootServicesTableLib
+  UefiLib
+  CStdLib
+  IntrinsicLib

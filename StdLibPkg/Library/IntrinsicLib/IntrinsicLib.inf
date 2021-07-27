@@ -1,0 +1,33 @@
+## @file
+#  Library with compiler-specific intrinsics.
+#
+#  Copyright (c) 2021, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION     = 0x00010005
+  BASE_NAME       = IntrinsicLib
+  FILE_GUID       = 7A70FE7E-6EF9-4216-B1DA-6CAFB53EA574
+  MODULE_TYPE     = BASE
+  VERSION_STRING  = 1.0
+  LIBRARY_CLASS   = NULL
+
+[Sources.X64]
+  X64/chkstk.c        | MSFT
+
+[Sources.IA32]
+  Ia32/alldiv.nasm    | MSFT
+  Ia32/alldvrm.nasm   | MSFT
+  Ia32/allmul.nasm    | MSFT
+  Ia32/allshl.nasm    | MSFT
+  Ia32/allrem.nasm    | MSFT
+  Ia32/aulldvrm.nasm  | MSFT
+  Ia32/aullshr.nasm   | MSFT
+  Ia32/ftol2.nasm     | MSFT
+  Ia32/chkstk.c       | MSFT
+
+[Packages]
+  MdePkg/MdePkg.dec

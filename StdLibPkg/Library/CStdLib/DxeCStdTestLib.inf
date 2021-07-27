@@ -1,0 +1,166 @@
+## @file
+#  C Standard Library implementation for DXE stage test application.
+#
+#  Copyright (c) 2020-2021, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION     = 0x00010005
+  BASE_NAME       = DxeCStdTestLib
+  MODULE_UNI_FILE = CStdLib.uni
+  FILE_GUID       = A97B7E55-AE4F-4980-BF69-FE0E6A205413
+  MODULE_TYPE     = DXE_DRIVER
+  VERSION_STRING  = 1.0
+  LIBRARY_CLASS   = DxeCStdTestLib|DXE_DRIVER DXE_RUNTIME_DRIVER UEFI_APPLICATION UEFI_DRIVER
+  CONSTRUCTOR     = CStdLibConstructor
+
+[Packages]
+  StdLibPkg/StdLibPkg.dec
+  MdePkg/MdePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+
+[Sources]
+  Main.c
+  
+  #
+  # functions/string
+  #
+  UnitTests/string/memchr.c
+  UnitTests/string/memcmp.c
+  # UnitTests/string/memcpy_s.c
+  UnitTests/string/memcpy.c
+  # UnitTests/string/memmove_s.c
+  UnitTests/string/memmove.c
+  # UnitTests/string/memset_s.c
+  UnitTests/string/memset.c
+  # UnitTests/string/strcat_s.c
+  UnitTests/string/strcat.c
+  UnitTests/string/strchr.c
+  UnitTests/string/strcmp.c
+  UnitTests/string/strcoll.c
+  # UnitTests/string/strcpy_s.c
+  UnitTests/string/strcpy.c
+  UnitTests/string/strcspn.c
+  # UnitTests/string/strerror_s.c
+  UnitTests/string/strerror.c
+  # UnitTests/string/strerrorlen_s.c
+  UnitTests/string/strlen.c
+  # UnitTests/string/strncat_s.c
+  UnitTests/string/strncat.c
+  UnitTests/string/strncmp.c
+  # UnitTests/string/strncpy_s.c
+  UnitTests/string/strncpy.c
+  UnitTests/string/strpbrk.c
+  UnitTests/string/strrchr.c
+  UnitTests/string/strspn.c
+  UnitTests/string/strstr.c
+  # UnitTests/string/strtok_s.c
+  # UnitTests/string/strtok.c
+  UnitTests/string/strxfrm.c
+
+  #
+  # functions/ctype
+  #
+  UnitTests/ctype/isalnum.c
+  UnitTests/ctype/isalpha.c
+  UnitTests/ctype/isblank.c
+  UnitTests/ctype/iscntrl.c
+  UnitTests/ctype/isdigit.c
+  UnitTests/ctype/isgraph.c
+  UnitTests/ctype/islower.c
+  UnitTests/ctype/isprint.c
+  UnitTests/ctype/ispunct.c
+  UnitTests/ctype/isspace.c
+  UnitTests/ctype/isupper.c
+  UnitTests/ctype/isxdigit.c
+  UnitTests/ctype/tolower.c
+  UnitTests/ctype/toupper.c
+
+  #
+  # functions/inttypes
+  #
+  UnitTests/inttypes/imaxabs.c
+  UnitTests/inttypes/imaxdiv.c
+  UnitTests/inttypes/strtoimax.c
+  UnitTests/inttypes/strtoumax.c
+
+  # pdclib/functions/stdlib/qsort.c
+  # pdclib/functions/stdlib/strtol.c
+  # pdclib/functions/stdlib/strtoul.c
+  # pdclib/functions/stdlib/atoi.c
+  # pdclib/functions/stdlib/abort.c
+  # pdclib/functions/stdlib/exit.c
+  # pdclib/functions/stdlib/_Exit.c
+  # pdclib/functions/stdlib/abs.c
+
+  # pdclib/functions/stdio/fputs.c
+  # pdclib/functions/stdio/fprintf.c
+  # pdclib/functions/stdio/ferror.c
+  # pdclib/functions/stdio/fopen.c
+  # pdclib/functions/stdio/fclose.c
+  # pdclib/functions/stdio/fread.c
+  # pdclib/functions/stdio/vfprintf.c
+  # pdclib/functions/stdio/sscanf.c
+  # pdclib/functions/stdio/vsscanf.c
+  # pdclib/functions/stdio/putc.c
+  # pdclib/functions/stdio/puts.c
+  # pdclib/functions/stdio/getc.c
+  # pdclib/functions/stdio/ungetc.c
+  # pdclib/functions/stdio/fgetc.c
+  # pdclib/functions/stdio/fputc.c
+  # pdclib/functions/stdio/sprintf.c
+  # pdclib/functions/stdio/snprintf.c
+  # pdclib/functions/stdio/vsnprintf.c
+
+  pdclib/functions/_PDCLIB/errno.c
+  # pdclib/functions/_PDCLIB/_PDCLIB_scan.c
+  # pdclib/functions/_PDCLIB/_PDCLIB_print.c
+  # pdclib/functions/_PDCLIB/_PDCLIB_is_leap.c
+  pdclib/functions/_PDCLIB/_PDCLIB_digits.c
+  # pdclib/functions/_PDCLIB/_PDCLIB_prepwrite.c
+  # pdclib/functions/_PDCLIB/_PDCLIB_prepread.c
+  # pdclib/functions/_PDCLIB/_PDCLIB_getstream.c
+  # pdclib/functions/_PDCLIB/_PDCLIB_isstream.c
+  # pdclib/functions/_PDCLIB/_PDCLIB_init_file_t.c
+  # pdclib/functions/_PDCLIB/_PDCLIB_filemode.c
+  # pdclib/functions/_PDCLIB/_PDCLIB_closeall.c
+  # pdclib/functions/_PDCLIB/_PDCLIB_atomax.c
+  pdclib/functions/_PDCLIB/_PDCLIB_strtox_prelim.c
+  pdclib/functions/_PDCLIB/_PDCLIB_strtox_main.c
+  # pdclib/functions/_PDCLIB/assert.c
+  # pdclib/functions/_PDCLIB/_PDCLIB_strtok.c
+
+  # Platform/uefi/functions/time/time.c
+  # Platform/uefi/functions/time/gmtime.c
+  # Platform/uefi/functions/stdlib/getenv.c
+  # Platform/uefi/functions/stdlib/memory.c
+  # Platform/uefi/functions/signal/raise.c
+  # Platform/uefi/functions/signal/signal.c
+  # Platform/uefi/functions/string/strcasecmp.c
+  # Platform/uefi/functions/string/strncasecmp.c
+
+  Platform/uefi/functions/_PDCLIB/_PDCLIB_stdinit.c
+  # Platform/uefi/functions/_PDCLIB/_PDCLIB_flushbuffer.c
+  # Platform/uefi/functions/_PDCLIB/_PDCLIB_fillbuffer.c
+  # Platform/uefi/functions/_PDCLIB/_PDCLIB_remove.c
+  # Platform/uefi/functions/_PDCLIB/_PDCLIB_close.c
+  # Platform/uefi/functions/_PDCLIB/_PDCLIB_open.c
+  # Platform/uefi/functions/_PDCLIB/_PDCLIB_realpath.c
+  # Platform/uefi/functions/_PDCLIB/_PDCLIB_Exit.c
+
+[LibraryClasses]
+  DebugLib
+  UefiBootServicesTableLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  TimeBaseLib
+  IntrinsicLib
+
+[BuildOptions]
+  # Remove normal include paths (no stdlib headers).
+  # Disable warning 4146 for strtol.c
+  MSFT:*_*_*_CC_FLAGS = /X /wd4146 /wd4244 /wd4245 /wd4267 /wd4706 /FAcs /GL-
+  

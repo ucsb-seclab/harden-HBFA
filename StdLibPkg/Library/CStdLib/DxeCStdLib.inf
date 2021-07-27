@@ -1,0 +1,200 @@
+## @file
+#  C Standard Library implementation for DXE stage.
+#
+#  Copyright (c) 2020-2021, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION     = 0x00010005
+  BASE_NAME       = DxeCStdLib
+  FILE_GUID       = FF9F84C5-A33E-44E3-9BB5-0D654B2D4149
+  MODULE_TYPE     = DXE_DRIVER
+  VERSION_STRING  = 1.0
+  LIBRARY_CLASS   = CStdLib|DXE_DRIVER DXE_RUNTIME_DRIVER UEFI_APPLICATION UEFI_DRIVER
+
+  CONSTRUCTOR     = CStdLibConstructor
+
+[Packages]
+  StdLibPkg/StdLibPkg.dec
+  MdePkg/MdePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+
+[Sources]
+  Main.c
+  
+  #
+  # functions/string
+  #
+  pdclib/functions/string/memchr.c
+  pdclib/functions/string/memcmp.c
+  # pdclib/functions/string/memcpy_s.c
+  pdclib/functions/string/memcpy.c
+  # pdclib/functions/string/memmove_s.c
+  pdclib/functions/string/memmove.c
+  # pdclib/functions/string/memset_s.c
+  pdclib/functions/string/memset.c
+  # pdclib/functions/string/strcat_s.c
+  pdclib/functions/string/strcat.c
+  pdclib/functions/string/strchr.c
+  pdclib/functions/string/strcmp.c
+  pdclib/functions/string/strcoll.c
+  # pdclib/functions/string/strcpy_s.c
+  pdclib/functions/string/strcpy.c
+  pdclib/functions/string/strcspn.c
+  # pdclib/functions/string/strerror_s.c
+  pdclib/functions/string/strerror.c
+  # pdclib/functions/string/strerrorlen_s.c
+  pdclib/functions/string/strlen.c
+  # pdclib/functions/string/strncat_s.c
+  pdclib/functions/string/strncat.c
+  pdclib/functions/string/strncmp.c
+  # pdclib/functions/string/strncpy_s.c
+  pdclib/functions/string/strncpy.c
+  pdclib/functions/string/strpbrk.c
+  pdclib/functions/string/strrchr.c
+  pdclib/functions/string/strspn.c
+  pdclib/functions/string/strstr.c
+  # pdclib/functions/string/strtok_s.c
+  # pdclib/functions/string/strtok.c
+  pdclib/functions/string/strxfrm.c
+
+  #
+  # functions/ctype
+  #
+  pdclib/functions/ctype/isalnum.c
+  pdclib/functions/ctype/isalpha.c
+  pdclib/functions/ctype/isblank.c
+  pdclib/functions/ctype/iscntrl.c
+  pdclib/functions/ctype/isdigit.c
+  pdclib/functions/ctype/isgraph.c
+  pdclib/functions/ctype/islower.c
+  pdclib/functions/ctype/isprint.c
+  pdclib/functions/ctype/ispunct.c
+  pdclib/functions/ctype/isspace.c
+  pdclib/functions/ctype/isupper.c
+  pdclib/functions/ctype/isxdigit.c
+  pdclib/functions/ctype/tolower.c
+  pdclib/functions/ctype/toupper.c
+
+  #
+  # functions/inttypes
+  #
+  pdclib/functions/inttypes/imaxabs.c
+  pdclib/functions/inttypes/imaxdiv.c
+  pdclib/functions/inttypes/strtoimax.c
+  pdclib/functions/inttypes/strtoumax.c
+
+  pdclib/functions/stdlib/qsort.c
+  pdclib/functions/stdlib/strtol.c
+  pdclib/functions/stdlib/strtoul.c
+  pdclib/functions/stdlib/strtoll.c
+  pdclib/functions/stdlib/atoi.c
+  pdclib/functions/stdlib/abort.c
+  pdclib/functions/stdlib/exit.c
+  pdclib/functions/stdlib/_Exit.c
+  pdclib/functions/stdlib/abs.c
+  pdclib/functions/stdlib/div.c
+
+  pdclib/functions/stdio/printf.c
+  pdclib/functions/stdio/scanf.c
+  pdclib/functions/stdio/vfscanf.c
+  pdclib/functions/stdio/feof.c
+
+  pdclib/functions/stdio/fputs.c
+  pdclib/functions/stdio/fprintf.c
+  pdclib/functions/stdio/ferror.c
+  pdclib/functions/stdio/fopen.c
+  pdclib/functions/stdio/fclose.c
+  pdclib/functions/stdio/fread.c
+  pdclib/functions/stdio/fflush.c
+  pdclib/functions/stdio/vfprintf.c
+  pdclib/functions/stdio/sscanf.c
+  pdclib/functions/stdio/vsscanf.c
+  pdclib/functions/stdio/putc.c
+  pdclib/functions/stdio/puts.c
+  pdclib/functions/stdio/getc.c
+  pdclib/functions/stdio/ungetc.c
+  pdclib/functions/stdio/fgetc.c
+  pdclib/functions/stdio/fputc.c
+  pdclib/functions/stdio/sprintf.c
+  pdclib/functions/stdio/snprintf.c
+  pdclib/functions/stdio/vsnprintf.c
+
+  pdclib/functions/time/localtime.c
+  pdclib/functions/time/strftime.c
+
+  pdclib/functions/_PDCLIB/errno.c
+  pdclib/functions/_PDCLIB/_PDCLIB_scan.c
+  pdclib/functions/_PDCLIB/_PDCLIB_print.c
+  pdclib/functions/_PDCLIB/_PDCLIB_is_leap.c
+  pdclib/functions/_PDCLIB/_PDCLIB_digits.c
+  pdclib/functions/_PDCLIB/_PDCLIB_prepwrite.c
+  pdclib/functions/_PDCLIB/_PDCLIB_prepread.c
+  pdclib/functions/_PDCLIB/_PDCLIB_getstream.c
+  pdclib/functions/_PDCLIB/_PDCLIB_isstream.c
+  pdclib/functions/_PDCLIB/_PDCLIB_init_file_t.c
+  pdclib/functions/_PDCLIB/_PDCLIB_filemode.c
+  pdclib/functions/_PDCLIB/_PDCLIB_closeall.c
+  pdclib/functions/_PDCLIB/_PDCLIB_atomax.c
+  pdclib/functions/_PDCLIB/_PDCLIB_strtox_prelim.c
+  pdclib/functions/_PDCLIB/_PDCLIB_strtox_main.c
+  pdclib/functions/_PDCLIB/assert.c
+
+  pdclib/functions/_tzcode/_PDCLIB_localtime_tzset.c
+  pdclib/functions/_tzcode/_PDCLIB_tzset_unlocked.c
+  pdclib/functions/_tzcode/_PDCLIB_tzparse.c
+  pdclib/functions/_tzcode/_PDCLIB_tzload.c
+  pdclib/functions/_tzcode/_PDCLIB_init_ttinfo.c
+  pdclib/functions/_tzcode/_PDCLIB_update_tzname_etc.c
+  pdclib/functions/_tzcode/_PDCLIB_localsub.c
+  pdclib/functions/_tzcode/_PDCLIB_gmtsub.c
+  pdclib/functions/_tzcode/_PDCLIB_timesub.c
+  pdclib/functions/_tzcode/_PDCLIB_increment_overflow.c
+
+  Platform/uefi/functions/time/time.c
+  Platform/uefi/functions/time/gmtime.c
+  Platform/uefi/functions/time/clock_gettime.c
+
+  Platform/uefi/functions/stdlib/getenv.c
+  Platform/uefi/functions/stdlib/memory.c
+
+  Platform/uefi/functions/signal/raise.c
+  Platform/uefi/functions/signal/signal.c
+  Platform/uefi/functions/signal/sigemptyset.c
+  Platform/uefi/functions/signal/sigaction.c
+  Platform/uefi/functions/signal/kill.c
+
+  Platform/uefi/functions/string/strcasecmp.c
+  Platform/uefi/functions/string/strncasecmp.c
+  Platform/uefi/functions/string/strerror_r.c
+  Platform/uefi/functions/string/strnlen.c
+  Platform/uefi/functions/string/strcasestr.c
+
+  Platform/uefi/functions/thread/tls_index.c
+
+  Platform/uefi/functions/_PDCLIB/_PDCLIB_stdinit.c
+  Platform/uefi/functions/_PDCLIB/_PDCLIB_flushbuffer.c
+  Platform/uefi/functions/_PDCLIB/_PDCLIB_fillbuffer.c
+  Platform/uefi/functions/_PDCLIB/_PDCLIB_remove.c
+  Platform/uefi/functions/_PDCLIB/_PDCLIB_close.c
+  Platform/uefi/functions/_PDCLIB/_PDCLIB_open.c
+  Platform/uefi/functions/_PDCLIB/_PDCLIB_realpath.c
+  Platform/uefi/functions/_PDCLIB/_PDCLIB_Exit.c
+
+[LibraryClasses]
+  DebugLib
+  UefiBootServicesTableLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  TimeBaseLib
+
+[Pcd]
+  gEfiMdePkgTokenSpaceGuid.PcdUefiLibMaxPrintBufferSize
+
+[BuildOptions]
+  # Remove normal include paths (no stdlib headers).
+  # Disable warning 4146 for strtol.c
+  MSFT:*_*_*_CC_FLAGS = /X /wd4146 /wd4244 /wd4245 /wd4267 /wd4706 /FAcs /GL-

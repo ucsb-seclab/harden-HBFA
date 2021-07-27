@@ -20,3 +20,6 @@
 [submodule "RedfishPkg/Library/JsonLib/jansson"]
 	path = RedfishPkg/Library/JsonLib/jansson
 	url = https://github.com/akheron/jansson
+[submodule "StdLibPkg/Library/CStdLib/pdclib"]
+	path = StdLibPkg/Library/CStdLib/pdclib
+	url = https://github.com/DevSolar/pdclib.git

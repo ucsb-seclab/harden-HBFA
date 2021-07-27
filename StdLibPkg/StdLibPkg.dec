@@ -1,0 +1,24 @@
+## @file
+#  Standard Library Package
+#
+#  Copyright (c) 2020-2021, Intel Corporation. All rights reserved.<BR>
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = StdLibPkg
+  PACKAGE_GUID                   = E34E5EA2-A973-4A6D-A9FB-A73D72BEF6EA
+  PACKAGE_VERSION                = 0.1
+
+[Includes]
+  Library/CStdLib/pdclib/include
+  Library/CStdLib/Platform/uefi/include
+  Library/CStdLib/Platform/uefi/include/pdclib
+
+[Includes.Common.Private]
+  Library/CStdLib/Platform/uefi/test_support
+
+[LibraryClasses.Common.Private]
+  DxeCStdTestLib|Library/CStdLib/DxeCStdTestLib.inf

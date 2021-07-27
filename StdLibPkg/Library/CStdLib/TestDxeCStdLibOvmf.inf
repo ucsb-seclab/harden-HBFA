@@ -1,0 +1,50 @@
+## @file
+#  CStdLib unit test application for OVMF.
+#
+#  Copyright (c) 2020-2021, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION    = 0x00010006
+  BASE_NAME      = TestDxeCStdLibOvmf
+  FILE_GUID      = 84F8B7DC-1C2A-4977-B606-178F6BCF03AE
+  MODULE_TYPE    = UEFI_APPLICATION
+  VERSION_STRING = 1.0
+  ENTRY_POINT    = DxeEntryPoint
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64
+#
+
+[Sources]
+  UnitTestMain.c
+  UnitTests/ctype.c
+  UnitTests/inttypes.c
+  UnitTests/string.c
+  UnitTests/UnitTests.c
+  UnitTests/UnitTests.h
+  UnitTests/PdcTestHandler.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  StdLibPkg/StdLibPkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  BaseLib
+  DebugLib
+  UnitTestLib
+  PrintLib
+  UefiLib
+  DxeCStdTestLib
+
+[BuildOptions]
+  # Remove normal include paths (no stdlib headers).
+  # Disable warning 4146 for strtol.c
+  MSFT:*_*_*_CC_FLAGS = /X /wd4146 /wd4244 /wd4245 /wd4267 /wd4706 /FAcs /GL-
+
