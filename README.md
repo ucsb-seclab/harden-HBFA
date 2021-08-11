@@ -205,8 +205,11 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
     * For  EMULATION  BUILD type:<br>`BLD.bat EMU`
 
 <del>5. build the CdeBinPkg source tree:</del>
+
 <del>* NOTE: CdeBinPkg CdeServices driver and CdeLib library are provided in binary format per default</del>
+
 <del>but can be recreated within a VS2019 session<br></del>
+
 <del>To do so, start CdeBinPkgSrc.sln with VS2019</del>
 
 6. Emulation Build run/debug
