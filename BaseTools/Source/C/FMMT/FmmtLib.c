@@ -3198,11 +3198,7 @@ LibEncapsulateFfsToFv (
 
   CHAR8*                 SystemCommandFormatString;
   CHAR8*                 SystemCommand;
-  CHAR8*                 FfsGuid = "8c8ce578-8a3d-4f1c-9935-896185c32dd3";
-
-  if (IsLargeFile == TRUE) {
-    FfsGuid = "5473c07a-3dcb-4dca-bd6f-1e9689e7349a";
-  }
+  CHAR8*                 FfsGuid = "5473c07a-3dcb-4dca-bd6f-1e9689e7349a";
 
   SystemCommandFormatString = NULL;
   SystemCommand             = NULL;
