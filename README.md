@@ -196,17 +196,17 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
     * VS2015x86 tool chain is used. Make sure, that **MSVC v140 VS2015 build tools** are installed
 2. `git clone -b CdePkg --recursive https://github.com/tianocore/edk2-staging.git`
 3. run **LAUNCH.BAT**, that will
-    1. check build tools are installed
+    1. check build tools installed
     2. download NASM and OPENSSL tools
     3. download EDK2 and EDK2-NON-OSI from tianocore and CdeBinPkg
     4. setup the build environment variables
 4. build the source tree:
-    * For MINNOWBOARD BUILD type:<br>`build -a IA32 -a X64 -n 5 -t VS2015x86 -b DEBUG -p PlatformPkgX64.dsc`
-    * For  EMULATION  BUILD type:<br>`build -p EmulatorPkg.dsc -t VS2015x86 -a IA32`
-5. build the CdeBinPkg source tree:
+    * For MINNOWBOARD BUILD type:<br>`BLD.bat REL` or `BLD.bat DEB`
+    * For  EMULATION  BUILD type:<br>`BLD.bat EMU`
+<del>5. build the CdeBinPkg source tree:
     * NOTE: CdeBinPkg CdeServices driver and CdeLib library are provided in binary format per default
       but can be recreated within a VS2019 session<br>
-      To do so, start CdeBinPkgSrc.sln with VS2019
+      To do so, start CdeBinPkgSrc.sln with VS2019</del>
 6. Emulation Build run/debug
     * run: `runemu.bat`
     * debug: `dbgemu.bat`<br>
@@ -227,6 +227,13 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
 |[Visual HWTools for UEFI Shell](https://github.com/KilianKegel/Visual-HWTools-for-UEFI-Shell#visual-hwtools-for-uefi-shell)|HWTools: PCI- and GPIOSpy for Baytrail. MemSpy for all.|
 
 ## Revision history
+### 20210811
+* force matching commits of `edk2-platforms` and `edk2-non-osi` for EDK2 source `edk2-stable202008`
+  to prevent build errors
+* simplify BUILD batch `BLD.bat` to build for EMULATION, RELEASE and DEBUG
+    * `BLD.bat EMU` for EMULATION build
+    * `BLD.bat REL` for MinnowBoard RELEASE build
+    * `BLD.bat DEB` for MinnowBoard DEBUG build
 
 ### 20200916
 * update EDK2 source to `edk2-stable202008`

@@ -115,11 +115,16 @@ rem ### PYTHONE_HOME
 rem ######################################################################
 for /F  %%a in ('where python.exe') do set PYTHON_HOME=%%~dpa
 
-cd %WORKSPACE%\edk2
+rem ######################################################################
+rem ### checkout component versions / commits
+rem ######################################################################
+cd %WORKSPACE%\edk2-platforms
+git checkout b0de06c7d8494d05b315fb4a2574664f151e108d
 
-rem ######################################################################
-rem ### checkout latest stable tag
-rem ######################################################################
+cd cd %WORKSPACE%\edk2-non-osi
+git checkout de63002b5de696f6d6ebc91dc80fa8fd6e47c507
+
+cd %WORKSPACE%\edk2
 git checkout edk2-stable202008
 
 call edksetup.bat Rebuild
@@ -130,6 +135,8 @@ nmake all
 cd %WORKSPACE%\edk2
 
 echo.
-echo For MINNOWBOARD BUILD type: build -a IA32 -a X64 -n 5 -t VS2015x86 -b DEBUG -p PlatformPkgX64.dsc
-echo For  EMULATION  BUILD type: build -p EmulatorPkg.dsc -t VS2015x86 -a IA32
+rem echo For MINNOWBOARD BUILD type: build -a IA32 -a X64 -n 5 -t VS2015x86 -b DEBUG -p PlatformPkgX64.dsc
+rem echo For  EMULATION  BUILD type: build -p EmulatorPkg.dsc -t VS2015x86 -a IA32
+echo For MINNOWBOARD BUILD type: BLD REL / DEB
+echo For  EMULATION  BUILD type: BLD EMU
 %COMSPEC% /k echo Welcome, to the jungle...

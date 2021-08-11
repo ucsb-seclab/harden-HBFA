@@ -176,7 +176,7 @@
 
 [PcdsFeatureFlag]
   gEfiMdeModulePkgTokenSpaceGuid.PcdDxeIplSwitchToLongMode|FALSE
-  gEfiMdeModulePkgTokenSpaceGuid.PcdStatusCodeUseSerial|TRUE
+#  gEfiMdeModulePkgTokenSpaceGuid.PcdStatusCodeUseSerial|TRUE
   gEfiMdeModulePkgTokenSpaceGuid.PcdPeiCoreImageLoaderSearchTeSectionFirst|FALSE
   gEfiMdeModulePkgTokenSpaceGuid.PcdDxeIplBuildPageTables|FALSE
 
@@ -243,7 +243,8 @@
     ##
     #  Emulator, OS WIN application
     ##
-    EmulatorPkg/Win/Host/WinHost.inf
+    #EmulatorPkg/Win/Host/WinHost.inf
+    CdeEmuPkg/Win/Host/WinHost.inf
   !else
     ##
     #  Emulator, OS POSIX application
