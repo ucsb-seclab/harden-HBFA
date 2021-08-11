@@ -236,6 +236,7 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
     * `BLD.bat EMU` for EMULATION build
     * `BLD.bat REL` for MinnowBoard RELEASE build
     * `BLD.bat DEB` for MinnowBoard DEBUG build
+* add POST Traces [.LOG file](https://raw.githubusercontent.com/tianocore/edk2-staging/CdePkg/UEFIBinaries/RELEASE.log)
 
 ### 20200916
 * update EDK2 source to `edk2-stable202008`
