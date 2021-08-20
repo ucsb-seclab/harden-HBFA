@@ -443,6 +443,15 @@ Returns:
 }
 #endif
 
+#ifndef __GNUC__
+#include <stdio.h>
+#include <sys/stat.h>
+#define stricmp _stricmp // https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/stricmp-wcsicmp
+#define getcwd _getcwd //https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/getcwd
+#define access _access //https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/access-crt
+#define fileno _fileno //https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/posix-fileno
+#endif
+
 #ifdef __GNUC__
 #include <stdio.h>
 #include <sys/stat.h>

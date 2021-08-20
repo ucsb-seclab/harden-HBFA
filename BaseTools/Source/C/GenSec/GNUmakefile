@@ -6,7 +6,11 @@
 #
 MAKEROOT ?= ..
 
-APPNAME = GenSec
+ifeq ($(OS),Windows_NT)
+  APPNAME = GenSec.exe
+else
+  APPNAME = GenSec
+endif
 
 OBJECTS = GenSec.o
 

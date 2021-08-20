@@ -21,7 +21,10 @@ class Tests(TestTools.BaseToolsTest):
 
     def setUp(self):
         TestTools.BaseToolsTest.setUp(self)
-        self.toolName = 'TianoCompress'
+        if sys.platform in ('win32', 'win64'):
+            self.toolName = 'TianoCompress.exe'
+        else:
+            self.toolName = 'TianoCompress'
 
     def testHelp(self):
         result = self.RunTool('--help', logFile='help')

@@ -7,7 +7,11 @@
 ARCH ?= IA32
 MAKEROOT ?= ..
 
-APPNAME = DevicePath
+ifeq ($(OS),Windows_NT)
+  APPNAME = DevicePath.exe
+else
+  APPNAME = DevicePath
+endif
 
 OBJECTS = DevicePath.o UefiDevicePathLib.o DevicePathFromText.o  DevicePathUtilities.o
 

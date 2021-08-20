@@ -7,35 +7,47 @@
 #
 
 ifndef HOST_ARCH
-  #
-  # If HOST_ARCH is not defined, then we use 'uname -m' to attempt
-  # try to figure out the appropriate HOST_ARCH.
-  #
-  uname_m = $(shell uname -m)
-  $(info Attempting to detect HOST_ARCH from 'uname -m': $(uname_m))
-  ifneq (,$(strip $(filter $(uname_m), x86_64 amd64)))
-    HOST_ARCH=X64
+  ifeq ($(OS),Windows_NT)
+      set_pro = $(shell set pro)
+      $(info Attempting to detect HOST_ARCH from 'set pro': $(set_pro))
+      ifneq (,$(strip $(filter (x86) %AMD64, $(set_pro))))
+        HOST_ARCH=X64
+        $(info the HOST_ARCH is X64)
+      endif
+      ifeq ($(patsubst i%86,IA32,$(uname_m)),IA32)
+        HOST_ARCH=IA32
+        $(info the HOST_ARCH is IA32)
+      endif
+  else
+      #
+      # If HOST_ARCH is not defined, then we use 'uname -m' to attempt
+      # try to figure out the appropriate HOST_ARCH.
+      #
+      uname_m = $(shell uname -m)
+      $(info Attempting to detect HOST_ARCH from 'uname -m': $(uname_m))
+      ifneq (,$(strip $(filter $(uname_m), x86_64 amd64)))
+        HOST_ARCH=X64
+      endif
+      ifeq ($(patsubst i%86,IA32,$(uname_m)),IA32)
+        HOST_ARCH=IA32
+      endif
+      ifneq (,$(findstring aarch64,$(uname_m)))
+        HOST_ARCH=AARCH64
+      else ifneq (,$(findstring arm64,$(uname_m)))
+        HOST_ARCH=AARCH64
+      else ifneq (,$(findstring arm,$(uname_m)))
+        HOST_ARCH=ARM
+      endif
+      ifneq (,$(findstring riscv64,$(uname_m)))
+        HOST_ARCH=RISCV64
+      endif
+      ifndef HOST_ARCH
+        $(info Could not detected HOST_ARCH from uname results)
+        $(error HOST_ARCH is not defined!)
+      endif
+      $(info Detected HOST_ARCH of $(HOST_ARCH) using uname.)
+    endif
   endif
-  ifeq ($(patsubst i%86,IA32,$(uname_m)),IA32)
-    HOST_ARCH=IA32
-  endif
-  ifneq (,$(findstring aarch64,$(uname_m)))
-    HOST_ARCH=AARCH64
-  else ifneq (,$(findstring arm64,$(uname_m)))
-    HOST_ARCH=AARCH64
-  else ifneq (,$(findstring arm,$(uname_m)))
-    HOST_ARCH=ARM
-  endif
-  ifneq (,$(findstring riscv64,$(uname_m)))
-    HOST_ARCH=RISCV64
-  endif
-  ifndef HOST_ARCH
-    $(info Could not detected HOST_ARCH from uname results)
-    $(error HOST_ARCH is not defined!)
-  endif
-  $(info Detected HOST_ARCH of $(HOST_ARCH) using uname.)
-endif
-
 export HOST_ARCH
 
 MAKEROOT = .
@@ -66,9 +78,13 @@ SUBDIRS := $(LIBRARIES) $(APPLICATIONS)
 $(LIBRARIES): $(MAKEROOT)/libs
 $(APPLICATIONS): $(LIBRARIES) $(MAKEROOT)/bin $(VFRAUTOGEN)
 
+ifeq ($(OS),Windows_NT)
+  $(APPLICATIONS): $(BASE_TOOLS_PATH)\Bin\Win32
+endif
+
 .PHONY: outputdirs
 makerootdir:
-	-mkdir -p $(MAKEROOT)
+	-$(MKDIR) $(MAKEROOT)
 
 .PHONY: subdirs $(SUBDIRS)
 subdirs: $(SUBDIRS)

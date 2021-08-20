@@ -6,7 +6,11 @@
 #
 MAKEROOT ?= ..
 
-APPNAME = GenFv
+ifeq ($(OS),Windows_NT)
+  APPNAME = GenFv.exe
+else
+  APPNAME = GenFv
+endif
 
 OBJECTS = GenFv.o GenFvInternalLib.o
 

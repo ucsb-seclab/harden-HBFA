@@ -6,7 +6,11 @@
 #
 MAKEROOT ?= ..
 
-APPNAME = LzmaCompress
+ifeq ($(OS),Windows_NT)
+  APPNAME = LzmaCompress.exe
+else
+  APPNAME = LzmaCompress
+endif
 
 LIBS = -lCommon
 

@@ -6,7 +6,11 @@
 #
 MAKEROOT ?= ..
 
-APPNAME = GenFw
+ifeq ($(OS),Windows_NT)
+  APPNAME = GenFw.exe
+else
+  APPNAME = GenFw
+endif
 
 OBJECTS = GenFw.o ElfConvert.o Elf32Convert.o Elf64Convert.o
 

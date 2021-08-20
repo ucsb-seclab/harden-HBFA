@@ -103,7 +103,7 @@ MyCheck (
 //
 // --*/
 //
-VOID  *
+static VOID  *
 MyAlloc (
   UINTN      Size,
   UINT8      File[],
@@ -167,7 +167,7 @@ MyRealloc (
 //
 // --*/
 //
-VOID
+static VOID
 MyFree (
   VOID       *Ptr,
   UINT8      File[],

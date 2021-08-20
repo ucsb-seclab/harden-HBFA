@@ -6,7 +6,11 @@
 #
 MAKEROOT ?= ..
 
-APPNAME = EfiRom
+ifeq ($(OS),Windows_NT)
+  APPNAME = EfiRom.exe
+else
+  APPNAME = EfiRom
+endif
 
 LIBS = -lCommon
 

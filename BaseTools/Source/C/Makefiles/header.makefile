@@ -8,6 +8,24 @@
 # Copyright (c) 2007 - 2018, Intel Corporation. All rights reserved.<BR>
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
+ifeq ($(OS),Windows_NT)
+  SEP :=$(subst /,\,/)
+  EXE_EXT := .exe
+  MKDIR := mkdir
+  MV    := move /Y
+  RM    := del /F /S
+  CP    := copy /y
+else
+  SEP :=/
+  EXE_EXT :=
+  MKDIR := mkdir -p
+  MV    := mv -f
+  RM    := rm -f
+  CP    := cp -f
+  SED   := sed
+  TEST  := test
+endif
+
 ifndef HOST_ARCH
   #
   # If HOST_ARCH is not defined, then we use 'uname -m' to attempt
@@ -38,9 +56,12 @@ ifndef HOST_ARCH
   $(info Detected HOST_ARCH of $(HOST_ARCH) using uname.)
 endif
 
-CYGWIN:=$(findstring CYGWIN, $(shell uname -s))
-LINUX:=$(findstring Linux, $(shell uname -s))
-DARWIN:=$(findstring Darwin, $(shell uname -s))
+ifneq ($(OS),Windows_NT)
+  CYGWIN:=$(findstring CYGWIN, $(shell uname -s))
+  LINUX:=$(findstring Linux, $(shell uname -s))
+  DARWIN:=$(findstring Darwin, $(shell uname -s))
+endif
+
 ifeq ($(CXX), llvm)
 BUILD_CC ?= $(CLANG_BIN)clang
 BUILD_CXX ?= $(CLANG_BIN)clang++
@@ -74,32 +95,44 @@ else
 $(error Bad HOST_ARCH)
 endif
 
-INCLUDE = $(TOOL_INCLUDE) -I $(MAKEROOT) -I $(MAKEROOT)/Include/Common -I $(MAKEROOT)/Include/ -I $(MAKEROOT)/Include/IndustryStandard -I $(MAKEROOT)/Common/ -I .. -I . $(ARCH_INCLUDE)
-BUILD_CPPFLAGS = $(INCLUDE)
+INCLUDES = $(TOOL_INCLUDE) -I $(MAKEROOT) -I $(MAKEROOT)/Include/Common -I $(MAKEROOT)/Include/ -I $(MAKEROOT)/Include/IndustryStandard -I $(MAKEROOT)/Common/ -I .. -I . $(ARCH_INCLUDE) -I "$(INCLUDE)"
+BUILD_CPPFLAGS = $(INCLUDES)
 
 # keep EXTRA_OPTFLAGS last
 BUILD_OPTFLAGS = -O2 $(EXTRA_OPTFLAGS)
 
 ifeq ($(DARWIN),Darwin)
-# assume clang or clang compatible flags on OS X
-BUILD_CFLAGS = -MD -fshort-wchar -fno-strict-aliasing -Wall -Werror \
--Wno-deprecated-declarations -Wno-self-assign -Wno-unused-result -nostdlib -g
+  # assume clang or clang compatible flags on OS X
+  BUILD_CFLAGS = -MD -fshort-wchar -fno-strict-aliasing -Wall -Werror \
+  -Wno-deprecated-declarations -Wno-self-assign -Wno-unused-result -nostdlib -g
 else
-ifeq ($(CXX), llvm)
-BUILD_CFLAGS = -MD -fshort-wchar -fno-strict-aliasing -fwrapv \
--fno-delete-null-pointer-checks -Wall -Werror \
--Wno-deprecated-declarations -Wno-self-assign \
--Wno-unused-result -nostdlib -g
-else
-BUILD_CFLAGS = -MD -fshort-wchar -fno-strict-aliasing -fwrapv \
--fno-delete-null-pointer-checks -Wall -Werror \
--Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict \
--Wno-unused-result -nostdlib -g
+  ifeq ($(CXX), llvm)
+    ifeq ($(OS),Windows_NT)
+      BUILD_CFLAGS = -MD -fshort-wchar -fno-strict-aliasing -fwrapv \
+      -fno-delete-null-pointer-checks -Wall -Werror \
+      -Wno-deprecated-declarations -Wno-self-assign \
+      -Wno-unused-result -nostdlib -Wno-unused-function -g -m32
+    else
+      BUILD_CFLAGS = -MD -fshort-wchar -fno-strict-aliasing -fwrapv \
+      -fno-delete-null-pointer-checks -Wall -Werror \
+      -Wno-deprecated-declarations -Wno-self-assign \
+      -Wno-unused-result -nostdlib -g
+    endif
+  else
+    BUILD_CFLAGS = -MD -fshort-wchar -fno-strict-aliasing -fwrapv \
+    -fno-delete-null-pointer-checks -Wall -Werror \
+    -Wno-deprecated-declarations -Wno-stringop-truncation -Wno-restrict \
+    -Wno-unused-result -nostdlib -g
+  endif
 endif
-endif
 ifeq ($(CXX), llvm)
-BUILD_LFLAGS =
-BUILD_CXXFLAGS = -Wno-deprecated-register -Wno-unused-result
+  ifeq ($(OS),Windows_NT)
+    BUILD_LFLAGS = -m32
+    BUILD_CXXFLAGS = -Wno-deprecated-register -Wno-unused-result -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -m32
+  else
+    BUILD_LFLAGS =
+    BUILD_CXXFLAGS = -Wno-deprecated-register -Wno-unused-result
+  endif
 else
 BUILD_LFLAGS =
 BUILD_CXXFLAGS = -Wno-unused-result
@@ -131,7 +164,12 @@ BUILD_LFLAGS += $(EXTRA_LDFLAGS)
 all:
 
 $(MAKEROOT)/libs:
-	mkdir $(MAKEROOT)/libs
+	$(MKDIR) $(MAKEROOT)$(SEP)libs
 
 $(MAKEROOT)/bin:
-	mkdir $(MAKEROOT)/bin
+	$(MKDIR) $(MAKEROOT)$(SEP)bin
+
+ifeq ($(OS),Windows_NT)
+  $(BASE_TOOLS_PATH)\Bin\Win32:
+		-$(MKDIR) $(BASE_TOOLS_PATH)\Bin\Win32
+endif

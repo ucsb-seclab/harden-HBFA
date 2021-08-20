@@ -6,7 +6,11 @@
 #
 MAKEROOT ?= ..
 
-APPNAME = BrotliCompress
+ifeq ($(OS),Windows_NT)
+  APPNAME = BrotliCompress.exe
+else
+  APPNAME = BrotliCompress
+endif
 
 OBJECTS = \
   BrotliCompress.o \
@@ -38,4 +42,6 @@ OBJECTS = \
 include $(MAKEROOT)/Makefiles/app.makefile
 
 TOOL_INCLUDE = -I ./brotli/c/include
+ifneq ($(OS),Windows_NT)
 LIBS += -lm
+endif

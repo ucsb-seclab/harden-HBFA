@@ -6,7 +6,11 @@
 #
 MAKEROOT ?= ..
 
-APPNAME = TianoCompress
+ifeq ($(OS),Windows_NT)
+  APPNAME = TianoCompress.exe
+else
+  APPNAME = TianoCompress
+endif
 
 LIBS = -lCommon
 

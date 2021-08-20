@@ -17,7 +17,14 @@ SET=$(PCCTS_HOME)\support\set
 CC = cl
 CFLAGS = /nologo -I "." -I "$(PCCTS_H)" -I "$(SET)" -D "USER_ZZSYN" -D "PC" \
         -D "ZZLEXBUFSIZE=65536"  /D "LONGFILENAMES" /Zi /W3 -D__USE_PROTOS /wd4700 \
-         /D _CRT_SECURE_NO_DEPRECATE /D _CRT_NONSTDC_NO_DEPRECATE 
+         /D _CRT_SECURE_NO_DEPRECATE /D _CRT_NONSTDC_NO_DEPRECATE
+
+!IF "$(CLANG_BUILD)"=="TRUE"
+CC = "$(CLANG_BIN)\clang-cl.exe"
+CFLAGS = /nologo -I "." -I "$(PCCTS_H)" -I "$(SET)" -D "USER_ZZSYN" -D "PC" \
+        -D "ZZLEXBUFSIZE=65536"  /D "LONGFILENAMES" /Zi /W3 -D__USE_PROTOS /wd4700 \
+         /D _CRT_SECURE_NO_DEPRECATE /D _CRT_NONSTDC_NO_DEPRECATE  /w -m32
+!ENDIF
 
 ANTLR_OBJS = antlr.obj scan.obj err.obj bits.obj build.obj fset2.obj \
             fset.obj gen.obj globals.obj hash.obj lex.obj main.obj \

@@ -6,7 +6,11 @@
 #
 MAKEROOT ?= ..
 
-APPNAME = VolInfo
+ifeq ($(OS),Windows_NT)
+  APPNAME = VolInfo.exe
+else
+  APPNAME = VolInfo
+endif
 
 OBJECTS = VolInfo.o
 

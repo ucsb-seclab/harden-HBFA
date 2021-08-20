@@ -6,7 +6,11 @@
 #
 MAKEROOT ?= ..
 
-APPNAME = GenFfs
+ifeq ($(OS),Windows_NT)
+  APPNAME = GenFfs.exe
+else
+  APPNAME = GenFfs
+endif
 
 OBJECTS = GenFfs.o
 

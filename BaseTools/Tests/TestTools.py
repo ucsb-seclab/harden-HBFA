@@ -135,7 +135,7 @@ class BaseToolsTest(unittest.TestCase):
         return open(os.path.join(self.testDir, fileName), mode)
 
     def ReadTmpFile(self, fileName):
-        f = open(self.GetTmpFilePath(fileName), 'r')
+        f = open(self.GetTmpFilePath(fileName), 'r', encoding='utf-8')
         data = f.read()
         f.close()
         return data

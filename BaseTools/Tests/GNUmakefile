@@ -7,9 +7,14 @@
 
 all: test
 
-test:
-	@if command -v $(PYTHON_COMMAND) >/dev/null 1; then $(PYTHON_COMMAND) RunTests.py; else python RunTests.py; fi
-
-clean:
-	find . -name '*.pyc' -exec rm '{}' ';'
-
+ifeq ($(OS),Windows_NT)
+  test:
+		python RunTests.py
+  clean:
+		echo ToDo
+else
+  test:
+		@if command -v $(PYTHON_COMMAND) >/dev/null 1; then $(PYTHON_COMMAND) RunTests.py; else python RunTests.py; fi
+  clean:
+		find . -name '*.pyc' -exec rm '{}' ';'
+endif

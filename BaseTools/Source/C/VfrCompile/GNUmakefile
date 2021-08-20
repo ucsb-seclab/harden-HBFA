@@ -7,7 +7,11 @@
 
 MAKEROOT ?= ..
 
-APPNAME = VfrCompile
+ifeq ($(OS),Windows_NT)
+  APPNAME = VfrCompile.exe
+else
+  APPNAME = VfrCompile
+endif
 
 LIBS = -lCommon
 
@@ -17,7 +21,11 @@ TOOL_INCLUDE = -I Pccts/h
 OBJECTS = AParser.o DLexerBase.o ATokenBuffer.o EfiVfrParser.o VfrLexer.o VfrSyntax.o \
           VfrFormPkg.o VfrError.o VfrUtilityLib.o VfrCompiler.o
 ifeq ($(CXX), llvm)
-VFR_CPPFLAGS = -Wno-deprecated-register -DPCCTS_USE_NAMESPACE_STD $(BUILD_CPPFLAGS)
+  ifeq ($(OS),Windows_NT)
+    VFR_CPPFLAGS = -Wno-deprecated-register -DPCCTS_USE_NAMESPACE_STD $(BUILD_CPPFLAGS) -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -m32
+  else
+    VFR_CPPFLAGS = -Wno-deprecated-register -DPCCTS_USE_NAMESPACE_STD $(BUILD_CPPFLAGS)
+  endif
 else
 VFR_CPPFLAGS = -DPCCTS_USE_NAMESPACE_STD $(BUILD_CPPFLAGS)
 endif
@@ -25,7 +33,11 @@ endif
 VFR_CXXFLAGS = $(BUILD_OPTFLAGS)
 
 # keep EXTRA_LDFLAGS last
+ifeq ($(OS),Windows_NT)
+VFR_LFLAGS = $(EXTRA_LDFLAGS) -m32
+else
 VFR_LFLAGS = $(EXTRA_LDFLAGS)
+endif
 
 LINKER = $(BUILD_CXX)
 
@@ -35,13 +47,16 @@ MAKEROOT ?= ../..
 
 include $(MAKEROOT)/Makefiles/header.makefile
 
-APPLICATION = $(MAKEROOT)/bin/$(APPNAME)
+APPLICATION = $(MAKEROOT)$(SEP)bin$(SEP)$(APPNAME)
 
 .PHONY:all
 all: $(MAKEROOT)/bin $(APPLICATION)
 
 $(APPLICATION): $(OBJECTS)
 	$(LINKER) -o $(APPLICATION) $(VFR_LFLAGS) $(OBJECTS) -L$(MAKEROOT)/libs $(LIBS)
+ifeq ($(OS),Windows_NT)
+	$(CP) $(APPLICATION) $(EDK_TOOLS_PATH)\Bin\Win32
+endif
 
 VfrCompiler.o: ../Include/Common/BuildVersion.h
 
@@ -54,10 +69,18 @@ VfrLexer.cpp VfrLexer.h: Pccts/dlg/dlg VfrParser.dlg
 	Pccts/dlg/dlg -C2 -i -CC -cl VfrLexer -o . VfrParser.dlg
 
 Pccts/antlr/antlr:
+ifeq ($(OS),Windows_NT)
+	set BIN_DIR='.'&& $(MAKE) -C Pccts/antlr
+else
 	BIN_DIR='.' $(MAKE) -C Pccts/antlr
+endif
 
 Pccts/dlg/dlg:
+ifeq ($(OS),Windows_NT)
+	set BIN_DIR='.'&& $(MAKE) -C Pccts/dlg
+else
 	BIN_DIR='.' $(MAKE) -C Pccts/dlg
+endif
 
 ATokenBuffer.o: Pccts/h/ATokenBuffer.cpp
 	$(BUILD_CXX) -c $(VFR_CPPFLAGS) $(INC) $(VFR_CXXFLAGS) $? -o $@

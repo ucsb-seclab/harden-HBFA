@@ -72,6 +72,11 @@ if /I "%1"=="/?" goto Usage
     set VSTool=VS2012
     goto loop
   )
+  if /I "%1"=="clang" (
+    shift
+    set CLANG_BUILD=TRUE
+    goto loop
+  )
   if "%1"=="" goto setup_workspace
   if exist %1 (
     if not defined BASE_TOOLS_PATH (
@@ -195,6 +200,11 @@ if defined VS2019 (
 ) else if defined VS2012 (
   call %EDK_TOOLS_PATH%\set_vsprefix_envs.bat VS2012
   call %EDK_TOOLS_PATH%\get_vsvars.bat VS2012
+) else if defined CLANG_BUILD (
+    @if exist "C:\Program Files\LLVM\bin\clang.exe" (
+        @set "CLANG_BIN=C:\Program Files\LLVM\bin\"
+        @echo   Found LLVM, setting CLANG_BIN environment variable to C:\Program Files\LLVM\bin\
+    )
 ) else (
   call %EDK_TOOLS_PATH%\set_vsprefix_envs.bat
   call %EDK_TOOLS_PATH%\get_vsvars.bat
@@ -472,7 +482,7 @@ goto end
 
 :Usage
   @echo.
-  echo  Usage: "%0 [-h | -help | --help | /h | /help | /?] [ Rebuild | ForceRebuild ] [Reconfig] [base_tools_path [edk_tools_path]] [VS2019] [VS2017] [VS2015] [VS2013] [VS2012]"
+  echo  Usage: "%0 [-h | -help | --help | /h | /help | /?] [ Rebuild | ForceRebuild ] [Reconfig] [base_tools_path [edk_tools_path]] [VS2019] [VS2017] [VS2015] [VS2013] [VS2012] [clang]"
   @echo.
   @echo         base_tools_path   BaseTools project path, BASE_TOOLS_PATH will be set to this path.
   @echo         edk_tools_path    EDK_TOOLS_PATH will be set to this path.
@@ -486,6 +496,7 @@ goto end
   @echo         VS2015            Set the env for VS2015 build.
   @echo         VS2017            Set the env for VS2017 build.
   @echo         VS2019            Set the env for VS2019 build.
+  @echo         clang             Set the env for clang-cl build.
   @echo.
 
 :end
@@ -498,5 +509,6 @@ set VS2015=
 set VS2013=
 set VS2012=
 set VSTool=
+set CLANG_BUILD=
 popd
 

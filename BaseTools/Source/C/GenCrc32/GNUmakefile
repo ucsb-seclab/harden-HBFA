@@ -6,7 +6,11 @@
 #
 MAKEROOT ?= ..
 
-APPNAME = GenCrc32
+ifeq ($(OS),Windows_NT)
+  APPNAME = GenCrc32.exe
+else
+  APPNAME = GenCrc32
+endif
 
 LIBS = -lCommon
 
