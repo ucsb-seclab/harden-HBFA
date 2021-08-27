@@ -1,3 +1,5 @@
+#ifndef DISABLE_NEW_DEPRECATED_INTERFACES
+
 /** @file
   Provides a service to retrieve the PE/COFF entry point from a PE/COFF image.
 
@@ -114,3 +116,5 @@ PeCoffSearchImageBase (
   );
 
 #endif
+
+#endif // DISABLE_NEW_DEPRECATED_INTERFACES

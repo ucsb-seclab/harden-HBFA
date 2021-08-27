@@ -9,6 +9,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "Sec.h"
+#include <Ppi/EmuThunk.h>
 
 
 
@@ -25,6 +26,51 @@ EFI_PEI_PPI_DESCRIPTOR  gPrivateDispatchTable[] = {
   }
 };
 
+//FIXME:
+/**
+  Retrieves and returns a pointer to the entry point to a PE/COFF image that has been loaded
+  into system memory with the PE/COFF Loader Library functions.
+
+  Retrieves the entry point to the PE/COFF image specified by Pe32Data and returns this entry
+  point in EntryPoint.  If the entry point could not be retrieved from the PE/COFF image, then
+  return RETURN_INVALID_PARAMETER.  Otherwise return RETURN_SUCCESS.
+  If Pe32Data is NULL, then ASSERT().
+  If EntryPoint is NULL, then ASSERT().
+
+  @param  Pe32Data                  The pointer to the PE/COFF image that is loaded in system memory.
+  @param  EntryPoint                The pointer to entry point to the PE/COFF image to return.
+
+  @retval RETURN_SUCCESS            EntryPoint was returned.
+  @retval RETURN_INVALID_PARAMETER  The entry point could not be found in the PE/COFF image.
+
+**/
+RETURN_STATUS
+EFIAPI
+UefiImageLoaderGetEntryPoint (
+  IN     VOID   *Pe32Data,
+  IN     UINT32 Pe32Size,
+  IN OUT VOID   **EntryPoint
+  )
+{
+  EMU_THUNK_PPI           *ThunkPpi;
+  EFI_STATUS              Status;
+  EMU_THUNK_PROTOCOL      *Thunk;
+
+  //
+  // Locate EmuThunkPpi for retrieving standard output handle
+  //
+  Status = PeiServicesLocatePpi (
+              &gEmuThunkPpiGuid,
+              0,
+              NULL,
+              (VOID **) &ThunkPpi
+             );
+  ASSERT_EFI_ERROR (Status);
+
+  Thunk  = (EMU_THUNK_PROTOCOL *)ThunkPpi->Thunk ();
+
+  return Thunk->UefiImageGetEntryPoint (Pe32Data, Pe32Size, EntryPoint);
+}
 
 
 /**
@@ -69,13 +115,15 @@ _ModuleEntryPoint (
   EFI_STATUS                Status;
   EFI_PEI_FV_HANDLE         VolumeHandle;
   EFI_PEI_FILE_HANDLE       FileHandle;
-  VOID                      *PeCoffImage;
+  VOID                      *UefiImage;
+  UINT32                    UefiImageSize;
   EFI_PEI_CORE_ENTRY_POINT  EntryPoint;
   EFI_PEI_PPI_DESCRIPTOR    *Ppi;
   EFI_PEI_PPI_DESCRIPTOR    *SecPpiList;
   UINTN                     SecReseveredMemorySize;
   UINTN                     Index;
   EFI_PEI_PPI_DESCRIPTOR    PpiArray[10];
+  UINT32                    AuthenticationStatus;
 
   EMU_MAGIC_PAGE()->PpiList = PpiList;
   ProcessLibraryConstructorList ();
@@ -123,10 +171,10 @@ _ModuleEntryPoint (
   Status = PeiServicesFfsFindNextFile (EFI_FV_FILETYPE_PEI_CORE, VolumeHandle, &FileHandle);
   ASSERT_EFI_ERROR (Status);
 
-  Status = PeiServicesFfsFindSectionData (EFI_SECTION_PE32, FileHandle, &PeCoffImage);
+  Status = PeiServicesFfsFindSectionData4 (EFI_SECTION_PE32, 0, FileHandle, &UefiImage, &UefiImageSize, &AuthenticationStatus);
   ASSERT_EFI_ERROR (Status);
 
-  Status = PeCoffLoaderGetEntryPoint (PeCoffImage, (VOID **)&EntryPoint);
+  Status = UefiImageLoaderGetEntryPoint (UefiImage, UefiImageSize, (VOID **)&EntryPoint);
   ASSERT_EFI_ERROR (Status);
 
   // Transfer control to PEI Core

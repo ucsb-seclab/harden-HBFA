@@ -1,3 +1,5 @@
+#ifndef DISABLE_NEW_DEPRECATED_INTERFACES
+
 /** @file
   X64 arch function to access IDT vector.
 
@@ -93,3 +95,5 @@ RestoreIdtEntry1 (
   IdtEntry = (IA32_IDT_GATE_DESCRIPTOR *) IdtDescriptor->Base;
   CopyMem (&IdtEntry[1], RestoredIdtEntry, sizeof (IA32_IDT_GATE_DESCRIPTOR));
 }
+
+#ifndef // DISABLE_NEW_DEPRECATED_INTERFACES

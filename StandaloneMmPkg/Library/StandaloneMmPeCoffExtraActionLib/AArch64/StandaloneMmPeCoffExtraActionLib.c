@@ -1,3 +1,5 @@
+#ifndef DISABLE_NEW_DEPRECATED_INTERFACES
+
 /**@file
 
 Copyright (c) 2006 - 2009, Intel Corporation. All rights reserved.<BR>
@@ -209,3 +211,5 @@ PeCoffLoaderUnloadImageExtraAction (
     ArmClearMemoryRegionReadOnly
     );
 }
+
+#endif // DISABLE_NEW_DEPRECATED_INTERFACES

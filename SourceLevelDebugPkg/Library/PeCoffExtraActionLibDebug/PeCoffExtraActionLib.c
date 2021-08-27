@@ -1,3 +1,5 @@
+#ifndef DISABLE_NEW_DEPRECATED_INTERFACES
+
 /** @file
   PE/Coff Extra Action library instances.
 
@@ -222,3 +224,5 @@ PeCoffLoaderUnloadImageExtraAction (
 {
   PeCoffLoaderExtraActionCommon (ImageContext, IMAGE_UNLOAD_SIGNATURE);
 }
+
+#endif // DISABLE_NEW_DEPRECATED_INTERFACES

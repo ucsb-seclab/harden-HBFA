@@ -1,3 +1,5 @@
+#ifndef DISABLE_NEW_DEPRECATED_INTERFACES
+
 /** @file
   Provides services to perform additional actions to relocate and unload
   PE/Coff image for Emu environment specific purpose such as souce level debug.
@@ -95,3 +97,5 @@ PeCoffLoaderUnloadImageExtraAction (
     mThunk->PeCoffUnloadImageExtraAction (ImageContext);
   }
 }
+
+#endif // DISABLE_NEW_DEPRECATED_INTERFACES

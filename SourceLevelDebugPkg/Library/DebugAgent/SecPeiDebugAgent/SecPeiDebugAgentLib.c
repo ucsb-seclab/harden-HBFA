@@ -565,8 +565,6 @@ InitializeDebugAgent (
     Phase2Context.Function = Function;
     DebugPortInitialize ((VOID *) &Phase2Context, InitializeDebugAgentPhase2);
 
-    FindAndReportModuleImageInfo (4);
-
     break;
 
   case DEBUG_AGENT_INIT_THUNK_PEI_IA32TOX64:
@@ -594,8 +592,6 @@ InitializeDebugAgent (
       // Update IDT entry to save location pointer saved the mailbox pointer
       //
       SetLocationSavedMailboxPointerInIdtEntry (MailboxLocationPointer);
-
-      FindAndReportModuleImageInfo (4);
     }
     break;
 

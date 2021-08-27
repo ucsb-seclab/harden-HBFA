@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "PeiMain.h"
+#include "ProcessorBind.h"
 
 /**
 
@@ -972,8 +973,7 @@ MigratePeim (
   EFI_FFS_FILE_HEADER       *FileHeader;
   VOID                      *Pe32Data;
   VOID                      *ImageAddress;
-  CHAR8                     *AsciiString;
-  UINTN                     Index;
+  UINT32                    ImageSize;
 
   Status = EFI_SUCCESS;
 
@@ -981,23 +981,10 @@ MigratePeim (
   ASSERT (!IS_FFS_FILE2 (FileHeader));
 
   ImageAddress = NULL;
-  PeiGetPe32Data (MigratedFileHandle, &ImageAddress);
+  PeiGetPe32Data (MigratedFileHandle, &ImageAddress, &ImageSize);
   if (ImageAddress != NULL) {
-    DEBUG_CODE_BEGIN ();
-    AsciiString = PeCoffLoaderGetPdbPointer (ImageAddress);
-    for (Index = 0; AsciiString[Index] != 0; Index++) {
-      if (AsciiString[Index] == '\\' || AsciiString[Index] == '/') {
-        AsciiString = AsciiString + Index + 1;
-        Index = 0;
-      } else if (AsciiString[Index] == '.') {
-        AsciiString[Index] = 0;
-      }
-    }
-    DEBUG ((DEBUG_INFO, "%a", AsciiString));
-    DEBUG_CODE_END ();
-
     Pe32Data = (VOID *) ((UINTN) ImageAddress - (UINTN) MigratedFileHandle + (UINTN) FileHandle);
-    Status = LoadAndRelocatePeCoffImageInPlace (Pe32Data, ImageAddress);
+    Status = LoadAndRelocateUefiImageInPlace (Pe32Data, ImageAddress, ImageSize);
     ASSERT_EFI_ERROR (Status);
   }
 
@@ -1090,6 +1077,7 @@ MigrateSecModulesInFv (
   UINT32                      FileSize;
   VOID                        *OrgPe32SectionData;
   VOID                        *Pe32SectionData;
+  UINT32                      Pe32SectionDataSize;
   EFI_FFS_FILE_HEADER         *FfsFileHeader;
   EFI_COMMON_SECTION_HEADER   *Section;
   BOOLEAN                     IsFfs3Fv;
@@ -1136,6 +1124,7 @@ MigrateSecModulesInFv (
                 Section,
                 FileSize,
                 &Pe32SectionData,
+                &Pe32SectionDataSize,
                 &SectionAuthenticationStatus,
                 IsFfs3Fv
                 );
@@ -1144,7 +1133,7 @@ MigrateSecModulesInFv (
         OrgPe32SectionData = (VOID *) ((UINTN) Pe32SectionData - (UINTN) MigratedFileHandle + (UINTN) FileHandle);
         DEBUG ((DEBUG_VERBOSE, "      PE32 section in migrated file at 0x%x.\n", (UINTN) Pe32SectionData));
         DEBUG ((DEBUG_VERBOSE, "      PE32 section in original file at 0x%x.\n", (UINTN) OrgPe32SectionData));
-        Status = LoadAndRelocatePeCoffImageInPlace (OrgPe32SectionData, Pe32SectionData);
+        Status = LoadAndRelocateUefiImageInPlace (OrgPe32SectionData, Pe32SectionData, Pe32SectionDataSize);
         ASSERT_EFI_ERROR (Status);
       }
     }

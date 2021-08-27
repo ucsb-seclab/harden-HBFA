@@ -1,3 +1,5 @@
+#ifndef DISABLE_NEW_DEPRECATED_INTERFACES
+
 /** @file
   Provides services to load and relocate a PE/COFF image.
 
@@ -355,7 +357,7 @@ PeCoffLoaderImageReadFromMemory (
 **/
 VOID
 EFIAPI
-PeCoffLoaderRelocateImageForRuntime (
+PeCoffLoaderRuntimeRelocateImage (
   IN  PHYSICAL_ADDRESS        ImageBase,
   IN  PHYSICAL_ADDRESS        VirtImageBase,
   IN  UINTN                   ImageSize,
@@ -384,3 +386,5 @@ PeCoffLoaderUnloadImage (
   IN OUT PE_COFF_LOADER_IMAGE_CONTEXT  *ImageContext
   );
 #endif
+
+#endif // DISABLE_NEW_DEPRECATED_INTERFACES

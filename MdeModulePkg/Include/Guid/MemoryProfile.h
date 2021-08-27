@@ -11,6 +11,8 @@
 
 #include <Pi/PiFirmwareFile.h>
 
+#include <Library/UefiImageLib.h>
+
 //
 // For BIOS MemoryType (0 ~ EfiMaxMemoryType - 1), it is recorded in UsageByType[MemoryType]. (Each valid entry has one entry)
 // For OS MemoryType (0x80000000 ~ 0xFFFFFFFF), it is recorded in UsageByType[EfiMaxMemoryType]. (All types are combined into one entry)
@@ -242,8 +244,7 @@ EFI_STATUS
 (EFIAPI *EDKII_MEMORY_PROFILE_REGISTER_IMAGE)(
   IN EDKII_MEMORY_PROFILE_PROTOCOL      *This,
   IN EFI_DEVICE_PATH_PROTOCOL           *FilePath,
-  IN PHYSICAL_ADDRESS                   ImageBase,
-  IN UINT64                             ImageSize,
+  IN UEFI_IMAGE_LOADER_IMAGE_CONTEXT       *ImageContext,
   IN EFI_FV_FILETYPE                    FileType
   );
 
@@ -388,11 +389,6 @@ struct _EDKII_MEMORY_PROFILE_PROTOCOL {
 //
 #define SMRAM_PROFILE_COMMAND_GET_PROFILE_INFO           0x1
 #define SMRAM_PROFILE_COMMAND_GET_PROFILE_DATA           0x2
-//
-// Below 2 commands are now used by ECP only and only valid before SmmReadyToLock
-//
-#define SMRAM_PROFILE_COMMAND_REGISTER_IMAGE             0x3
-#define SMRAM_PROFILE_COMMAND_UNREGISTER_IMAGE           0x4
 
 #define SMRAM_PROFILE_COMMAND_GET_PROFILE_DATA_BY_OFFSET 0x5
 #define SMRAM_PROFILE_COMMAND_GET_RECORDING_STATE        0x6

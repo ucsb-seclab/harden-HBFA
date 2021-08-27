@@ -54,6 +54,7 @@ FixUpPcdDatabase (
   EFI_STATUS                  Status;
   EFI_FFS_FILE_HEADER         *FileHeader;
   VOID                        *PcdRawData;
+  UINT32                      PcdRawSize;
   PEI_PCD_DATABASE            *PeiDatabase;
   PEI_PCD_DATABASE            *UplDatabase;
   EFI_HOB_GUID_TYPE           *GuidHob;
@@ -75,7 +76,7 @@ FixUpPcdDatabase (
   if (EFI_ERROR (Status)) {
     return Status;
   }
-  Status = FileFindSection (FileHeader, EFI_SECTION_RAW, &PcdRawData);
+  Status = FileFindSection (FileHeader, EFI_SECTION_RAW, &PcdRawData, &PcdRawSize);
   ASSERT_EFI_ERROR (Status);
   if (EFI_ERROR (Status)) {
     return Status;

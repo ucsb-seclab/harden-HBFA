@@ -1,3 +1,5 @@
+#ifndef DISABLE_NEW_DEPRECATED_INTERFACES
+
 /*++ @file
 
 Copyright (c) 2006 - 2012, Intel Corporation. All rights reserved.<BR>
@@ -288,4 +290,6 @@ PeCoffGetSizeOfHeaders (
 
   return (UINT32) SizeOfHeaders;
 }
+
+#endif // DISABLE_NEW_DEPRECATED_INTERFACES
 

@@ -523,7 +523,9 @@ FindCapsuleCoalesceImage (
         DEBUG ((DEBUG_ERROR, "Unable to find PE32 section in CapsuleX64 image ffs %r!\n", Status));
         return Status;
       }
-      *CoalesceImageMachineType = PeCoffLoaderGetMachineType ((VOID *) (UINTN) CoalesceImageAddress);
+      *CoalesceImageMachineType = EFI_IMAGE_MACHINE_X64;
+      // FIXME: Get machine type from context once PPI is adapted
+      //*CoalesceImageMachineType = UefiImageLoaderGetMachineType ((VOID *) (UINTN) CoalesceImageAddress);
       break;
     } else {
       continue;

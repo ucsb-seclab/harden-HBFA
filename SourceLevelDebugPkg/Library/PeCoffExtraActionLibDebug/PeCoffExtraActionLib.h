@@ -1,3 +1,5 @@
+#ifndef DISABLE_NEW_DEPRECATED_INTERFACES
+
 /** @file
   PE/Coff Extra Action library instances, it will report image debug info.
 
@@ -70,4 +72,6 @@ RestoreIdtEntry1 (
   );
 
 #endif
+
+#endif // DISABLE_NEW_DEPRECATED_INTERFACES
 

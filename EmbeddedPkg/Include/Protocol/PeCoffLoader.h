@@ -1,3 +1,5 @@
+#ifndef DISABLE_NEW_DEPRECATED_INTERFACES
+
 /** @file
 
   Copyright (c) 2006 - 2008, Intel Corporation. All rights reserved.<BR>
@@ -232,4 +234,6 @@ extern EFI_GUID gPeCoffLoaderProtocolGuid;
 
 
 #endif
+
+#endif // DISABLE_NEW_DEPRECATED_INTERFACES
 
