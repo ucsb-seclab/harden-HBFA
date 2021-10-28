@@ -23,7 +23,7 @@ Important Changes and Updates:
 
 The Firmware Device is a persistent physical repository that contains firmware code and/or data. The firmware code and/or data stored in Firmware Volumes. Detail layout of Firmware Volumes is described in “Figure 1. The Firmware Volume Format”.
 
-![](Img/FirmwareVolumeFormat.png)
+![](BaseTools/Source/Python/FMMT/Img/FirmwareVolumeFormat.png)
 
 ​													Figure 1. The Firmware Volume Format
 
@@ -137,7 +137,7 @@ The NodeTree will be created with parse function. When parse a file, a Root Node
 
 - After all Node created, the whole NodeTree saves all the info. (Can be used in other functions or print the whole firmware layout into log file)
 
-![](Img/NodeTreeFormat.png)
+![](BaseTools/Source/Python/FMMT/Img/NodeTreeFormat.png)
 
 ​																		Figure 2. The NodeTree format
 
