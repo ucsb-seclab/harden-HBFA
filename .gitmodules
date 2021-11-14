@@ -1,3 +1,6 @@
 [submodule "CdeBinPkgSrc"]
 	path = CdeBinPkgSrc
 	url = https://github.com/KilianKegel/CdeBinPkgSrc
+[submodule "blogs/2021-11-14/lib"]
+	path = blogs/2021-11-14/lib
+	url = https://github.com/KilianKegel/toro-C-Library.git
