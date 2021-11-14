@@ -229,6 +229,9 @@ Therefore the **CdePkg**'s C library will be validated by simple tests only, in 
 |[Visual HWTools for UEFI Shell](https://github.com/KilianKegel/Visual-HWTools-for-UEFI-Shell#visual-hwtools-for-uefi-shell)|HWTools: PCI- and GPIOSpy for Baytrail. MemSpy for all.|
 
 ## Revision history
+### 2021-11-14 CdePkgBlog
+* https://github.com/tianocore/edk2-staging/tree/CdePkg/blogs/2021-11-14#cdepkgblog-2021-11-14
+
 ### 20210811
 * force matching commits of `edk2-platforms` and `edk2-non-osi` for EDK2 source `edk2-stable202008`
   to prevent build errors
