@@ -4,3 +4,9 @@
 [submodule "blogs/2021-11-14/lib"]
 	path = blogs/2021-11-14/lib
 	url = https://github.com/KilianKegel/toro-C-Library.git
+[submodule "blogs/2021-11-28/lib"]
+	path = blogs/2021-11-28/lib
+	url = https://github.com/KilianKegel/toro-C-Library.git
+[submodule "blogs/2021-11-28/MdePkgInc"]
+	path = blogs/2021-11-28/MdePkgInc
+	url = https://github.com/KilianKegel/MdePkgInc.git
