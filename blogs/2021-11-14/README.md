@@ -2,6 +2,7 @@
 ### Table of content
 * [Abstract](README.md#Abstract)
 * [Introduction](README.md#Introduction)
+    * [introductory email](https://edk2.groups.io/g/devel/message/83734?p=%2C%2C%2C20%2C0%2C0%2C0%3A%3ACreated%2C%2CCdePkgBlog%2C20%2C2%2C0%2C87053945)
 * [Starting Visual Studio](README.md#starting-visual-studio-2022)
 * [Using the compiler and linker](README.md#using-the-compiler-and-linker)
     * [Compiling the .C file](README.md#compiling-the-c-file)
