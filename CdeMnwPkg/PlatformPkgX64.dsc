@@ -1,7 +1,7 @@
 #/** @file
 # Platform description.
 #
-# Copyright (c) 2012  - 2019, Intel Corporation. All rights reserved.<BR>
+# Copyright (c) 2012  - 2021, Intel Corporation. All rights reserved.<BR>
 #
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 #
@@ -65,6 +65,7 @@
 # Library Class section - list of all Library Classes needed by this Platform.
 #
 ################################################################################
+!include MdePkg/MdeLibs.dsc.inc
 [LibraryClasses.common]
   #
   # Entry point
@@ -165,6 +166,7 @@
   CpuExceptionHandlerLib|UefiCpuPkg/Library/CpuExceptionHandlerLib/DxeCpuExceptionHandlerLib.inf
   MpInitLib|UefiCpuPkg/Library/MpInitLib/DxeMpInitLib.inf
   VmgExitLib|UefiCpuPkg/Library/VmgExitLibNull/VmgExitLibNull.inf
+  MicrocodeLib|UefiCpuPkg/Library/MicrocodeLib/MicrocodeLib.inf
 
   #
   # ICH
@@ -225,8 +227,13 @@
   StallSmmLib|Vlv2TbltDevicePkg/Library/StallSmmLib/StallSmmLib.inf
 
 !if $(SECURE_BOOT_ENABLE) == TRUE
+  RngLib|MdePkg/Library/BaseRngLibTimerLib/BaseRngLibTimerLib.inf
+  IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
+  OpensslLib|CryptoPkg/Library/OpensslLib/OpensslLibCrypto.inf
   PlatformSecureLib|SecurityPkg/Library/PlatformSecureLibNull/PlatformSecureLibNull.inf
   AuthVariableLib|SecurityPkg/Library/AuthVariableLib/AuthVariableLib.inf
+  SecureBootVariableLib|SecurityPkg/Library/SecureBootVariableLib/SecureBootVariableLib.inf
+  SecureBootVariableProvisionLib|SecurityPkg/Library/SecureBootVariableProvisionLib/SecureBootVariableProvisionLib.inf
 !else
   AuthVariableLib|MdeModulePkg/Library/AuthVariableLibNull/AuthVariableLibNull.inf
 !endif
@@ -234,10 +241,13 @@
   FileExplorerLib|MdeModulePkg/Library/FileExplorerLib/FileExplorerLib.inf
 
   VarCheckLib|MdeModulePkg/Library/VarCheckLib/VarCheckLib.inf
+  VariablePolicyLib|MdeModulePkg/Library/VariablePolicyLib/VariablePolicyLib.inf
+  VariablePolicyHelperLib|MdeModulePkg/Library/VariablePolicyHelperLib/VariablePolicyHelperLib.inf
   ShellLib|ShellPkg/Library/UefiShellLib/UefiShellLib.inf
   FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
   SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
+  RngLib|MdePkg/Library/BaseRngLib/BaseRngLib.inf
   OpensslLib|CryptoPkg/Library/OpensslLib/OpensslLib.inf
   IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
 !if $(NETWORK_TLS_ENABLE) == TRUE
@@ -312,6 +322,7 @@
   LockBoxLib|MdeModulePkg/Library/SmmLockBoxLib/SmmLockBoxDxeLib.inf
   EfiRegTableLib|Vlv2TbltDevicePkg/Library/EfiRegTableLib/EfiRegTableLib.inf
   HashLib|SecurityPkg/Library/HashLibBaseCryptoRouter/HashLibBaseCryptoRouterDxe.inf
+  MmUnblockMemoryLib|MdePkg/Library/MmUnblockMemoryLib/MmUnblockMemoryLibNull.inf
 
 [LibraryClasses.X64.DXE_DRIVER]
   DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
@@ -387,6 +398,7 @@
 
 [LibraryClasses.X64.DXE_RUNTIME_DRIVER]
   ReportStatusCodeLib|MdeModulePkg/Library/RuntimeDxeReportStatusCodeLib/RuntimeDxeReportStatusCodeLib.inf
+  VariablePolicyLib|MdeModulePkg/Library/VariablePolicyLib/VariablePolicyLibRuntimeDxe.inf
 !if $(SECURE_BOOT_ENABLE) == TRUE || $(TPM_ENABLED) == TRUE
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/RuntimeCryptLib.inf
 !endif
@@ -744,22 +756,22 @@
 [Components.IA32]
 #KGDebug start
   CdeBinPkg/CdeServices/CdeServicesPei.inf
-  #CdePkg/CdeWelcomePei/CdeWelcomePei.inf
+  CdePkg/CdeWelcomePei/CdeWelcomePei.inf
   CdePkg/CdeLoadOptionsPei/CdeLoadOptionsPei.inf
 
-  CdeValidationPkg/HOSTED_ENV/argcv/buildPEI.inf
-  CdeValidationPkg/SYSTEM_IF/systeminterfacePEI/buildPEI.inf
-  CdeValidationPkg/template/buildPEI.inf
-  CdeValidationPkg/TIME_H/clock/buildPEI.inf
-  CdeValidationPkg/TIME_H/timehfunctions/buildPEI.inf
-  CdeValidationPkg/STRING_H/stringhfunctions/buildPEI.inf
-  CdeValidationPkg/WCHAR_H/wcharhfunctions/buildPEI.inf
-  CdeValidationPkg/STDIO_H/stdiohfunctions/buildPEI.inf
-  CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildPEI.inf
-  CdeValidationPkg/CTYPE_H/ctypehfunctions/buildPEI.inf
-  CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildPEI.inf
-  CdeValidationPkg/ASSERT_H/asserthfunctions/buildPEI.inf
-  CdeValidationPkg/LOCALE_H/localehfunctions/buildPEI.inf
+  #CdeValidationPkg/HOSTED_ENV/argcv/buildPEI.inf
+  #CdeValidationPkg/SYSTEM_IF/systeminterfacePEI/buildPEI.inf
+  #CdeValidationPkg/template/buildPEI.inf
+  #CdeValidationPkg/TIME_H/clock/buildPEI.inf
+  #CdeValidationPkg/TIME_H/timehfunctions/buildPEI.inf
+  #CdeValidationPkg/STRING_H/stringhfunctions/buildPEI.inf
+  #CdeValidationPkg/WCHAR_H/wcharhfunctions/buildPEI.inf
+  #CdeValidationPkg/STDIO_H/stdiohfunctions/buildPEI.inf
+  #CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildPEI.inf
+  #CdeValidationPkg/CTYPE_H/ctypehfunctions/buildPEI.inf
+  #CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildPEI.inf
+  #CdeValidationPkg/ASSERT_H/asserthfunctions/buildPEI.inf
+  #CdeValidationPkg/LOCALE_H/localehfunctions/buildPEI.inf
 #KGDebug end
   Vlv2SocBinPkg/$(DXE_ARCHITECTURE)$(TARGET)/IA32/SecCore.inf
 
@@ -897,22 +909,22 @@
   #
   #KGDebug
   CdeBinPkg/CdeServices/CdeServicesDxe.inf
-  #CdePkg/CdeWelcomeDxe/CdeWelcomeDxe.inf
+  CdePkg/CdeWelcomeDxe/CdeWelcomeDxe.inf
   CdePkg/CdeLoadOptionsDxe/CdeLoadOptionsDxe.inf
 
-  CdeValidationPkg/HOSTED_ENV/argcv/buildDXE.inf
-  CdeValidationPkg/SYSTEM_IF/systeminterfaceDXE/buildDXE.inf
-  CdeValidationPkg/template/buildDXE.inf
-  CdeValidationPkg/TIME_H/clock/buildDXE.inf
-  CdeValidationPkg/TIME_H/timehfunctions/buildDXE.inf
-  CdeValidationPkg/STRING_H/stringhfunctions/buildDXE.inf
-  CdeValidationPkg/WCHAR_H/wcharhfunctions/buildDXE.inf
-  CdeValidationPkg/STDIO_H/stdiohfunctions/buildDXE.inf
-  CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildDXE.inf
-  CdeValidationPkg/CTYPE_H/ctypehfunctions/buildDXE.inf
-  CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildDXE.inf
-  CdeValidationPkg/ASSERT_H/asserthfunctions/buildDXE.inf
-  CdeValidationPkg/LOCALE_H/localehfunctions/buildDXE.inf
+  #CdeValidationPkg/HOSTED_ENV/argcv/buildDXE.inf
+  #CdeValidationPkg/SYSTEM_IF/systeminterfaceDXE/buildDXE.inf
+  #CdeValidationPkg/template/buildDXE.inf
+  #CdeValidationPkg/TIME_H/clock/buildDXE.inf
+  #CdeValidationPkg/TIME_H/timehfunctions/buildDXE.inf
+  #CdeValidationPkg/STRING_H/stringhfunctions/buildDXE.inf
+  #CdeValidationPkg/WCHAR_H/wcharhfunctions/buildDXE.inf
+  #CdeValidationPkg/STDIO_H/stdiohfunctions/buildDXE.inf
+  #CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildDXE.inf
+  #CdeValidationPkg/CTYPE_H/ctypehfunctions/buildDXE.inf
+  #CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildDXE.inf
+  #CdeValidationPkg/ASSERT_H/asserthfunctions/buildDXE.inf
+  #CdeValidationPkg/LOCALE_H/localehfunctions/buildDXE.inf
   #KGDebug
 
   MdeModulePkg/Core/Dxe/DxeMain.inf {
@@ -989,6 +1001,7 @@
   MdeModulePkg/Universal/Variable/RuntimeDxe/VariableSmm.inf {
     <LibraryClasses>
       NULL|MdeModulePkg/Library/VarCheckUefiLib/VarCheckUefiLib.inf
+      NULL|MdeModulePkg/Library/VarCheckPolicyLib/VarCheckPolicyLib.inf
       SerialPortLib|MdeModulePkg/Library/BaseSerialPortLib16550/BaseSerialPortLib16550.inf
   }
   Vlv2TbltDevicePkg/FvbRuntimeDxe/FvbSmm.inf
@@ -1202,6 +1215,7 @@
       NULL|ShellPkg/Library/UefiShellInstall1CommandsLib/UefiShellInstall1CommandsLib.inf
       NULL|ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
       HandleParsingLib|ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.inf
+      OrderedCollectionLib|MdePkg/Library/BaseOrderedCollectionRedBlackTreeLib/BaseOrderedCollectionRedBlackTreeLib.inf
       PrintLib|MdePkg/Library/BasePrintLib/BasePrintLib.inf
       BcfgCommandLib|ShellPkg/Library/UefiShellBcfgCommandLib/UefiShellBcfgCommandLib.inf
     <PcdsFixedAtBuild>
@@ -1268,6 +1282,10 @@
 !endif
 
 !if $(CAPSULE_ENABLE)
+#  !include Vlv2TbltDevicePkg/FmpMinnowMaxSystem.dsc
+#  !include Vlv2TbltDevicePkg/FmpGreenSampleDevice.dsc
+#  !include Vlv2TbltDevicePkg/FmpBlueSampleDevice.dsc
+#  !include Vlv2TbltDevicePkg/FmpRedSampleDevice.dsc
   !include FmpMinnowMaxSystem.dsc
   !include FmpGreenSampleDevice.dsc
   !include FmpBlueSampleDevice.dsc

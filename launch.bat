@@ -122,10 +122,10 @@ cd %WORKSPACE%\edk2-platforms
 git checkout b0de06c7d8494d05b315fb4a2574664f151e108d
 
 cd cd %WORKSPACE%\edk2-non-osi
-git checkout de63002b5de696f6d6ebc91dc80fa8fd6e47c507
+git checkout 3e73df15730667c46a1e449cca872e7f8861007c
 
 cd %WORKSPACE%\edk2
-git checkout edk2-stable202008
+git checkout edk2-stable202111
 
 call edksetup.bat Rebuild
 

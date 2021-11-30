@@ -46,10 +46,17 @@ DATA = {
   # Blockmap[1]: End
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   ## This is the VARIABLE_STORE_HEADER
+!if $(SECURE_BOOT_ENABLE) == FALSE
   #Signature: gEfiVariableGuid =
   #  { 0xddcf3616, 0x3275, 0x4164, { 0x98, 0xb6, 0xfe, 0x85, 0x70, 0x7f, 0xfe, 0x7d }}
   0x16, 0x36, 0xcf, 0xdd, 0x75, 0x32, 0x64, 0x41,
   0x98, 0xb6, 0xfe, 0x85, 0x70, 0x7f, 0xfe, 0x7d,
+!else
+  # Signature: gEfiAuthenticatedVariableGuid =
+  #  { 0xaaf32c78, 0x947b, 0x439a, { 0xa1, 0x80, 0x2e, 0x14, 0x4e, 0xc3, 0x77, 0x92 }}
+  0x78, 0x2c, 0xf3, 0xaa, 0x7b, 0x94, 0x9a, 0x43,
+  0xa1, 0x80, 0x2e, 0x14, 0x4e, 0xc3, 0x77, 0x92,
+!endif
   #Size: 0xc000 (gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize) - 0x48 (size of EFI_FIRMWARE_VOLUME_HEADER) = 0xBFB8
   # This can speed up the Variable Dispatch a bit.
   0xB8, 0xBF, 0x00, 0x00,
@@ -116,22 +123,22 @@ APRIORI DXE {
   }
 #KGDebug
 INF  CdeBinPkg/CdeServices/CdeServicesPei.inf
-#INF  CdePkg/CdeWelcomePei/CdeWelcomePei.inf
+INF  CdePkg/CdeWelcomePei/CdeWelcomePei.inf
 INF  CdePkg/CdeLoadOptionsPei/CdeLoadOptionsPei.inf
 
-INF  CdeValidationPkg/HOSTED_ENV/argcv/buildPEI.inf
-INF  CdeValidationPkg/SYSTEM_IF/systeminterfacePEI/buildPEI.inf
-INF  CdeValidationPkg/template/buildPEI.inf
-INF  CdeValidationPkg/TIME_H/timehfunctions/buildPEI.inf
-INF  CdeValidationPkg/STRING_H/stringhfunctions/buildPEI.inf
-INF  CdeValidationPkg/WCHAR_H/wcharhfunctions/buildPEI.inf
-INF  CdeValidationPkg/STDIO_H/stdiohfunctions/buildPEI.inf
-INF  CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildPEI.inf
-INF  CdeValidationPkg/CTYPE_H/ctypehfunctions/buildPEI.inf
-INF  CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildPEI.inf
-INF  CdeValidationPkg/ASSERT_H/asserthfunctions/buildPEI.inf
-INF  CdeValidationPkg/LOCALE_H/localehfunctions/buildPEI.inf
-INF  CdeValidationPkg/TIME_H/clock/buildPEI.inf
+#INF  CdeValidationPkg/HOSTED_ENV/argcv/buildPEI.inf
+#INF  CdeValidationPkg/SYSTEM_IF/systeminterfacePEI/buildPEI.inf
+#INF  CdeValidationPkg/template/buildPEI.inf
+#INF  CdeValidationPkg/TIME_H/timehfunctions/buildPEI.inf
+#INF  CdeValidationPkg/STRING_H/stringhfunctions/buildPEI.inf
+#INF  CdeValidationPkg/WCHAR_H/wcharhfunctions/buildPEI.inf
+#INF  CdeValidationPkg/STDIO_H/stdiohfunctions/buildPEI.inf
+#INF  CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildPEI.inf
+#INF  CdeValidationPkg/CTYPE_H/ctypehfunctions/buildPEI.inf
+#INF  CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildPEI.inf
+#INF  CdeValidationPkg/ASSERT_H/asserthfunctions/buildPEI.inf
+#INF  CdeValidationPkg/LOCALE_H/localehfunctions/buildPEI.inf
+#INF  CdeValidationPkg/TIME_H/clock/buildPEI.inf
 #KGDebug
 
 INF  EmulatorPkg/Sec/Sec.inf
@@ -153,22 +160,22 @@ INF  MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf
 #
 #KGDebug
 INF  CdeBinPkg/CdeServices/CdeServicesDxe.inf
-#INF  CdePkg/CdeWelcomeDxe/CdeWelcomeDxe.inf
+INF  CdePkg/CdeWelcomeDxe/CdeWelcomeDxe.inf
 INF  CdePkg/CdeLoadOptionsDxe/CdeLoadOptionsDxe.inf
 
-INF  CdeValidationPkg/HOSTED_ENV/argcv/buildDXE.inf
-INF  CdeValidationPkg/SYSTEM_IF/systeminterfaceDXE/buildDXE.inf
-INF  CdeValidationPkg/template/buildDXE.inf
-INF  CdeValidationPkg/TIME_H/timehfunctions/buildDXE.inf
-INF  CdeValidationPkg/STRING_H/stringhfunctions/buildDXE.inf
-INF  CdeValidationPkg/WCHAR_H/wcharhfunctions/buildDXE.inf
-INF  CdeValidationPkg/STDIO_H/stdiohfunctions/buildDXE.inf
-INF  CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildDXE.inf
-INF  CdeValidationPkg/CTYPE_H/ctypehfunctions/buildDXE.inf
-INF  CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildDXE.inf
-INF  CdeValidationPkg/ASSERT_H/asserthfunctions/buildDXE.inf
-INF  CdeValidationPkg/LOCALE_H/localehfunctions/buildDXE.inf
-INF  CdeValidationPkg/TIME_H/clock/buildDXE.inf
+#INF  CdeValidationPkg/HOSTED_ENV/argcv/buildDXE.inf
+#INF  CdeValidationPkg/SYSTEM_IF/systeminterfaceDXE/buildDXE.inf
+#INF  CdeValidationPkg/template/buildDXE.inf
+#INF  CdeValidationPkg/TIME_H/timehfunctions/buildDXE.inf
+#INF  CdeValidationPkg/STRING_H/stringhfunctions/buildDXE.inf
+#INF  CdeValidationPkg/WCHAR_H/wcharhfunctions/buildDXE.inf
+#INF  CdeValidationPkg/STDIO_H/stdiohfunctions/buildDXE.inf
+#INF  CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildDXE.inf
+#INF  CdeValidationPkg/CTYPE_H/ctypehfunctions/buildDXE.inf
+#INF  CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildDXE.inf
+#INF  CdeValidationPkg/ASSERT_H/asserthfunctions/buildDXE.inf
+#INF  CdeValidationPkg/LOCALE_H/localehfunctions/buildDXE.inf
+#INF  CdeValidationPkg/TIME_H/clock/buildDXE.inf
 #KGDebug
 
 INF  MdeModulePkg/Core/Dxe/DxeMain.inf
@@ -224,7 +231,15 @@ INF  MdeModulePkg/Logo/LogoDxe.inf
 INF  MdeModulePkg/Universal/LoadFileOnFv2/LoadFileOnFv2.inf
 INF  RuleOverride = UI MdeModulePkg/Application/UiApp/UiApp.inf
 INF  MdeModulePkg/Application/BootManagerMenuApp/BootManagerMenuApp.inf
-INF  MdeModulePkg/Universal/DriverSampleDxe/DriverSampleDxe.inf
+#INF  MdeModulePkg/Universal/DriverSampleDxe/DriverSampleDxe.inf
+INF  CdeEmuPkg/MdeModulePkg/Universal/DriverSampleDxe/DriverSampleDxe.inf
+
+#
+# Secure Boot Key Enroll
+#
+!if $(SECURE_BOOT_ENABLE) == TRUE
+INF SecurityPkg/VariableAuthenticated/SecureBootConfigDxe/SecureBootConfigDxe.inf
+!endif
 
 #
 # Network stack drivers
@@ -233,6 +248,11 @@ INF  MdeModulePkg/Universal/DriverSampleDxe/DriverSampleDxe.inf
 INF  EmulatorPkg/EmuSnpDxe/EmuSnpDxe.inf
 !endif
 !include NetworkPkg/Network.fdf.inc
+
+#
+# EFI Redfish drivers
+#
+!include RedfishPkg/Redfish.fdf.inc
 
 INF FatPkg/EnhancedFatDxe/Fat.inf
 
