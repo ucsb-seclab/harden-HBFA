@@ -29,7 +29,7 @@ def ChangeSize(TargetTree, size_delta: int=0) -> None:
         TargetTree.Data.Header.Size[2] = TargetTree.Data.Size // (16**4)
 
 def ModifyFfsType(TargetFfs) -> None:
-    if type(TargetFfs.Data.Header) == type(EFI_FFS_FILE_HEADER()) and (TargetFfs.Data.HeaderLength + TargetFfs.Data.Size) > 0xFFFFFF:
+    if type(TargetFfs.Data.Header) == type(EFI_FFS_FILE_HEADER()) and TargetFfs.Data.Size > 0xFFFFFF:
         ExtendSize = TargetFfs.Data.Header.FFS_FILE_SIZE + 8
         New_Header = EFI_FFS_FILE_HEADER2()
         New_Header.Name = TargetFfs.Data.Header.Name
@@ -43,7 +43,7 @@ def ModifyFfsType(TargetFfs) -> None:
         TargetFfs.Data.Size = TargetFfs.Data.Header.FFS_FILE_SIZE
         TargetFfs.Data.HeaderLength = TargetFfs.Data.Header.HeaderLength
         TargetFfs.Data.ModCheckSum()
-    elif type(TargetFfs.Data.Header) == type(EFI_FFS_FILE_HEADER2()) and (TargetFfs.Data.HeaderLength + TargetFfs.Data.Size) <= 0xFFFFFF:
+    elif type(TargetFfs.Data.Header) == type(EFI_FFS_FILE_HEADER2()) and TargetFfs.Data.Size <= 0xFFFFFF:
         New_Header = EFI_FFS_FILE_HEADER()
         New_Header.Name = TargetFfs.Data.Header.Name
         New_Header.IntegrityCheck = TargetFfs.Data.Header.IntegrityCheck
@@ -291,7 +291,7 @@ class FvHandler:
                     ~self.NewFfs.Data.Header.State)
         # NewFfs parsing will not calculate the PadSize, thus recalculate.
         self.NewFfs.Data.PadData = b'\xff' * GetPadSize(self.NewFfs.Data.Size, 8)
-        if self.NewFfs.Data.Size > self.TargetFfs.Data.Size:
+        if self.NewFfs.Data.Size >= self.TargetFfs.Data.Size:
             Needed_Space = self.NewFfs.Data.Size + len(self.NewFfs.Data.PadData) - self.TargetFfs.Data.Size - len(self.TargetFfs.Data.PadData)
             # If TargetFv have enough free space, just move part of the free space to NewFfs.
             if TargetFv.Data.Free_Space >= Needed_Space:

@@ -114,9 +114,9 @@ class FfsNode:
     def __init__(self, buffer: bytes) -> None:
         self.Header = EFI_FFS_FILE_HEADER.from_buffer_copy(buffer)
         # self.Attributes = unpack("<B", buffer[21:22])[0]
-        if self.Header.Size != 0 and self.Header.Attributes == 0x01:
+        if self.Header.FFS_FILE_SIZE != 0 and self.Header.Attributes != 0xff and self.Header.Attributes & 0x01 == 1:
             print('Error Ffs Header! Ffs Header Size and Attributes is not matched!')
-        if self.Header.Size == 0 and self.Header.Attributes == 0x01:
+        if self.Header.FFS_FILE_SIZE == 0 and self.Header.Attributes & 0x01 == 1:
             self.Header = EFI_FFS_FILE_HEADER2.from_buffer_copy(buffer)
         self.Name = uuid.UUID(bytes_le=struct2stream(self.Header.Name))
         self.UiName = b''

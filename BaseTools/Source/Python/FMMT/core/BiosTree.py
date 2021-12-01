@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 ##
 import collections
-from typing import OrderedDict
 from PI.Common import *
 
 ROOT_TREE = 'ROOT'
@@ -113,7 +112,7 @@ class BIOSTREE:
             self = self.Parent
         return BiosTreePath
 
-    def parserTree(self, TargetDict: dict=None, Info: list=None, space: int=0) -> None:
+    def parserTree(self, TargetDict: dict=None, Info: list=None, space: int=0, ParFvId="") -> None:
         Key = list(TargetDict.keys())[0]
         if TargetDict[Key]["Type"] in RootType:
             Info.append("Image File: {}".format(Key))
@@ -122,11 +121,11 @@ class BIOSTREE:
         elif TargetDict[Key]["Type"] in FvType:
             space += 2
             if TargetDict[Key]["Type"] == SEC_FV_TREE:
-                Info.append("{}Child FV named {} of {}".format(space*" ", Key, self.FvId))
+                Info.append("{}Child FV named {} of {}".format(space*" ", Key, ParFvId))
                 space += 2
             else:
                 Info.append("FvId: {}".format(Key))
-                self.FvId = Key
+                ParFvId = Key
             Info.append("{}FvNameGuid: {}".format(space*" ", TargetDict.get(Key).get('FvNameGuid')))
             Info.append("{}Attributes: {}".format(space*" ", TargetDict.get(Key).get('Attributes')))
             Info.append("{}Total Volume Size: {}".format(space*" ", TargetDict.get(Key).get('Size')))
@@ -141,7 +140,7 @@ class BIOSTREE:
                 Info.append("{}File: {}".format(space*" ", Key))
         if "Files" in list(TargetDict[Key].keys()):
             for item in TargetDict[Key]["Files"]:
-                self.parserTree(item, Info, space)
+                self.parserTree(item, Info, space, ParFvId)
 
     def ExportTree(self,TreeInfo: dict=None) -> dict:
         if TreeInfo is None:
