@@ -422,7 +422,7 @@ Returns:
        for (i = 1; i < Argc; i++) {
          if (0 == strncmp("/debug", Argv[i],strlen("/debug"))) {
            //SecPrint("IF YOU WANT TO DEBUG from the very beginning of the EMULATION:\n\t1. start the TASKMGR\n\t2. connect WinHost.exe to the debugger\n\t3. and press ENTER in this command box\nOR\n");
-           SecPrint("\t1. start your debug engine\n");
+           SecPrint("\t1. start your debug engine (VS2022)\n");
            SecPrint("\t2. attach to process WinHost.exe in your SystemDebugger (Ctrl+Alt+P in VS2022)\n");
            SecPrint("\t4. SET A SOFTWARE BREAKPOINT (F9) in %s\\overrides\\EmulatorPkg\\Win\\Host\\WinHost.c line 448\n",pWorkspace);
            SecPrint("\t5. and press ENTER in the WinHost command box\n");

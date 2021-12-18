@@ -59,7 +59,7 @@
   # Basic
   #
   #KGDebug
-  CdeLib|CdeBinPkg/CdeLib/CdeLib.inf
+  CdeLib|CdePkg\CdeLib\CdeLib.inf
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
   SynchronizationLib|MdePkg/Library/BaseSynchronizationLib/BaseSynchronizationLib.inf
   PrintLib|MdePkg/Library/BasePrintLib/BasePrintLib.inf
@@ -318,23 +318,23 @@
   MdeModulePkg/Core/Pei/PeiMain.inf
   
   #KGDebug start
-  CdeBinPkg/CdeServices/CdeServicesPei.inf
-  CdePkg/CdeWelcomePei/CdeWelcomePei.inf
-  CdePkg/CdeLoadOptionsPei/CdeLoadOptionsPei.inf
+    CdePkg/CdeServices/CdeServicesPei.inf
+    CdePkg\CdeWelcome\buildPRE.inf
+    CdePkg/CdeLoadOptionsPei/CdeLoadOptionsPei.inf
 
-  CdeValidationPkg/HOSTED_ENV/argcv/buildPEI.inf
-  CdeValidationPkg/SYSTEM_IF/systeminterfacePEI/buildPEI.inf
-  CdeValidationPkg/template/buildPEI.inf
-  CdeValidationPkg/TIME_H/clock/buildPEI.inf
-  CdeValidationPkg/TIME_H/timehfunctions/buildPEI.inf
-  CdeValidationPkg/STRING_H/stringhfunctions/buildPEI.inf
-  CdeValidationPkg/WCHAR_H/wcharhfunctions/buildPEI.inf
-  CdeValidationPkg/STDIO_H/stdiohfunctions/buildPEI.inf
-  CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildPEI.inf
-  CdeValidationPkg/CTYPE_H/ctypehfunctions/buildPEI.inf
-  CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildPEI.inf
-  CdeValidationPkg/ASSERT_H/asserthfunctions/buildPEI.inf
-  CdeValidationPkg/LOCALE_H/localehfunctions/buildPEI.inf
+  #CdeValidationPkg/HOSTED_ENV/argcv/buildPEI.inf
+  #CdeValidationPkg/SYSTEM_IF/systeminterfacePEI/buildPEI.inf
+  #CdeValidationPkg/template/buildPEI.inf
+  #CdeValidationPkg/TIME_H/clock/buildPEI.inf
+  #CdeValidationPkg/TIME_H/timehfunctions/buildPEI.inf
+  #CdeValidationPkg/STRING_H/stringhfunctions/buildPEI.inf
+  #CdeValidationPkg/WCHAR_H/wcharhfunctions/buildPEI.inf
+  #CdeValidationPkg/STDIO_H/stdiohfunctions/buildPEI.inf
+  #CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildPEI.inf
+  #CdeValidationPkg/CTYPE_H/ctypehfunctions/buildPEI.inf
+  #CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildPEI.inf
+  #CdeValidationPkg/ASSERT_H/asserthfunctions/buildPEI.inf
+  #CdeValidationPkg/LOCALE_H/localehfunctions/buildPEI.inf
 #KGDebug end
   
   MdeModulePkg/Universal/PCD/Pei/Pcd.inf  {
@@ -365,23 +365,23 @@
       NULL|MdeModulePkg/Library/LzmaCustomDecompressLib/LzmaCustomDecompressLib.inf
   }
   #KGDebug
-  CdeBinPkg/CdeServices/CdeServicesDxe.inf
-  CdePkg/CdeWelcomeDxe/CdeWelcomeDxe.inf
+    CdePkg\CdeServices\CdeServicesDxe.inf
+    CdePkg\CdeWelcome\buildDXE.inf
   CdePkg/CdeLoadOptionsDxe/CdeLoadOptionsDxe.inf
 
-  CdeValidationPkg/HOSTED_ENV/argcv/buildDXE.inf
-  CdeValidationPkg/SYSTEM_IF/systeminterfaceDXE/buildDXE.inf
-  CdeValidationPkg/template/buildDXE.inf
-  CdeValidationPkg/TIME_H/clock/buildDXE.inf
-  CdeValidationPkg/TIME_H/timehfunctions/buildDXE.inf
-  CdeValidationPkg/STRING_H/stringhfunctions/buildDXE.inf
-  CdeValidationPkg/WCHAR_H/wcharhfunctions/buildDXE.inf
-  CdeValidationPkg/STDIO_H/stdiohfunctions/buildDXE.inf
-  CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildDXE.inf
-  CdeValidationPkg/CTYPE_H/ctypehfunctions/buildDXE.inf
-  CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildDXE.inf
-  CdeValidationPkg/ASSERT_H/asserthfunctions/buildDXE.inf
-  CdeValidationPkg/LOCALE_H/localehfunctions/buildDXE.inf
+  #CdeValidationPkg/HOSTED_ENV/argcv/buildDXE.inf
+  #CdeValidationPkg/SYSTEM_IF/systeminterfaceDXE/buildDXE.inf
+  #CdeValidationPkg/template/buildDXE.inf
+  #CdeValidationPkg/TIME_H/clock/buildDXE.inf
+  #CdeValidationPkg/TIME_H/timehfunctions/buildDXE.inf
+  #CdeValidationPkg/STRING_H/stringhfunctions/buildDXE.inf
+  #CdeValidationPkg/WCHAR_H/wcharhfunctions/buildDXE.inf
+  #CdeValidationPkg/STDIO_H/stdiohfunctions/buildDXE.inf
+  #CdeValidationPkg/STDLIB_H/stdlibhfunctions/buildDXE.inf
+  #CdeValidationPkg/CTYPE_H/ctypehfunctions/buildDXE.inf
+  #CdeValidationPkg/WCTYPE_H/wctypehfunctions/buildDXE.inf
+  #CdeValidationPkg/ASSERT_H/asserthfunctions/buildDXE.inf
+  #CdeValidationPkg/LOCALE_H/localehfunctions/buildDXE.inf
   #KGDebug
 
   MdeModulePkg/Universal/PCD/Dxe/Pcd.inf {

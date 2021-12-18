@@ -334,8 +334,8 @@ READ_LOCK_STATUS   = TRUE
 FvNameGuid         = B73FE497-B92E-416e-8326-45AD0D270091
 
 #KGDebug
-INF  CdeBinPkg/CdeServices/CdeServicesPei.inf
-INF  CdePkg/CdeWelcomePei/CdeWelcomePei.inf
+INF  CdePkg/CdeServices/CdeServicesPei.inf
+INF  CdePkg/CdeWelcome/buildPEI.inf
 INF  CdePkg/CdeLoadOptionsPei/CdeLoadOptionsPei.inf
 
 #INF  CdeValidationPkg/HOSTED_ENV/argcv/buildPEI.inf
@@ -420,8 +420,8 @@ FILE FREEFORM = C3E36D09-8294-4b97-A857-D5288FE33E28 {
   #
 
 #KGDebug
-INF  CdeBinPkg/CdeServices/CdeServicesDxe.inf
-INF  CdePkg/CdeWelcomeDxe/CdeWelcomeDxe.inf
+INF  CdePkg/CdeServices/CdeServicesDxe.inf
+INF  CdePkg/CdeWelcome/buildDXE.inf
 INF  CdePkg/CdeLoadOptionsDxe/CdeLoadOptionsDxe.inf
 
 #INF  CdeValidationPkg/HOSTED_ENV/argcv/buildDXE.inf

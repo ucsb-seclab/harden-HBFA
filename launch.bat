@@ -88,10 +88,12 @@ if not exist nasm-2.13.03 (
 rem #######################################################################
 rem ### EDK2 and EDK2-NON-OSI #############################################
 rem #######################################################################
-if not exist edk2 git clone --recursive https://github.com/tianocore/edk2.git edk2
-if not exist edk2-non-osi git clone --recursive https://github.com/tianocore/edk2-non-osi.git edk2-non-osi
-if not exist edk2-platforms git clone --recursive https://github.com/tianocore/edk2-platforms.git edk2-platforms
-if not exist CdeBinPkg git clone --recursive https://github.com/KilianKegel/CdeBinPkg.git CdeBinPkg
+rem if not exist edk2 git clone --recursive https://github.com/tianocore/edk2.git edk2
+rem if not exist edk2-non-osi git clone --recursive https://github.com/tianocore/edk2-non-osi.git edk2-non-osi
+rem if not exist edk2-platforms git clone --recursive https://github.com/tianocore/edk2-platforms.git edk2-platforms
+rem if not exist CdeBinPkg git clone --recursive https://github.com/KilianKegel/CdeBinPkg.git CdeBinPkg
+rem git submodule update --init --recursive
+git submodule init
 
 rem #######################################################################
 rem ### set build environment #############################################
@@ -99,12 +101,12 @@ rem #######################################################################
 rem 
 set WORKSPACE=%CD%
 set PACKAGES_PATH=%WORKSPACE%\edk2
-set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%
-set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\CdeMnwPkg
-set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\CdeEmuPkg
-set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\edk2-platforms\Silicon\Intel
-set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\edk2-platforms\Platform\Intel
-set PACKAGES_PATH=%PACKAGES_PATH%;%WORKSPACE%\edk2-non-osi\Silicon\Intel
+set PACKAGES_PATH=%WORKSPACE%;%PACKAGES_PATH%;
+set PACKAGES_PATH=%WORKSPACE%\edk2-platforms\Silicon\Intel;%PACKAGES_PATH%;
+set PACKAGES_PATH=%WORKSPACE%\edk2-platforms\Platform\Intel;%PACKAGES_PATH%;
+set PACKAGES_PATH=%WORKSPACE%\edk2-non-osi\Silicon\Intel;%PACKAGES_PATH%;
+set PACKAGES_PATH=%WORKSPACE%\CdeMnwPkg;%PACKAGES_PATH%;
+set PACKAGES_PATH=%WORKSPACE%\CdeEmuPkg;%PACKAGES_PATH%;
 
 set EDK_TOOLS_PATH=%WORKSPACE%\edk2\BaseTools
 path=%path%;%WORKSPACE%\openssl-1.0.2r-x64_86-win64;%WORKSPACE%;
@@ -115,17 +117,7 @@ rem ### PYTHONE_HOME
 rem ######################################################################
 for /F  %%a in ('where python.exe') do set PYTHON_HOME=%%~dpa
 
-rem ######################################################################
-rem ### checkout component versions / commits
-rem ######################################################################
-cd %WORKSPACE%\edk2-platforms
-git checkout b0de06c7d8494d05b315fb4a2574664f151e108d
-
-cd cd %WORKSPACE%\edk2-non-osi
-git checkout 3e73df15730667c46a1e449cca872e7f8861007c
-
 cd %WORKSPACE%\edk2
-git checkout edk2-stable202111
 
 call edksetup.bat Rebuild
 

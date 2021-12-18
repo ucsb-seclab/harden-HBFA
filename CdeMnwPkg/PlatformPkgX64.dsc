@@ -80,7 +80,7 @@
   # Basic
   #
 #  #KGDebug
-  CdeLib|CdeBinPkg/CdeLib/CdeLib.inf
+  CdeLib|CdePkg\CdeLib\CdeLib.inf
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
 !if $(SSE2_ENABLE) == TRUE
   BaseMemoryLib|MdePkg/Library/BaseMemoryLibSse2/BaseMemoryLibSse2.inf
@@ -755,8 +755,8 @@
 
 [Components.IA32]
 #KGDebug start
-  CdeBinPkg/CdeServices/CdeServicesPei.inf
-  CdePkg/CdeWelcomePei/CdeWelcomePei.inf
+  CdePkg/CdeServices/CdeServicesPei.inf
+  CdePkg/CdeWelcome/buildPEI.inf
   CdePkg/CdeLoadOptionsPei/CdeLoadOptionsPei.inf
 
   #CdeValidationPkg/HOSTED_ENV/argcv/buildPEI.inf
@@ -908,8 +908,8 @@
   # EDK II Related Platform codes
   #
   #KGDebug
-  CdeBinPkg/CdeServices/CdeServicesDxe.inf
-  CdePkg/CdeWelcomeDxe/CdeWelcomeDxe.inf
+  CdePkg/CdeServices/CdeServicesDxe.inf
+  CdePkg/CdeWelcome/buildDXE.inf
   CdePkg/CdeLoadOptionsDxe/CdeLoadOptionsDxe.inf
 
   #CdeValidationPkg/HOSTED_ENV/argcv/buildDXE.inf
