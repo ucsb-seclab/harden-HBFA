@@ -1,7 +1,5 @@
 # CdePkg - C Development Environment Package for EDK2
-* [CdePkgBlog 2021-11-14](blogs/2021-11-14#cdepkgblog-2021-11-14)
-* [CdePkgBlog 2021-11-28](blogs/2021-11-14#cdepkgblog-2021-11-28)
-
+* [CdePkgBlog](README.md#cdepkgblog)
 * [Preface](README.md#preface)
 * [Introduction](README.md#introduction)
 * [Intention](README.md#intention)
@@ -17,6 +15,9 @@
 
 <!-- ![C](https://github.com/JoaquinConoBolillo/CdePkg/blob/master/C.png) -->
 
+## CdePkgBlog
+* [CdePkgBlog 2021-11-14](blogs/2021-11-14#cdepkgblog-2021-11-14)
+* [CdePkgBlog 2021-11-28](blogs/2021-11-14#cdepkgblog-2021-11-28)
 
 ## Preface
 The programming language C is standardized by the American National Standards Institute (ANSI) and the
