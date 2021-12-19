@@ -3,6 +3,7 @@
 ### Table of content
 * [Abstract](README.md#Abstract)
 * [Introduction](README.md#Introduction)
+    * [introductory email](https://edk2.groups.io/g/devel/topic/cdepkgblog_2021_11_18/87363412?p=,,,20,0,0,0::recentpostdate/sticky,,,20,2,0,87363412,previd=1638131716272402469,nextid=1637941879803363607&previd=1638131716272402469&nextid=1637941879803363607)
 * [In a nutshell: **CdePkg**](README.md#in-a-nutshell-cdepkg)
     * [A short comparison with RedfishCrtLib](README.md#a-short-comparison-with-redfishcrtlib)
     * [RedfishCrtLib conflicts with CdePkg by design](README.md#redfishcrtlib-conflicts-with-cdepkg-by-design)
@@ -56,7 +57,7 @@ Once, the driver is transformed to be a **CdePkg**-based driver this type of err
 NOTE: Currently **CdePkg** is only available for Microsoft tool chain. It is planned to provide the same functionality
 for GNU and LLVM based tool chains, too.
 
-ATTENTION: DON'T TRY TO USE **toro C Library** and **CdeLib.lib** with the GNU linker! The GNU linker contained
+ATTENTION: DON'T TRY TO USE **toro C Library** and **CdeLib.lib** with the GNU linker! The GNU linker used to contain
 bugs regarding MS-COFF .OBJ format and maybe there are still some more bugs beside those that were already found and solved: https://github.com/KilianKegel/GNU-ld-for-MicrosoftCOFF-to-LinuxELF#gnu-ld-for-microsoftcoff-to-linuxelf
 
 # In a nutshell: **CdePkg**
@@ -67,13 +68,13 @@ in front of the open source **tianocore** project.
 The "barrier" of **tianocore** exists and is kept up by three reasons:<br>
 1. introduction of unique data types
 2. substitution of shift and divide operators for 64 bit integers
-3. absense of any Standard C functions from [chapter 7](http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1256.pdf#page=176) of the C specification [ISO/IEC 9899](http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1256.pdf#page=1)
+3. absence of any Standard C functions from [chapter 7](http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1256.pdf#page=176) of the C specification [ISO/IEC 9899](http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1256.pdf#page=1)
 	
 Item (3) of the above list implies one positive argument:
 Since none of the Standard C Library functions are provided by the native UEFI (Library) API at all, none of the Standard C functions
 could be implemented faultily.<br>
 
-The design rules below appliy to **CdePkg**:<br>
+The design rules below apply to **CdePkg**:<br>
 1. reimplementing/cloning all C90/C95-related functions of the Microsoft C Library
     * reimplementing exact behaviour (NOTE: original Microsoft C Library source code is *not* available to me -- this is a [clean room design](https://en.wikipedia.org/wiki/Clean_room_design))
 2. multi platform targets
@@ -96,7 +97,7 @@ The design rules below appliy to **CdePkg**:<br>
 		
 
 ## A short comparison with **RedfishCrtLib**
-On one hand, a recent [**RedfishCrtLib.c**](https://github.com/tianocore/edk2/blob/master/RedfishPkg/PrivateLibrary/RedfishCrtLib/RedfishCrtLib.c) 
+On the one hand, a recent [**RedfishCrtLib.c**](https://github.com/tianocore/edk2/blob/master/RedfishPkg/PrivateLibrary/RedfishCrtLib/RedfishCrtLib.c) 
 and [**RedfishCrtLib.h**](https://github.com/tianocore/edk2/blob/master/RedfishPkg/Include/Library/RedfishCrtLib.h)
 introduce a **short-term** approach. That was taken from `CryptoPkg` CrtLibSupport and is also used in `RegularExpressionDxe`and `BrotliDecompressLib`.
 
@@ -153,20 +154,20 @@ and there is only a little margin to be "creative":<br>
 
 #### NOTE: <ins>If it keeps true that the **RedfishCrtLib**-functions differ from specified  Standard C functions and the header files are kept although holding the wrong content, the advantage of portability **turns into untrustworthiness**. In this case the smallest change in parameters or programflow always requires a full validation of the entire module.</ins>
 
-On the other ahnd, the **toro C Library**/**CdePkg**
+On the other hand, the **toro C Library**/**CdePkg**
 * each single function's behaviour is tested painstakingly against its Microsoft C Library counterpart
 * each single format specifier of the [`scanf()`](http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1256.pdf#page=294)- and [`print()`](http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1256.pdf#page=287)-family functions is validated meticulously
     * NOTE: This does not guarantee it to be bug-free 
 * a true (partial) validation using [**SuperTest**](https://solidsands.com/products/supertest) is in preparation
 
 ## **`RedfishCrtLib`** conflicts with **`CdePkg`** by design
-The full **CdePkg**-function-set is only available when **`RedfishCrtLib`** is completely unused in the **`RedfishPkg`**.
+The full **CdePkg**-function-set is only functional when **`RedfishCrtLib`** is NOT being used at all.
 This is because the [**RedfishCrtLib.c**](https://github.com/tianocore/edk2/blob/master/RedfishPkg/PrivateLibrary/RedfishCrtLib/RedfishCrtLib.c)
 implements all functions in one monolithic .C/.OBJ file. 
 
 Doing so, it violates the ***one definition rule***.
 
-If during the link process *one* single functions from `RedfishCrtLib` is invoked,  (*e.g. a new function called [`isdchar()`](https://github.com/tianocore/edk2/blob/master/RedfishPkg/PrivateLibrary/RedfishCrtLib/RedfishCrtLib.c#L40)
+If during the link process *one* single function from `RedfishCrtLib` is invoked,  (*e.g. a new function called [`isdchar()`](https://github.com/tianocore/edk2/blob/master/RedfishPkg/PrivateLibrary/RedfishCrtLib/RedfishCrtLib.c#L40)
 that is yet unknown to any Standard/ANSI/POSIX-C specification but pretty much sounds like it belongs to the `ctype.h` functions and for that reason its existence and naming irritates*)
 then at the same time all the other functions/symbols will be tried to be pulled in by the linker. If the linker has already found
 a function/symbol with the same name in another .OBJ module, it conflicts with `RedfishCrtLib.obj` and will break the build.
@@ -228,7 +229,7 @@ ENTRY_POINT               = _MainEntryPointDxe
 IMAGE_ENTRY_POINT         = _cdeCRT0UefiDxeEDK
 ```
 
-In the `[Packages]` section the `CdePkg/CdePkg.dec` must preceed the other packages, 
+In the `[Packages]` section the `CdePkg/CdePkg.dec` must precede the other packages, 
 because otherwise for **RedfishPkg** an already faultily implemented [`stdlib.h`](https://raw.githubusercontent.com/tianocore/edk2/master/RedfishPkg/PrivateInclude/Crt/stdlib.h)
 leads to build errors (e.g. `atoi()` function not declarated).<br>
 NOTE: The order of  the packages determines the search-order of the include-folders.
@@ -271,7 +272,7 @@ __cdeCRT0UefiDxeEDK()                CdeLib:osifUefiDxeEntryPointEDK.obj
 The transformation is so easy that it could be done by a simple program or script, e.g. `Mde2Cde.py`.
 ![RedfishCredentialDxe.c](RedfishCredentialDxe.c.diff.png)
 
-There are only two things to to:<br>
+There are only two things to do:<br>
 1. rename the `xyzEntryPoint()` definition from<br>`EFI_STATUS EFIAPI xyzEntryPoint (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE   *SystemTable)` <br>to<br> `EFI_STATUS  main(int argc, char** argv)`<BR><BR>
 2. define and initialize `ImageHandle` and `SystemTable` as local variables in `main()`<br>
 ```EFI_HANDLE        ImageHandle = (void*)argv[-2];   // get ImageHandle from CdePkg argv[-2] backdoor```<br>
@@ -291,8 +292,8 @@ function [`_cdeStr2Argcv()`](https://github.com/tianocore/edk2-staging/blob/CdeP
 	
 The GUID is the `gEfiCallerIdGuid`.
 
-With `rejectStart = 1` a registered component does invoke `main()`. This feature can be used to prevent a particular
-component to run during POST without recompiling and updating the BIOS.
+With `rejectStart = 1` a registered component does not invoke `main()`. This feature can be used to prevent a particular
+component from running during POST without recompiling and updating the BIOS.
 
 ## Adding a command line on a real platform
 On a real platform the "POST command line" is placed in NVRAM, and can be modified using a 
@@ -373,11 +374,11 @@ The **RestJsonStructureDxe** is adjusted to exercise some simple tasks I'd like 
     .
     .
 ```
-4. line 587 .. 588 demonstrated the a "true" `printf()` redirects its `stdout` output to StatusCode
-5. line 590 .. 593 fills the allocated 64kB buffer with a unique charcter pattern 
+4. line 587 .. 588 demonstrates that a "true" `printf()` redirects its `stdout` output to StatusCode during POST
+5. line 590 .. 593 fills the allocated 64kB buffer with a unique character pattern 
 6. line 595 demonstrates that `printf()` internally works bufferless, by processing a `%s`-specifier that has a string argument 64kB in size
 7. line 599 .. 603 demonstrates the new `fprintf()` based and build time parameter checked `CDETRACE()` macro
-8. line 605 runs a EDK2 `DEBUG()` macron built upon the `_DebugPrint()` reimplemenation that is not parameter checked
+8. line 605 runs a EDK2 `DEBUG()` macro built upon the `_DebugPrint()` reimplemenation that is not parameter checked
 
 ## [`wctype.h`](http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1256.pdf#page=405) demonstration
 `wctype.h` functions are not available from [**PDCLIB**](https://github.com/DevSolar/pdclib/tree/5950958ff57391789d9a164a56cd1ed87dedaa12), 
@@ -529,7 +530,7 @@ Beginning with line [786](https://github.com/tianocore/edk2-staging/blob/CdePkg/
 * [`wmemset()`](wchar_h/wmemset.c)
 * [`wprintf()`](wchar_h/wprintf.c)
 
-Regrettably `wchar.h` includes the most incomplete function set from **toro C Library**.
+Regrettably `wchar.h` includes the most incomplete function-set from **toro C Library**.
 A lot of console related functions are not yet implemented. 
 The prime reason is that the Microsoft [`fwide()`](https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/fwide?view=msvc-170) is implemented non-conform 
 to [ISO/IEC 9899](http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1256.pdf#page=1).
@@ -647,8 +648,8 @@ The `DEBUG()` trace macro in the **tianocroe/EDK2** implementation has the disad
 1. It can be controlled globally by choosing DEBUG vs. RELEASE build that causes side effects:
    1. In some commercial BIOS projects DEBUG mode can not be used at all, because a DEBUG built simply doesn't fit into the BIOS flash part.
       That is a bad situation if no other debug tools are available.
-   2. overall-DEBUG traces increases the POST time significantly
-   3. DEBUG traces that are out of interrest can not be suppressed. The trace log must be treated manually. *ALL* traces floods the terminal program.
+   2. overall-DEBUG traces increase the POST time significantly
+   3. irrelevant DEBUG traces cannot be suppressed. The trace log must be treated manually. 
 
 2. It does not separate *ORIGIN* and *SEVERITY*: https://github.com/tianocore/edk2/blob/master/MdePkg/Include/Library/DebugLib.h#L30
 ```c
@@ -672,20 +673,19 @@ The `DEBUG()` trace macro in the **tianocroe/EDK2** implementation has the disad
 In customized DEBUG traces on commercial BIOS implementations *SEVERITY*-keywords like 'WARNING', 'ERROR' or 'FATAL'
 are placed manually in the trace message.
 
-3. `DEBUG()` internally is length limited due to a "buffer-based" implementation of `AsciiVSPrint()` and causes restrictions
+3. `DEBUG()` internally is length-limited due to a "buffer-based" implementation of `AsciiVSPrint()` and causes restrictions
     1. automatically generated [`__FILE__`](http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1256.pdf#page=172) *origin* can't be placed into the DEBUG()-macro
        because a deep directory structure will overflow the buffer
     2. `DEBUG()` internally uses `DebugPrint()` that is not parameter checked at compile time
   
 ## [`CDETRACE()`](https://github.com/KilianKegel/CdePkg/blob/master/Include/CDE.h#L283)
-All the above mentioned disadvantages are eliminated with 'CDETRACE()`.<br>
+All the above mentioned characteristics are eliminated with 'CDETRACE()`.<br>
 Additionally it provides a *condition check* like:<br>
 ```c 
     CDETRACE((TRCERR(EFI_SUCCESS != Status) "Something went wrong...\n"));
 ```
-The core idea is to use a "real" Standard C function `fprintf()`.
-For those cases modern C compiler (GCC too) do parameter validation at build time.
-Because internally it is a buffer-less implementation the buffer can not overflow by design and the message legth is unlimited.
+The core idea is to use a "real" Standard C function `fprintf()`, in which cases modern C compiler (GCC too) do parameter validation at build time.
+Because internally it is a buffer-less implementation the buffer cannot overflow by design and the message-length is unlimited.
 
 ```c
 #define CDETRACE(dbgsig_msg)  \
