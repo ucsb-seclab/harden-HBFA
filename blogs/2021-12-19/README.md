@@ -3,7 +3,7 @@
 ### Table of content
 * [Abstract](README.md#Abstract)
 * [Introduction](README.md#Introduction)
-    * [introductory email](https://edk2.groups.io/g/devel/topic/cdepkgblog_2021_11_18/87363412?p=,,,20,0,0,0::recentpostdate/sticky,,,20,2,0,87363412,previd=1638131716272402469,nextid=1637941879803363607&previd=1638131716272402469&nextid=1637941879803363607)
+    * [introductory email](https://edk2.groups.io/g/devel/topic/cdepkgblog_2021_12_19/87843834?p=,,,20,0,0,0::recentpostdate/sticky,,,20,2,0,87843834,previd=1639947117658429604,nextid=1639753762684061333&previd=1639947117658429604&nextid=1639753762684061333)
 * [In a nutshell: **CdePkg**](README.md#in-a-nutshell-cdepkg)
     * [A short comparison with RedfishCrtLib](README.md#a-short-comparison-with-redfishcrtlib)
     * [RedfishCrtLib conflicts with CdePkg by design](README.md#redfishcrtlib-conflicts-with-cdepkg-by-design)
