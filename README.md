@@ -1,5 +1,7 @@
 # CdePkg - C Development Environment Package for EDK2
 * [CdePkgBlog 2021-11-14](blogs/2021-11-14#cdepkgblog-2021-11-14)
+* [CdePkgBlog 2021-11-28](blogs/2021-11-14#cdepkgblog-2021-11-28)
+
 * [Preface](README.md#preface)
 * [Introduction](README.md#introduction)
 * [Intention](README.md#intention)
