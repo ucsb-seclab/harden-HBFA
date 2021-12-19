@@ -19,3 +19,6 @@
 [submodule "CdePkg"]
 	path = CdePkg
 	url = https://github.com/KilianKegel/CdePkg.git
+[submodule "CdeEmuPkg/RedfishPkg/Library/JsonLib/jansson"]
+	path = CdeEmuPkg/RedfishPkg/Library/JsonLib/jansson
+	url = https://github.com/akheron/jansson.git
