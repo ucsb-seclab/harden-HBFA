@@ -170,13 +170,13 @@ GetExportDirectoryInPeCoffImage (
   //
   switch (PeCoffLoaderImageContext->Machine) {
   case EFI_IMAGE_MACHINE_IA32:
-    // Todo: Add EFI_IMAGE_MACHINE_ARMT
     //
     // Assume PE32 image with IA32 Machine field.
     //
     Magic = EFI_IMAGE_NT_OPTIONAL_HDR32_MAGIC;
     break;
   case EFI_IMAGE_MACHINE_X64:
+  case EFI_IMAGE_MACHINE_AARCH64:
     //
     // Assume PE32+ image with X64 Machine field
     //
@@ -295,15 +295,15 @@ GetImageVersionInPeCoffImage (
   //
   switch (PeCoffLoaderImageContext->Machine) {
   case EFI_IMAGE_MACHINE_IA32:
-    // Todo: Add EFI_IMAGE_MACHINE_ARMT
     //
-    // Assume PE32 image with IA32 Machine field.
+    // Assume PE32 image
     //
     Magic = EFI_IMAGE_NT_OPTIONAL_HDR32_MAGIC;
     break;
   case EFI_IMAGE_MACHINE_X64:
+  case EFI_IMAGE_MACHINE_AARCH64:
     //
-    // Assume PE32+ image with X64 Machine field
+    // Assume PE32+ image
     //
     Magic = EFI_IMAGE_NT_OPTIONAL_HDR64_MAGIC;
     break;
