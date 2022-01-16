@@ -46,7 +46,7 @@ The "ACPI"-subcomponent on a particular platform, early in the development proce
 able to start and run *RWEVERYTHING* -  is suddenly much easier tangible. 
 
 A very common chicken/egg problem while engineering for UEFI platforms is, that analysis tools run
-on a "real" operating system only — that fails to boot due to a problem that gots to be analysed.
+on a "real" operating system only â€” that fails to boot due to a problem that gots to be analysed.
 
 While a UEFI Shell mostly runs in an early development stage of a board, those analysis tools 
 are regrettably not available for UEFI Shell. That is also true for *GPIO*-tools.
@@ -55,7 +55,7 @@ are regrettably not available for UEFI Shell. That is also true for *GPIO*-tools
 * build *Visual-ACPICA-for-UEFI-Shell*: https://www.youtube.com/watch?v=POfSJQXi2aM
 * run *ACPIDUMP.efi* and *ASLCOMPILER.efi*: https://www.youtube.com/watch?v=oA1GA95WrF0 
 
-# ACPICA — ACPI Component Architecture 
+# ACPICA â€” ACPI Component Architecture 
 ## Original project sourcecode
 The ACPICA reference implementation is available here: https://acpica.org/source <br>
 This port is based on the version https://acpica.org/node/196 from September 2021.
@@ -119,14 +119,14 @@ The datatype ```long``` has in 64Bit/32Bit
 * Microsoft Compiler: same size
 * GNU Compiler different size
 
-So ```FileHandle```would be 32Bit in size when building for 64Bit — thats wrong.
+So ```FileHandle```would be 32Bit in size when building for 64Bit â€” thats wrong.
 
 ![oswindir.c](https://github.com/tianocore/edk2-staging/blob/CdePkg/blogs/2022-01-16/pictures/oswindir.c.png)
 
 #### oswintbl.c
 
-* ```EnumSystemFirmwareTables4UEFI()``` 
-* ```GetSystemFirmwareTable4UEFI()``` 
+* [```EnumSystemFirmwareTables4UEFI()```](https://github.com/KilianKegel/Win324UEFI/blob/main/EnumSystemFirmwareTables.c)
+* [```GetSystemFirmwareTable4UEFI()```](https://github.com/KilianKegel/Win324UEFI/blob/main/GetSystemFirmwareTable.c)
 
 with slightly different parameters instead its original Windows counter parts.
 
@@ -156,6 +156,8 @@ The library is updated with new functions on demand only. It is not planned to i
 a full subset of a particular *Win32 API interface* completely.
 
 Currently the library provides the functions listed below:
+* [```EnumSystemFirmwareTables4UEFI()```](https://github.com/KilianKegel/Win324UEFI/blob/main/EnumSystemFirmwareTables.c)
+* [```GetSystemFirmwareTable4UEFI()```](https://github.com/KilianKegel/Win324UEFI/blob/main/GetSystemFirmwareTable.c)
 * [```QueryPerformanceCounter4UEFI()```](https://github.com/KilianKegel/Win324UEFI/blob/main/QueryPerformanceCounter.c): https://docs.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter
 * [```QueryPerformanceFrequency4UEFI()```](https://github.com/KilianKegel/Win324UEFI/blob/main/QueryPerformanceFrequency.c): https://docs.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancefrequency
 * [```GetTickCount644UEFI()```](https://github.com/KilianKegel/Win324UEFI/blob/main/GetTickCount64.c): https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-gettickcount64
