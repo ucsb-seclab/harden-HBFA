@@ -209,7 +209,7 @@ The .EFI files appear in the ```x64\UEFIShell``` folder.
 
 <ins>**2022-01-16:**</ins>
 * Adopting open source Visual-Studio projects to UEFI<br>
-* Introduction of the ACPCIA port to UEFI<br>
+* Introduction of the ACPICA port to UEFI<br>
 
 <ins>**2022-01-30:**</ins>
 * Introduction of how to calibrate a TSC-based software timer - on IBM-AT compatible UEFI platforms
