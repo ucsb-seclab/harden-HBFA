@@ -22,3 +22,6 @@
 [submodule "CdeEmuPkg/RedfishPkg/Library/JsonLib/jansson"]
 	path = CdeEmuPkg/RedfishPkg/Library/JsonLib/jansson
 	url = https://github.com/akheron/jansson.git
+[submodule "blogs/2022-01-16/Visual-ACPICA-for-UEFI-Shell"]
+	path = blogs/2022-01-16/Visual-ACPICA-for-UEFI-Shell
+	url = https://github.com/KilianKegel/Visual-ACPICA-for-UEFI-Shell.git

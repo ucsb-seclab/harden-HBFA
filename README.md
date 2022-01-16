@@ -16,9 +16,11 @@
 <!-- ![C](https://github.com/JoaquinConoBolillo/CdePkg/blob/master/C.png) -->
 
 ## CdePkgBlog
-* [CdePkgBlog 2021-11-14](blogs/2021-11-14#cdepkgblog-2021-11-14)
-* [CdePkgBlog 2021-11-28](blogs/2021-11-28#cdepkgblog-2021-11-28)
-* [CdePkgBlog 2021-12-19](blogs/2021-12-19#cdepkgblog-2021-12-19)
+
+* [CdePkgBlog 2022-01-16](blogs/2022-01-16#cdepkgblog-2022-01-16) — *Visual-ACPICA-for-UEFI-Shell*
+* [CdePkgBlog 2021-12-19](blogs/2021-12-19#cdepkgblog-2021-12-19) — *Redfish on CdePkg*
+* [CdePkgBlog 2021-11-28](blogs/2021-11-28#cdepkgblog-2021-11-28) — *Using UEFI- and Standard-C-API in shell applications, creating MSDOS Tools for UEFI*
+* [CdePkgBlog 2021-11-14](blogs/2021-11-14#cdepkgblog-2021-11-14) — *My legacy toolbox*
 
 ## Preface
 The programming language C is standardized by the American National Standards Institute (ANSI) and the
