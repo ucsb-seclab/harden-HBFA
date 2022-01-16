@@ -83,7 +83,7 @@ build switch.
 Additionally a couple of Windows functions need to be rewritten for UEFI usage.
 The library is called [Win324UEFI.lib](README.md#win324uefi)
 
-#### aslmain.c
+### [aslmain.c](https://github.com/KilianKegel/Visual-ACPICA-for-UEFI-Shell/blob/main/acpica-win-20210930-source/compiler/aslmain.c)
 ```aslmain.c``` is the master file for the *AslCompiler*. To build successfully
 it needs ```EFI_SYSTEM_TABLE``` and ```EFI_HANDLE``` to initialize global variables.
 ```EFI_SYSTEM_TABLE``` and ```EFI_HANDLE``` have been passed via ```argv[-1]``` and ```argv[-2]```.
@@ -91,7 +91,7 @@ it needs ```EFI_SYSTEM_TABLE``` and ```EFI_HANDLE``` to initialize global variab
 ![aslmain.c](https://github.com/tianocore/edk2-staging/blob/CdePkg/blogs/2022-01-16/pictures/aslmain.c.png)
 
 
-#### apmain.c
+### [apmain.c](https://github.com/KilianKegel/Visual-ACPICA-for-UEFI-Shell/blob/main/acpica-win-20210930-source/tools/acpidump/apmain.c)
 ```apmain.c``` is the master file for the *AcpiDump* utility. To build successfully
 it needs ```EFI_SYSTEM_TABLE``` and ```EFI_HANDLE``` to initialize global variables.
 ```EFI_SYSTEM_TABLE``` and ```EFI_HANDLE``` have been passed via ```argv[-1]``` and ```argv[-2]```.
@@ -102,19 +102,19 @@ This functions were provided by the [Win324UEFI.lib](https://github.com/KilianKe
 
 ![apmain.c](https://github.com/tianocore/edk2-staging/blob/CdePkg/blogs/2022-01-16/pictures/apmain.c.png)
 
-#### evglock.c
+### [evglock.c](https://github.com/KilianKegel/Visual-ACPICA-for-UEFI-Shell/blob/main/acpica-win-20210930-source/components/events/evglock.c)
 ```evglock.c``` provides the Global Lock support. The functions ```AcpiAcquireGlobalLock()```
 and ```AcpiReleaseGlobalLock()``` need to be rewritten from inline assembly language to
 Microsoft C intrinsics, because for 64Bit code generator inline-assembler is not supported anymore.
 
 ![evglock.c](https://github.com/tianocore/edk2-staging/blob/CdePkg/blogs/2022-01-16/pictures/evglock.c.png)
 
-#### acwin.h
+### [acwin.h](https://github.com/KilianKegel/Visual-ACPICA-for-UEFI-Shell/blob/main/acpica-win-20210930-source/include/platform/acwin.h)
 For the same reasons the macros in ```acwin.h```have to be adjusted.
 
 ![acwin.h](https://github.com/tianocore/edk2-staging/blob/CdePkg/blogs/2022-01-16/pictures/acwin.h.png)
 
-#### oswindir.c
+### [oswindir.c](https://github.com/KilianKegel/Visual-ACPICA-for-UEFI-Shell/blob/main/acpica-win-20210930-source/os_specific/service_layers/oswindir.c)
 The datatype ```long``` has in 64Bit/32Bit 
 * Microsoft Compiler: same size
 * GNU Compiler different size
@@ -123,7 +123,7 @@ So ```FileHandle```would be 32Bit in size when building for 64Bit — thats wron
 
 ![oswindir.c](https://github.com/tianocore/edk2-staging/blob/CdePkg/blogs/2022-01-16/pictures/oswindir.c.png)
 
-#### oswintbl.c
+### [oswintbl.c](https://github.com/KilianKegel/Visual-ACPICA-for-UEFI-Shell/blob/main/acpica-win-20210930-source/os_specific/service_layers/oswintbl.c)
 
 * [```EnumSystemFirmwareTables4UEFI()```](https://github.com/KilianKegel/Win324UEFI/blob/main/EnumSystemFirmwareTables.c)
 * [```GetSystemFirmwareTable4UEFI()```](https://github.com/KilianKegel/Win324UEFI/blob/main/GetSystemFirmwareTable.c)
@@ -135,7 +135,7 @@ Microsoft function definitions in the header files.
 
 ![oswintbl.c](https://github.com/tianocore/edk2-staging/blob/CdePkg/blogs/2022-01-16/pictures/oswintbl.c.png)
 
-#### oswinxf.c
+### [oswinxf.c](https://github.com/KilianKegel/Visual-ACPICA-for-UEFI-Shell/blob/main/acpica-win-20210930-source/os_specific/service_layers/oswinxf.c)
 * [```QueryPerformanceCounter4UEFI()```](https://github.com/KilianKegel/Win324UEFI/blob/main/QueryPerformanceCounter.c)
 * [```QueryPerformanceFrequency4UEFI()```](https://github.com/KilianKegel/Win324UEFI/blob/main/QueryPerformanceFrequency.c)
 * [```GetTickCount644UEFI()```](https://github.com/KilianKegel/Win324UEFI/blob/main/GetTickCount64.c)
