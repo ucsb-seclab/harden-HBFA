@@ -39,6 +39,10 @@ implementation of the Advanced Configuration and Power Interface Specification (
 This blog will demonstrate how surprisingly easy the port to the UEFI Shell is
 when a *Standard C API* is available.[<sup>2</sup>](footnotes/footnote-2.md)
 
+This task was suggested by @ajfish and @jljusten  at 
+tianocore / tianocore.github.io:
+https://github.com/tianocore/tianocore.github.io/wiki/Tasks#port-acpi-ca-to-a-shell-application.
+
 The tools provided by the ACPICA are really useful during the development process of PC-platforms.
 The extraction, comparison and disassembly of binary ACPI tables can be done easily directly 
 on the target.
