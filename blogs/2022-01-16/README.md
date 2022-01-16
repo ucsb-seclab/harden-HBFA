@@ -4,7 +4,7 @@
 ### Table of content
 * [Abstract](README.md#abstract)
 * [Introduction](README.md#Introduction)
-    * [introductory videos](README.md#introductory-videos)
+        * [introductory email](https://edk2.groups.io/g/devel/topic/cdepkgblog_2021_12_19/87843834?p=,,,20,0,0,0::recentpostdate* [introductory videos](README.md#introductory-videos)
 * [ACPICA](README.md#acpica--acpi-component-architecture)
     * [Original project sourcecode](README.md#original-project-sourcecode)
     * [Modified project sourcecode](README.md#modified-project-sourcecode)
