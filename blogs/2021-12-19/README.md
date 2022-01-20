@@ -1,5 +1,6 @@
 ### CdePkgBlog 2021-12-19
 # Redfish on CdePkg
+![redfish](https://redfish.dmtf.org/sites/default/files/DMTF_Redfish_logo_R.75.jpg)
 ### Table of content
 * [Abstract](README.md#Abstract)
 * [Introduction](README.md#Introduction)
