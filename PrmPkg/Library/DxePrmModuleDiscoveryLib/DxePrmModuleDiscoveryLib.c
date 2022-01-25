@@ -3,11 +3,13 @@
   The PRM Module Discovery library provides functionality to discover PRM modules installed by platform firmware.
 
   Copyright (c) Microsoft Corporation
-  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2020 - 2022, Intel Corporation. All rights reserved.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <PiMm.h>
+#include <Protocol/MmAccess.h>
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
@@ -113,6 +115,37 @@ CreateNewPrmModuleImageContextListEntry (
 }
 
 /**
+  Check whether the address is within any of the MMRAM ranges.
+
+  @param[in]  Address           The address to be checked.
+  @param[in]  MmramRanges       Pointer to MMRAM descriptor.
+  @param[in]  MmramRangeCount   MMRAM range count.
+
+  @retval     TRUE     The address is in MMRAM ranges.
+  @retval     FALSE    The address is out of MMRAM ranges.
+**/
+BOOLEAN
+EFIAPI
+IsAddressInMmram (
+  IN EFI_PHYSICAL_ADDRESS             Address,
+  IN EFI_MMRAM_DESCRIPTOR             *MmramRanges,
+  IN UINTN                            MmramRangeCount
+  )
+{
+  UINTN         Index;
+
+  for (Index = 0; Index < MmramRangeCount; Index++) {
+    if ((Address >= MmramRanges[Index].CpuStart) &&
+        (Address < (MmramRanges[Index].CpuStart + MmramRanges[Index].PhysicalSize)))
+    {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
   Discovers all PRM Modules loaded during boot.
 
   Each PRM Module discovered is placed into a linked list so the list can br processsed in the future.
@@ -147,6 +180,10 @@ DiscoverPrmModules (
   UINTN                                   Index;
   UINTN                                   PrmHandlerCount;
   UINTN                                   PrmModuleCount;
+  EFI_MM_ACCESS_PROTOCOL                  *MmAccess;
+  UINTN                                   Size;
+  EFI_MMRAM_DESCRIPTOR                    *MmramRanges;
+  UINTN                                   MmramRangeCount;
 
   DEBUG ((DEBUG_INFO, "%a %a - Entry.\n", _DBGMSGID_, __FUNCTION__));
 
@@ -169,6 +206,30 @@ DiscoverPrmModules (
     return EFI_NOT_FOUND;
   }
 
+  MmramRanges = NULL;
+  MmramRangeCount = 0;
+  Status = gBS->LocateProtocol (
+                  &gEfiMmAccessProtocolGuid,
+                  NULL,
+                  (VOID **)&MmAccess
+                  );
+  if (Status == EFI_SUCCESS) {
+    //
+    // Get MMRAM range information
+    //
+    Size = 0;
+    Status = MmAccess->GetCapabilities (MmAccess, &Size, NULL);
+    if ((Status == EFI_BUFFER_TOO_SMALL) && (Size != 0)) {
+      MmramRanges = (EFI_MMRAM_DESCRIPTOR *)AllocatePool (Size);
+      if (MmramRanges != NULL) {
+        Status = MmAccess->GetCapabilities (MmAccess, &Size, MmramRanges);
+        if (Status == EFI_SUCCESS) {
+          MmramRangeCount = Size / sizeof (EFI_MMRAM_DESCRIPTOR);
+        }
+      }
+    }
+  }
+
   for (Index = 0; Index < HandleCount; Index++) {
     Status = gBS->HandleProtocol (
                     HandleBuffer[Index],
@@ -176,6 +237,10 @@ DiscoverPrmModules (
                     (VOID **) &LoadedImageProtocol
                     );
     if (EFI_ERROR (Status)) {
+      continue;
+    }
+
+    if (IsAddressInMmram ((EFI_PHYSICAL_ADDRESS)(LoadedImageProtocol->ImageBase), MmramRanges, MmramRangeCount)) {
       continue;
     }
 
@@ -243,6 +308,10 @@ DiscoverPrmModules (
   }
   if (ModuleCount != NULL) {
     *ModuleCount = PrmModuleCount;
+  }
+
+  if (MmramRanges != NULL) {
+    FreePool (MmramRanges);
   }
 
   return EFI_SUCCESS;
