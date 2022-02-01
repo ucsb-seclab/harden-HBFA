@@ -12,7 +12,7 @@
     * [Dealing with ASCII and UCS2/UTF16LE file format](README.md#dealing-with-ascii-and-ucs2utf16le-file-format)
     * [Reading lines from `stdin`](README.md#reading-lines-from-stdin)
         * [1. stdin is directly connected to the console](README.md#1-stdin-is-directly-connected-to-the-console)
-        * [2. stdin is redirected, BOM is not detected](README.md#2-stdin-is-redirected-bom-is-not-detected)
+        * [2. stdin is redirected, BOM is not detected](README.md#2-stdin-is-redirected-bom-is-not-yet-detected)
         * [3. stdin is redirected, BOM is detected](README.md#3-stdin-is-redirected-bom-is-detected)
     * [Reading lines from file(s)](README.md#reading-lines-from-files)
 * [In a nutshell: `MORE.EFI`](README.md#in-a-nutshell-morefi)
