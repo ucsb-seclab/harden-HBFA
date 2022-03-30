@@ -99,6 +99,10 @@ FV = PEIFV
 gUefiOvmfPkgTokenSpaceGuid.PcdOvmfDxeMemFvBase|gUefiOvmfPkgTokenSpaceGuid.PcdOvmfDxeMemFvSize
 FV = DXEFV
 
+############################################################
+# In current stage separate-fv is not supported in CloudHV
+SET gUefiOvmfPkgTokenSpaceGuid.PcdOvmfDxeNonCcFvBase = 0
+SET gUefiOvmfPkgTokenSpaceGuid.PcdOvmfDxeNonCcFvSize = 0
 ################################################################################
 
 [FV.SECFV]

@@ -45,7 +45,10 @@ PeiFvInitialization (
   // Let DXE know about the DXE FV and NonCC FV
   //
   BuildFvHob (PcdGet32 (PcdOvmfDxeMemFvBase), PcdGet32 (PcdOvmfDxeMemFvSize));
-  BuildFvHob (PcdGet32 (PcdOvmfDxeNonCcFvBase), PcdGet32 (PcdOvmfDxeNonCcFvSize));
+
+  if (PcdGet32 (PcdOvmfDxeNonCcFvSize) > 0) {
+    BuildFvHob (PcdGet32 (PcdOvmfDxeNonCcFvBase), PcdGet32 (PcdOvmfDxeNonCcFvSize));
+  }
 
   SecureS3Needed = mS3Supported && FeaturePcdGet (PcdSmmSmramRequire);
 
@@ -63,11 +66,13 @@ PeiFvInitialization (
     SecureS3Needed ? EfiACPIMemoryNVS : EfiBootServicesData
     );
 
-  BuildMemoryAllocationHob (
-    PcdGet32 (PcdOvmfDxeNonCcFvBase),
-    PcdGet32 (PcdOvmfDxeNonCcFvSize),
-    SecureS3Needed ? EfiACPIMemoryNVS : EfiBootServicesData
-    );
+  if (PcdGet32 (PcdOvmfDxeNonCcFvSize) > 0) {
+    BuildMemoryAllocationHob (
+      PcdGet32 (PcdOvmfDxeNonCcFvBase),
+      PcdGet32 (PcdOvmfDxeNonCcFvSize),
+      SecureS3Needed ? EfiACPIMemoryNVS : EfiBootServicesData
+      );
+  }
 
 
   //

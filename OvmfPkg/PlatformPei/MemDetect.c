@@ -600,6 +600,7 @@ PublishPeiMemory (
   UINT64                      MemorySize;
   UINT32                      LowerMemorySize;
   UINT32                      PeiMemoryCap;
+  EFI_PHYSICAL_ADDRESS        MemoryBase2;
 
   LowerMemorySize = GetSystemMemorySizeBelow4gb ();
   if (FeaturePcdGet (PcdSmmSmramRequire)) {
@@ -640,9 +641,15 @@ PublishPeiMemory (
     // allocation HOB, and other allocations served from the permanent PEI RAM
     // shouldn't overlap with that HOB.
     //
+    if (PcdGet32 (PcdOvmfDxeNonCcFvSize) > 0) {
+      MemoryBase2 = PcdGet32 (PcdOvmfDxeNonCcFvBase) + PcdGet32 (PcdOvmfDxeNonCcFvSize);
+    } else {
+      MemoryBase2 = PcdGet32 (PcdOvmfDxeMemFvBase) + PcdGet32 (PcdOvmfDxeMemFvSize);
+    }
+
+
     MemoryBase = mS3Supported && FeaturePcdGet (PcdSmmSmramRequire) ?
-      PcdGet32 (PcdOvmfDecompressionScratchEnd) :
-      PcdGet32 (PcdOvmfDxeNonCcFvBase) + PcdGet32 (PcdOvmfDxeNonCcFvSize);
+      PcdGet32 (PcdOvmfDecompressionScratchEnd) : MemoryBase2;
     MemorySize = LowerMemorySize - MemoryBase;
     if (MemorySize > PeiMemoryCap) {
       MemoryBase = LowerMemorySize - PeiMemoryCap;

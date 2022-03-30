@@ -465,6 +465,10 @@ DecompressMemFvs (
     return EFI_VOLUME_CORRUPTED;
   }
 
+  if (PcdGet32 (PcdOvmfDxeMemFvSize) == 0) {
+    goto Done;
+  }
+
   // Next Section is DxeNonCcFv
   BufferPtr = (UINTN)(FvSection + 1) + PcdGet32 (PcdOvmfDxeMemFvSize);
   OutputBufferSize -= (UINT32)(BufferPtr - (UINTN)OutputBuffer);
@@ -502,6 +506,7 @@ DecompressMemFvs (
     return EFI_VOLUME_CORRUPTED;
   }
 
+Done:
   *Fv = PeiMemFv;
   return EFI_SUCCESS;
 }
