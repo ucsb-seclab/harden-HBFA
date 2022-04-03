@@ -4,10 +4,11 @@
 # Copyright (c) 2021-, Intel Corporation. All rights reserved.<BR>
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 ##
-from PI.FvHeader import *
-from PI.FfsFileHeader import *
-from PI.SectionHeader import *
-from PI.Common import *
+from FirmwareStorageFormat.FvHeader import *
+from FirmwareStorageFormat.FfsFileHeader import *
+from FirmwareStorageFormat.SectionHeader import *
+from FirmwareStorageFormat.Common import *
+from utils.FmmtLogger import FmmtLogger as logger
 import uuid
 
 SectionHeaderType = {
@@ -26,7 +27,7 @@ SectionHeaderType = {
     0x19:'EFI_SECTION_RAW',
     0x1B:'EFI_SECTION_PEI_DEPEX',
     0x1C:'EFI_SECTION_MM_DEPEX'
-}    
+}
 HeaderType = [0x01, 0x02, 0x14, 0x15, 0x18]
 
 class BinaryNode:
@@ -70,10 +71,8 @@ class FvNode:
         self.ROffset = 0
         self.Data = b''
         if self.Header.Signature != 1213613663:
-            print('Invalid! Fv Header Signature {} is not "_FVH".'.format(self.Header.Signature))
-            with open(str(self.Name)+'.fd', "wb") as f:
-                f.write(struct2stream(self.Header))
-            assert False
+            logger.error('Invalid Fv Header! Fv {} signature {} is not "_FVH".'.format(struct2stream(self.Header), self.Header.Signature))
+            raise Exception("Process Failed: Fv Header Signature!")
         self.PadData = b''
         self.Free_Space = 0
         self.ModCheckSum()
@@ -115,7 +114,8 @@ class FfsNode:
         self.Header = EFI_FFS_FILE_HEADER.from_buffer_copy(buffer)
         # self.Attributes = unpack("<B", buffer[21:22])[0]
         if self.Header.FFS_FILE_SIZE != 0 and self.Header.Attributes != 0xff and self.Header.Attributes & 0x01 == 1:
-            print('Error Ffs Header! Ffs Header Size and Attributes is not matched!')
+            logger.error('Error Ffs Header! Ffs {} Header Size and Attributes is not matched!'.format(uuid.UUID(bytes_le=struct2stream(self.Header.Name))))
+            raise Exception("Process Failed: Error Ffs Header!")
         if self.Header.FFS_FILE_SIZE == 0 and self.Header.Attributes & 0x01 == 1:
             self.Header = EFI_FFS_FILE_HEADER2.from_buffer_copy(buffer)
         self.Name = uuid.UUID(bytes_le=struct2stream(self.Header.Name))
@@ -128,6 +128,7 @@ class FfsNode:
         self.ROffset = 0
         self.Data = b''
         self.PadData = b''
+        self.SectionMaxAlignment = 4
 
     def ModCheckSum(self) -> None:
         HeaderData = struct2stream(self.Header)
@@ -149,7 +150,7 @@ class SectionNode:
         if self.Header.Type in SectionHeaderType:
             self.Name = SectionHeaderType[self.Header.Type]
         elif self.Header.Type == 0:
-            self.Name = "EFI_SECTION_RAW"
+            self.Name = "EFI_SECTION_ALL"
         else:
             self.Name = "SECTION"
         if self.Header.Type in HeaderType:
@@ -167,6 +168,8 @@ class SectionNode:
         self.OriData = b''
         self.OriHeader = b''
         self.PadData = b''
+        self.IsPadSection = False
+        self.SectionMaxAlignment = 4
 
     def GetExtHeader(self, Type: int, buffer: bytes, nums: int=0) -> None:
         if Type == 0x01:

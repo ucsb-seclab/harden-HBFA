@@ -7,7 +7,7 @@
 from ast import Str
 from struct import *
 from ctypes import *
-from PI.Common import *
+from FirmwareStorageFormat.Common import *
 
 class EFI_FV_BLOCK_MAP_ENTRY(Structure):
     _pack_ = 1

@@ -6,7 +6,7 @@
 ##
 from struct import *
 from ctypes import *
-from PI.Common import *
+from FirmwareStorageFormat.Common import *
 
 EFI_COMMON_SECTION_HEADER_LEN = 4
 EFI_COMMON_SECTION_HEADER2_LEN = 8
@@ -21,7 +21,7 @@ class EFI_COMMON_SECTION_HEADER(Structure):
     @property
     def SECTION_SIZE(self) -> int:
         return self.Size[0] | self.Size[1] << 8 | self.Size[2] << 16
-    
+
     def Common_Header_Size(self) -> int:
         return 4
 

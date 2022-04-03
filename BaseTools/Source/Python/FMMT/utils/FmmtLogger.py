@@ -8,11 +8,24 @@
 
 import logging
 import sys
+import os
+
+logfile = 'FMMT_Build.log'
+if os.path.exists(logfile):
+    os.remove(logfile)
 
 FmmtLogger = logging.getLogger('FMMT')
-FmmtLogger.setLevel(logging.INFO)
+FmmtLogger.setLevel(logging.DEBUG)
 
-lh=logging.StreamHandler(sys.stdout)
-lf=logging.Formatter("%(levelname)-8s: %(message)s")
-lh.setFormatter(lf)
-FmmtLogger.addHandler(lh)
+log_stream_handler=logging.StreamHandler(sys.stdout)
+log_file_handler=logging.FileHandler(logfile)
+log_stream_handler.setLevel(logging.INFO)
+
+stream_format=logging.Formatter("%(levelname)-8s: %(message)s")
+file_format=logging.Formatter("%(levelname)-8s: %(message)s")
+
+log_stream_handler.setFormatter(stream_format)
+log_file_handler.setFormatter(file_format)
+
+FmmtLogger.addHandler(log_stream_handler)
+FmmtLogger.addHandler(log_file_handler)

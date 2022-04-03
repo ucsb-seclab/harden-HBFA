@@ -11,7 +11,7 @@ import shutil
 import sys
 import tempfile
 import uuid
-from PI.Common import *
+from FirmwareStorageFormat.Common import *
 from utils.FmmtLogger import FmmtLogger as logger
 import subprocess
 
@@ -23,6 +23,7 @@ class GUIDTool:
         self.guid: str = guid
         self.short_name: str = short_name
         self.command: str = command
+        self.ifexist: bool = False
 
     def pack(self, buffer: bytes) -> bytes:
         """
@@ -101,13 +102,21 @@ class GUIDTools:
     }
 
     def __init__(self, tooldef_file: str=None) -> None:
-        self.dir = os.path.dirname(__file__)
-        self.tooldef_file = tooldef_file if tooldef_file else os.path.join(
-            self.dir, "FMMTConfig.ini")
+        self.dir = os.path.join(os.path.dirname(__file__), "..")
+        self.tooldef_file = tooldef_file if tooldef_file else os.path.join(self.dir, "FmmtConf.ini")
         self.tooldef = dict()
-        self.load()
 
-    def VerifyTools(self) -> None:
+    def SetConfigFile(self) -> None:
+        if os.environ['FmmtConfPath']:
+            self.tooldef_file = os.path.join(os.environ['FmmtConfPath'], 'FmmtConf.ini')
+        else:
+            PathList = os.environ['PATH']
+            for CurrentPath in PathList:
+                if os.path.exists(os.path.join(CurrentPath, 'FmmtConf.ini')):
+                    self.tooldef_file = os.path.join(CurrentPath, 'FmmtConf.ini')
+                    break
+
+    def VerifyTools(self, guidtool) -> None:
         """
         Verify Tools and Update Tools path.
         """
@@ -115,38 +124,56 @@ class GUIDTools:
         path_env_list = path_env.split(os.pathsep)
         path_env_list.append(os.path.dirname(__file__))
         path_env_list = list(set(path_env_list))
-        for tool in self.tooldef.values():
-            cmd = tool.command
-            if os.path.isabs(cmd):
-                if not os.path.exists(cmd):
-                    print("Tool Not found %s" % cmd)
-            else:
-                for syspath in path_env_list:
-                    if glob.glob(os.path.join(syspath, cmd+"*")):
-                        break
+        cmd = guidtool.command
+        if os.path.isabs(cmd):
+            if not os.path.exists(cmd):
+                if guidtool not in self.default_tools:
+                    logger.error("Tool Not found %s, which causes compress/uncompress process error." % cmd)
+                    logger.error("Please goto edk2 repo in current console, run 'edksetup.bat rebuild' command, and try again.\n")
                 else:
-                    print("Tool Not found %s" % cmd)
+                    logger.error("Tool Not found %s, which causes compress/uncompress process error." % cmd)
+            else:
+                guidtool.ifexist = True
+        else:
+            for syspath in path_env_list:
+                if glob.glob(os.path.join(syspath, cmd+"*")):
+                    guidtool.ifexist = True
+                    break
+            else:
+                if guidtool not in self.default_tools:
+                    logger.error("Tool Not found %s, which causes compress/uncompress process error." % cmd)
+                    logger.error("Please goto edk2 repo in current console, run 'edksetup.bat rebuild' command, and try again.\n")
+                else:
+                    logger.error("Tool Not found %s, which causes compress/uncompress process error." % cmd)
 
-    def load(self) -> None:
+    def LoadingTools(self) -> None:
+        self.SetConfigFile()
         if os.path.exists(self.tooldef_file):
             with open(self.tooldef_file, "r") as fd:
                 config_data = fd.readlines()
             for line in config_data:
                 try:
-                    guid, short_name, command = line.split()
-                    new_format_guid = struct2stream(ModifyGuidFormat(guid.strip()))
-                    self.tooldef[new_format_guid] = GUIDTool(
-                        guid.strip(), short_name.strip(), command.strip())
+                    if not line.startswith("#"):
+                        guid, short_name, command = line.split()
+                        new_format_guid = struct2stream(ModifyGuidFormat(guid.strip()))
+                        self.tooldef[new_format_guid] = GUIDTool(
+                            guid.strip(), short_name.strip(), command.strip())
                 except:
-                    print("GuidTool load error!")
+                    logger.error("GuidTool load error!")
                     continue
         else:
             self.tooldef.update(self.default_tools)
 
-        self.VerifyTools()
-
-    def __getitem__(self, guid) -> None:
-        return self.tooldef.get(guid)
-
+    def __getitem__(self, guid):
+        if not self.tooldef:
+            self.LoadingTools()
+        guid_tool = self.tooldef.get(guid)
+        if guid_tool:
+            self.VerifyTools(guid_tool)
+            return guid_tool
+        else:
+            logger.error("{} GuidTool is not defined!".format(guid))
+            raise Exception("Process Failed: is not defined!")
 
 guidtools = GUIDTools()
+

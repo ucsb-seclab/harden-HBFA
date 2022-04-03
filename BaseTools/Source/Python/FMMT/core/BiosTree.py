@@ -5,7 +5,8 @@
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 ##
 import collections
-from PI.Common import *
+from FirmwareStorageFormat.Common import *
+from utils.FmmtLogger import FmmtLogger as logger
 
 ROOT_TREE = 'ROOT'
 ROOT_FV_TREE = 'ROOT_FV_TREE'
@@ -36,7 +37,7 @@ class BIOSTREE:
         self.Parent = None
         self.NextRel = None
         self.LastRel = None
- 
+
     def HasChild(self) -> bool:
         if self.Child == []:
             return False
@@ -95,15 +96,14 @@ class BIOSTREE:
                 nextTree.LastRel = None
             return DeleteTree
         else:
-            print('Could not find the target tree')
+            logger.error('Could not find the target tree')
             return None
 
     def FindNode(self, key: str, Findlist: list) -> None:
         if self.key == key or (self.Data and self.Data.Name == key) or (self.type == FFS_TREE and self.Data.UiName == key):
             Findlist.append(self)
-        else:
-            for item in self.Child:
-                item.FindNode(key, Findlist)
+        for item in self.Child:
+            item.FindNode(key, Findlist)
 
     def GetTreePath(self):
         BiosTreePath = [self]

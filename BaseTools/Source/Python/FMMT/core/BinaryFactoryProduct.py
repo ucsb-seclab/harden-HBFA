@@ -7,10 +7,12 @@
 from re import T
 import copy
 import os
-from PI.Common import *
+import sys
+from FirmwareStorageFormat.Common import *
 from core.BiosTreeNode import *
 from core.BiosTree import *
-from core.GuidTools import *
+from core.GuidTools import GUIDTools
+from utils.FmmtLogger import FmmtLogger as logger
 
 ROOT_TREE = 'ROOT'
 ROOT_FV_TREE = 'ROOT_FV_TREE'
@@ -36,10 +38,11 @@ class BinaryFactory():
 
 class BinaryProduct():
     ## Use GuidTool to decompress data.
-    def DeCompressData(self, GuidTool, Section_Data: bytes) -> bytes:
-        ParPath = os.path.abspath(os.path.dirname(os.path.abspath(__file__))+os.path.sep+"..")
-        ToolPath = os.path.join(ParPath, r'FMMTConfig.ini')
-        guidtool = GUIDTools(ToolPath).__getitem__(struct2stream(GuidTool))
+    def DeCompressData(self, GuidTool, Section_Data: bytes, FileName) -> bytes:
+        guidtool = GUIDTools().__getitem__(struct2stream(GuidTool))
+        if not guidtool.ifexist:
+            logger.error("GuidTool {} is not found when decompressing {} file.\n".format(guidtool.command, FileName))
+            raise Exception("Process Failed: GuidTool not found!")
         DecompressedData = guidtool.unpack(Section_Data)
         return DecompressedData
 
@@ -75,17 +78,17 @@ class SectionProduct(BinaryProduct):
     def ParserData(self, Section_Tree, whole_Data: bytes, Rel_Whole_Offset: int=0) -> None:
         if Section_Tree.Data.Type == 0x01:
             Section_Tree.Data.OriData = Section_Tree.Data.Data
-            self.ParserFfs(Section_Tree, b'')
+            self.ParserSection(Section_Tree, b'')
         # Guided Define Section
         elif Section_Tree.Data.Type == 0x02:
             Section_Tree.Data.OriData = Section_Tree.Data.Data
             DeCompressGuidTool = Section_Tree.Data.ExtHeader.SectionDefinitionGuid
-            Section_Tree.Data.Data = self.DeCompressData(DeCompressGuidTool, Section_Tree.Data.Data)
+            Section_Tree.Data.Data = self.DeCompressData(DeCompressGuidTool, Section_Tree.Data.Data, Section_Tree.Parent.Data.Name)
             Section_Tree.Data.Size = len(Section_Tree.Data.Data) + Section_Tree.Data.HeaderLength
-            self.ParserFfs(Section_Tree, b'')
+            self.ParserSection(Section_Tree, b'')
         elif Section_Tree.Data.Type == 0x03:
             Section_Tree.Data.OriData = Section_Tree.Data.Data
-            self.ParserFfs(Section_Tree, b'')
+            self.ParserSection(Section_Tree, b'')
         # SEC_FV Section
         elif Section_Tree.Data.Type == 0x17:
             global Fv_count
@@ -99,7 +102,7 @@ class SectionProduct(BinaryProduct):
             Section_Tree.insertChild(Sec_Fv_Tree)
             Fv_count += 1
 
-    def ParserFfs(self, ParTree, Whole_Data: bytes, Rel_Whole_Offset: int=0) -> None:
+    def ParserSection(self, ParTree, Whole_Data: bytes, Rel_Whole_Offset: int=0) -> None:
         Rel_Offset = 0
         Section_Offset = 0
         # Get the Data from parent tree, if do not have the tree then get it from the whole_data.
@@ -133,6 +136,9 @@ class SectionProduct(BinaryProduct):
                 ParTree.Data.Version = Section_Info.ExtHeader.GetVersionString()
             if Section_Info.Header.Type == 0x15:
                 ParTree.Data.UiName = Section_Info.ExtHeader.GetUiString()
+            if Section_Info.Header.Type == 0x19:
+                if Section_Info.Data.replace(b'\x00', b'') == b'':
+                    Section_Info.IsPadSection = True
             Section_Offset += Section_Info.Size + Pad_Size
             Rel_Offset += Section_Info.Size + Pad_Size
             Section_Tree.Data = Section_Info
@@ -175,6 +181,9 @@ class FfsProduct(BinaryProduct):
                 ParTree.Data.Version = Section_Info.ExtHeader.GetVersionString()
             if Section_Info.Header.Type == 0x15:
                 ParTree.Data.UiName = Section_Info.ExtHeader.GetUiString()
+            if Section_Info.Header.Type == 0x19:
+                if Section_Info.Data.replace(b'\x00', b'') == b'':
+                    Section_Info.IsPadSection = True
             Section_Offset += Section_Info.Size + Pad_Size
             Rel_Offset += Section_Info.Size + Pad_Size
             Section_Tree.Data = Section_Info
@@ -243,7 +252,7 @@ class FdProduct(BinaryProduct):
         data_size = len(whole_data)
         Binary_count = 0
         global Fv_count
-        # If the first Fv image is the Binary Fv, add it into the tree. 
+        # If the first Fv image is the Binary Fv, add it into the tree.
         if Fd_Struct[0][1] != 0:
             Binary_node = BIOSTREE('BINARY'+ str(Binary_count))
             Binary_node.type = BINARY_DATA
@@ -302,7 +311,7 @@ class FdProduct(BinaryProduct):
         while cur_index < data_size:
             if EFI_FIRMWARE_FILE_SYSTEM2_GUID_BYTE in whole_data[cur_index:]:
                 target_index = whole_data[cur_index:].index(EFI_FIRMWARE_FILE_SYSTEM2_GUID_BYTE) + cur_index
-                if whole_data[target_index+24:target_index+28] == FVH_SIGNATURE and whole_data[target_index-16:target_index] == ZEROVECTOR_BYTE:
+                if whole_data[target_index+24:target_index+28] == FVH_SIGNATURE:
                     Fd_Struct.append([FV_TREE, target_index - 16, unpack("Q", whole_data[target_index+16:target_index+24])])
                     cur_index = Fd_Struct[-1][1] + Fd_Struct[-1][2][0]
                 else:
@@ -314,7 +323,7 @@ class FdProduct(BinaryProduct):
         while cur_index < data_size:
             if EFI_FIRMWARE_FILE_SYSTEM3_GUID_BYTE in whole_data[cur_index:]:
                 target_index = whole_data[cur_index:].index(EFI_FIRMWARE_FILE_SYSTEM3_GUID_BYTE) + cur_index
-                if whole_data[target_index+24:target_index+28] == FVH_SIGNATURE and whole_data[target_index-16:target_index] == ZEROVECTOR_BYTE:
+                if whole_data[target_index+24:target_index+28] == FVH_SIGNATURE:
                     Fd_Struct.append([FV_TREE, target_index - 16, unpack("Q", whole_data[target_index+16:target_index+24])])
                     cur_index = Fd_Struct[-1][1] + Fd_Struct[-1][2][0]
                 else:
@@ -326,7 +335,7 @@ class FdProduct(BinaryProduct):
         while cur_index < data_size:
             if EFI_SYSTEM_NVDATA_FV_GUID_BYTE in whole_data[cur_index:]:
                 target_index = whole_data[cur_index:].index(EFI_SYSTEM_NVDATA_FV_GUID_BYTE) + cur_index
-                if whole_data[target_index+24:target_index+28] == FVH_SIGNATURE and whole_data[target_index-16:target_index] == ZEROVECTOR_BYTE:
+                if whole_data[target_index+24:target_index+28] == FVH_SIGNATURE:
                     Fd_Struct.append([DATA_FV_TREE, target_index - 16, unpack("Q", whole_data[target_index+16:target_index+24])])
                     cur_index = Fd_Struct[-1][1] + Fd_Struct[-1][2][0]
                 else:

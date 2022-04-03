@@ -11,6 +11,7 @@
 #
 import argparse
 import sys
+sys.path.append("..")
 from core.FMMTOperation import *
 
 parser = argparse.ArgumentParser(description='''
@@ -24,14 +25,23 @@ parser.add_argument("-d", "--Delete", dest="Delete", nargs='+',
                     help="Delete a Ffs from FV: '-d inputfile TargetFfsName outputfile TargetFvName(Optional,\
                     If not given, wil delete all the existed target Ffs)'")
 parser.add_argument("-e", "--Extract", dest="Extract", nargs='+',
-                    help="Extract a Ffs Info: '-e inputfile TargetFfsName outputfile'")
+                    help="Extract a Ffs Info: '-e inputfile TargetFfsName outputfile TargetFvName(Optional,\
+                    If not given, wil extract the first target Ffs)'")
 parser.add_argument("-a", "--Add", dest="Add", nargs='+',
                     help="Add a Ffs into a FV:'-a inputfile TargetFvName newffsfile outputfile'")
 parser.add_argument("-r", "--Replace", dest="Replace", nargs='+',
                     help="Replace a Ffs in a FV: '-r inputfile TargetFfsName newffsfile outputfile TargetFvName(Optional,\
                         If not given, wil replace all the existed target Ffs with new Ffs file)'")
-parser.add_argument("-l", "--LogFileType", dest="LogFileType", nargs='+',
-                    help="The format of log file which saves Binary layout. Currently supports: json, txt. More formats will be added in the future")
+parser.add_argument("-l", "--LayoutFileName", dest="LayoutFileName", nargs='+',
+                    help="The output file which saves Binary layout: '-l xxx.txt'/'-l xxx.json'\
+                        If only provide file format as 'txt', \
+                        the file will be generated with default name (Layout_'InputFileName'.txt). \
+                        Currently supports two formats: json, txt. More formats will be added in the future")
+parser.add_argument("-c", "--ConfigFilePath", dest="ConfigFilePath", nargs='+',
+                    help="Provide the target FmmtConf.ini file path: '-c C:\Code\FmmtConf.ini' \
+                        FmmtConf file saves the target guidtool used in compress/uncompress process.\
+                        If do not provide, FMMT tool will search the inputfile folder for FmmtConf.ini firstly, if not found,\
+                        the FmmtConf.ini saved in FMMT tool's folder will be used as default.")
 
 def print_banner():
     print("")
@@ -40,14 +50,30 @@ class FMMT():
     def __init__(self) -> None:
         self.firmware_packet = {}
 
+    def SetConfigFilePath(self, configfilepath:str) -> str:
+        os.environ['FmmtConfPath'] = os.path.abspath(configfilepath)
+
+    def SetDestPath(self, inputfile:str) -> str:
+        os.environ['FmmtConfPath'] = ''
+        self.dest_path = os.path.dirname(os.path.abspath(inputfile))
+        old_env = os.environ['PATH']
+        os.environ['PATH'] = self.dest_path + os.pathsep + old_env
+
     def CheckFfsName(self, FfsName:str) -> str:
         try:
             return uuid.UUID(FfsName)
         except:
             return FfsName
 
-    def View(self, inputfile: str, logfiletype: str=None, outputfile: str=None) -> None:
-        # ParserFile(inputfile, ROOT_TYPE, logfile, outputfile)
+    def GetFvName(self, FvName:str) -> str:
+        try:
+            return uuid.UUID(FvName)
+        except:
+            return FvName
+
+    def View(self, inputfile: str, layoutfilename: str=None, outputfile: str=None) -> None:
+        # ViewFile(inputfile, ROOT_TYPE, logfile, outputfile)
+        self.SetDestPath(inputfile)
         filetype = os.path.splitext(inputfile)[1].lower()
         if filetype == '.fd':
             ROOT_TYPE = ROOT_TREE
@@ -59,23 +85,30 @@ class FMMT():
             ROOT_TYPE = ROOT_SECTION_TREE
         else:
             ROOT_TYPE = ROOT_TREE
-        ParserFile(inputfile, ROOT_TYPE, logfiletype, outputfile)
+        ViewFile(inputfile, ROOT_TYPE, layoutfilename, outputfile)
 
     def Delete(self, inputfile: str, TargetFfs_name: str, outputfile: str, Fv_name: str=None) -> None:
+        self.SetDestPath(inputfile)
         if Fv_name:
-            DeleteFfs(inputfile, self.CheckFfsName(TargetFfs_name), outputfile, uuid.UUID(Fv_name))
+            DeleteFfs(inputfile, self.CheckFfsName(TargetFfs_name), outputfile, self.GetFvName(Fv_name))
         else:
             DeleteFfs(inputfile, self.CheckFfsName(TargetFfs_name), outputfile)
 
-    def Extract(self, inputfile: str, Ffs_name: str, outputfile: str) -> None:
-        ExtractFfs(inputfile, self.CheckFfsName(Ffs_name), outputfile)
+    def Extract(self, inputfile: str, Ffs_name: str, outputfile: str, Fv_name: str=None) -> None:
+        self.SetDestPath(inputfile)
+        if Fv_name:
+            ExtractFfs(inputfile, self.CheckFfsName(Ffs_name), outputfile, self.GetFvName(Fv_name))
+        else:
+            ExtractFfs(inputfile, self.CheckFfsName(Ffs_name), outputfile)
 
     def Add(self, inputfile: str, Fv_name: str, newffsfile: str, outputfile: str) -> None:
+        self.SetDestPath(inputfile)
         AddNewFfs(inputfile, self.CheckFfsName(Fv_name), newffsfile, outputfile)
 
     def Replace(self,inputfile: str, Ffs_name: str, newffsfile: str, outputfile: str, Fv_name: str=None) -> None:
+        self.SetDestPath(inputfile)
         if Fv_name:
-            ReplaceFfs(inputfile, self.CheckFfsName(Ffs_name), newffsfile, outputfile, uuid.UUID(Fv_name))
+            ReplaceFfs(inputfile, self.CheckFfsName(Ffs_name), newffsfile, outputfile, self.GetFvName(Fv_name))
         else:
             ReplaceFfs(inputfile, self.CheckFfsName(Ffs_name), newffsfile, outputfile)
 
@@ -86,27 +119,32 @@ def main():
 
     try:
         fmmt=FMMT()
+        if args.ConfigFilePath:
+            fmmt.SetConfigFilePath(args.ConfigFilePath[0])
         if args.View:
-            if args.LogFileType:
-                fmmt.View(args.View[0], args.LogFileType[0])
+            if args.LayoutFileName:
+                fmmt.View(args.View[0], args.LayoutFileName[0])
             else:
                 fmmt.View(args.View[0])
-        if args.Delete:
+        elif args.Delete:
             if len(args.Delete) == 4:
                 fmmt.Delete(args.Delete[0],args.Delete[1],args.Delete[2],args.Delete[3])
             else:
                 fmmt.Delete(args.Delete[0],args.Delete[1],args.Delete[2])
-        if args.Extract:
-            fmmt.Extract(args.Extract[0],args.Extract[1],args.Extract[2])
-        if args.Add:
+        elif args.Extract:
+            if len(args.Extract) == 4:
+                fmmt.Extract(args.Extract[0],args.Extract[1],args.Extract[2], args.Extract[3])
+            else:
+                fmmt.Extract(args.Extract[0],args.Extract[1],args.Extract[2])
+        elif args.Add:
             fmmt.Add(args.Add[0],args.Add[1],args.Add[2],args.Add[3])
-        if args.Replace:
+        elif args.Replace:
             if len(args.Replace) == 5:
                 fmmt.Replace(args.Replace[0],args.Replace[1],args.Replace[2],args.Replace[3],args.Replace[4])
             else:
                 fmmt.Replace(args.Replace[0],args.Replace[1],args.Replace[2],args.Replace[3])
-        # TODO:
-        '''Do the main work'''
+        else:
+            parser.print_help()
     except Exception as e:
         print(e)
 

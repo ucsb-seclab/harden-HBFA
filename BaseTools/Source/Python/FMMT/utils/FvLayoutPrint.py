@@ -4,6 +4,7 @@
 # Copyright (c) 2021-, Intel Corporation. All rights reserved.<BR>
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 ##
+from utils.FmmtLogger import FmmtLogger as logger
 
 def GetFormatter(layout_format: str):
     if layout_format == 'json':
@@ -40,7 +41,7 @@ class TxtFormatter(Formatter):
         print('\n')
 
     def dump(self,layoutdict: dict, layoutlist: list, outputfile: str=None) -> None:
-        print(outputfile)
+        logger.info('Binary Layout Info is saved in {} file.'.format(outputfile))
         with open(outputfile, "w") as f:
             for item in layoutlist:
                 f.writelines(item + '\n')
