@@ -210,6 +210,10 @@ TdxStartup(
   // SecFV
   //
   BootFv = (EFI_FIRMWARE_VOLUME_HEADER *)SecCoreData->BootFirmwareVolumeBase;
+  if (BootFv->FvLength != FixedPcdGet32 (PcdBootFvLength)) {
+    ASSERT (FALSE);
+    CpuDeadLoop ();
+  }
   BuildFvHob ((UINTN)BootFv, BootFv->FvLength);
 
   //
