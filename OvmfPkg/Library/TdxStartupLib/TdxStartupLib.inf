@@ -87,6 +87,7 @@
   gUefiOvmfPkgTokenSpaceGuid.PcdOvmfSecGhcbBackupBase
   gUefiOvmfPkgTokenSpaceGuid.PcdTdxAcceptPartialMemorySize
   gUefiOvmfPkgTokenSpaceGuid.PcdOvmfSecGhcbSize
+  gUefiOvmfPkgTokenSpaceGuid.PcdBootFvLength
   //
   // TODO check these PCDs' impact on Ovmf
   //
