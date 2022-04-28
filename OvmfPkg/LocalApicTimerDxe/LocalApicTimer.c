@@ -162,12 +162,6 @@ EFI_TIMER_NOTIFY  mTimerNotifyFunction = NULL;
 ///
 UINT64  mTimerPeriod = 0;
 
-///
-/// Counts the number of Local APIC Timer interrupts processed by this driver.
-/// Only required for debug.
-///
-volatile UINTN  mNumTicks;
-
 /**
   The interrupt handler for the Local APIC timer.  This handler clears the Local
   APIC interrupt and computes the amount of time that has passed since the last 
@@ -190,11 +184,6 @@ TimerInterruptHandler (
   EFI_TPL OriginalTPL;
 
   OriginalTPL = gBS->RaiseTPL (TPL_HIGH_LEVEL);
-
-  //
-  // Count number of ticks
-  //
-  DEBUG_CODE (mNumTicks++;);
 
   //
   // Check to see if there is a registered notification function
@@ -457,16 +446,6 @@ TimerDriverInitialize (
     DEBUG ((DEBUG_ERROR, "Unable to set Local APIC default timer rate.  Unload Local APIC timer driver.\n"));
     return EFI_DEVICE_ERROR;
   }
-
-  //
-  // Show state of enabled timer
-  //
-  DEBUG_CODE (
-    //
-    // Wait for a few timer interrupts to fire before continuing
-    // 
-    while (mNumTicks < 10);
-  );
 
   //
   // Install the Timer Architectural Protocol onto a new handle
