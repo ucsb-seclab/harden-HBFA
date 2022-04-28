@@ -146,7 +146,7 @@ def ReplaceFfs(inputfile: str, Ffs_name: str, newffsfile: str, outputfile: str, 
     Status = False
     # 3. Data Modify
     new_ffs = newFmmtParser.WholeFvTree.Child[0]
-    new_ffs.Data.PadData = GetPadSize(new_ffs.Data.Size, 8) * b'\xff'
+    new_ffs.Data.PadData = GetPadSize(new_ffs.Data.Size, FFS_COMMON_ALIGNMENT) * b'\xff'
     FmmtParser.WholeFvTree.FindNode(Ffs_name, FmmtParser.WholeFvTree.Findlist)
     if Fv_name:
         for item in FmmtParser.WholeFvTree.Findlist:

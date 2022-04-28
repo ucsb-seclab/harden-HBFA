@@ -26,6 +26,10 @@ ZEROVECTOR_BYTE = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
 PADVECTOR = uuid.UUID("ffffffff-ffff-ffff-ffff-ffffffffffff")
 FVH_SIGNATURE = b'_FVH'
 
+#Alignment
+SECTION_COMMON_ALIGNMENT = 4
+FFS_COMMON_ALIGNMENT = 8
+
 class GUID(Structure):
     _pack_ = 1
     _fields_ = [

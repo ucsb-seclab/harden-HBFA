@@ -127,7 +127,7 @@ class SectionProduct(BinaryProduct):
             # The final Section in parent Section does not need to add padding, else must be 4-bytes align with parent Section start offset
             Pad_Size = 0
             if (Rel_Offset+Section_Info.HeaderLength+len(Section_Info.Data) != Data_Size):
-                Pad_Size = GetPadSize(Section_Info.Size, 4)
+                Pad_Size = GetPadSize(Section_Info.Size, SECTION_COMMON_ALIGNMENT)
                 Section_Info.PadData = Pad_Size * b'\x00'
             if Section_Info.Header.Type == 0x02:
                 Section_Info.DOffset = Section_Offset + Section_Info.ExtHeader.DataOffset + Rel_Whole_Offset
@@ -171,7 +171,7 @@ class FfsProduct(BinaryProduct):
             # The final Section in Ffs does not need to add padding, else must be 4-bytes align with Ffs start offset
             Pad_Size = 0
             if (Rel_Offset+Section_Info.HeaderLength+len(Section_Info.Data) != Data_Size):
-                Pad_Size = GetPadSize(Section_Info.Size, 4)
+                Pad_Size = GetPadSize(Section_Info.Size, SECTION_COMMON_ALIGNMENT)
                 Section_Info.PadData = Pad_Size * b'\x00'
             if Section_Info.Header.Type == 0x02:
                 Section_Info.DOffset = Section_Offset + Section_Info.ExtHeader.DataOffset + Rel_Whole_Offset
@@ -235,7 +235,7 @@ class FvProduct(BinaryProduct):
                 # The final Ffs in Fv does not need to add padding, else must be 8-bytes align with Fv start offset
                 Pad_Size = 0
                 if Ffs_Tree.type != FFS_FREE_SPACE and (Rel_Offset+Ffs_Info.Header.HeaderLength+len(Ffs_Info.Data) != Data_Size):
-                    Pad_Size = GetPadSize(Ffs_Info.Size, 8)
+                    Pad_Size = GetPadSize(Ffs_Info.Size, FFS_COMMON_ALIGNMENT)
                     Ffs_Info.PadData = Pad_Size * b'\xff'
                 Ffs_Offset += Ffs_Info.Size + Pad_Size
                 Rel_Offset += Ffs_Info.Size + Pad_Size

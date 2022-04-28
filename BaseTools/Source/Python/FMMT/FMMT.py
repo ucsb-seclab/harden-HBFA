@@ -10,8 +10,6 @@
 # Import Modules
 #
 import argparse
-import sys
-sys.path.append("..")
 from core.FMMTOperation import *
 
 parser = argparse.ArgumentParser(description='''
@@ -22,16 +20,16 @@ parser.add_argument("--version", action="version", version='%(prog)s Version 1.0
 parser.add_argument("-v", "--View", dest="View", nargs='+',
                     help="View each FV and the named files within each FV: '-v inputfile outputfile, inputfiletype(.Fd/.Fv/.ffs/.sec)'")
 parser.add_argument("-d", "--Delete", dest="Delete", nargs='+',
-                    help="Delete a Ffs from FV: '-d inputfile TargetFfsName outputfile TargetFvName(Optional,\
-                    If not given, wil delete all the existed target Ffs)'")
+                    help="Delete a Ffs from FV: '-d inputfile TargetFvName(Optional) TargetFfsName outputfile\
+                        If not given TargetFvName, all the existed target Ffs will be deleted'")
 parser.add_argument("-e", "--Extract", dest="Extract", nargs='+',
-                    help="Extract a Ffs Info: '-e inputfile TargetFfsName outputfile TargetFvName(Optional,\
-                    If not given, wil extract the first target Ffs)'")
+                    help="Extract a Ffs Info: '-e inputfile TargetFvName(Optional) TargetFfsName outputfile\
+                        If not given TargetFvName, the first found target Ffs will be extracted'")
 parser.add_argument("-a", "--Add", dest="Add", nargs='+',
                     help="Add a Ffs into a FV:'-a inputfile TargetFvName newffsfile outputfile'")
 parser.add_argument("-r", "--Replace", dest="Replace", nargs='+',
-                    help="Replace a Ffs in a FV: '-r inputfile TargetFfsName newffsfile outputfile TargetFvName(Optional,\
-                        If not given, wil replace all the existed target Ffs with new Ffs file)'")
+                    help="Replace a Ffs in a FV: '-r inputfile TargetFvName(Optional) TargetFfsName newffsfile outputfile\
+                        If not given TargetFvName, all the existed target Ffs will be replaced with new Ffs file)'")
 parser.add_argument("-l", "--LayoutFileName", dest="LayoutFileName", nargs='+',
                     help="The output file which saves Binary layout: '-l xxx.txt'/'-l xxx.json'\
                         If only provide file format as 'txt', \
@@ -128,19 +126,19 @@ def main():
                 fmmt.View(args.View[0])
         elif args.Delete:
             if len(args.Delete) == 4:
-                fmmt.Delete(args.Delete[0],args.Delete[1],args.Delete[2],args.Delete[3])
+                fmmt.Delete(args.Delete[0],args.Delete[2],args.Delete[3],args.Delete[1])
             else:
                 fmmt.Delete(args.Delete[0],args.Delete[1],args.Delete[2])
         elif args.Extract:
             if len(args.Extract) == 4:
-                fmmt.Extract(args.Extract[0],args.Extract[1],args.Extract[2], args.Extract[3])
+                fmmt.Extract(args.Extract[0],args.Extract[2],args.Extract[3], args.Extract[1])
             else:
                 fmmt.Extract(args.Extract[0],args.Extract[1],args.Extract[2])
         elif args.Add:
             fmmt.Add(args.Add[0],args.Add[1],args.Add[2],args.Add[3])
         elif args.Replace:
             if len(args.Replace) == 5:
-                fmmt.Replace(args.Replace[0],args.Replace[1],args.Replace[2],args.Replace[3],args.Replace[4])
+                fmmt.Replace(args.Replace[0],args.Replace[2],args.Replace[3],args.Replace[4],args.Replace[1])
             else:
                 fmmt.Replace(args.Replace[0],args.Replace[1],args.Replace[2],args.Replace[3])
         else:

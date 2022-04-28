@@ -85,7 +85,7 @@ class FvNode:
         for i in range(Size):
             Sum += int(Header[i*2: i*2 + 2].hex(), 16)
         if Sum & 0xffff:
-            self.Header.Checksum = int(hex(0x10000 - int(hex(Sum - self.Header.Checksum)[-4:], 16)), 16)
+            self.Header.Checksum = 0x10000 - (Sum - self.Header.Checksum) % 0x10000
 
     def ModFvExt(self) -> None:
         # If used space changes and self.ExtEntry.UsedSize exists, self.ExtEntry.UsedSize need to be changed.
@@ -128,7 +128,7 @@ class FfsNode:
         self.ROffset = 0
         self.Data = b''
         self.PadData = b''
-        self.SectionMaxAlignment = 4
+        self.SectionMaxAlignment = SECTION_COMMON_ALIGNMENT  # 4-align
 
     def ModCheckSum(self) -> None:
         HeaderData = struct2stream(self.Header)
@@ -138,8 +138,8 @@ class FfsNode:
         HeaderSum -= self.Header.State
         HeaderSum -= self.Header.IntegrityCheck.Checksum.File
         if HeaderSum & 0xff:
-            Header = self.Header.IntegrityCheck.Checksum.Header + 0x100 - int(hex(HeaderSum)[-2:], 16)
-            self.Header.IntegrityCheck.Checksum.Header = int(hex(Header)[-2:], 16)
+            Header = self.Header.IntegrityCheck.Checksum.Header + 0x100 - HeaderSum % 0x100
+            self.Header.IntegrityCheck.Checksum.Header = Header % 0x100
 
 class SectionNode:
     def __init__(self, buffer: bytes) -> None:
@@ -169,7 +169,7 @@ class SectionNode:
         self.OriHeader = b''
         self.PadData = b''
         self.IsPadSection = False
-        self.SectionMaxAlignment = 4
+        self.SectionMaxAlignment = SECTION_COMMON_ALIGNMENT  # 4-align
 
     def GetExtHeader(self, Type: int, buffer: bytes, nums: int=0) -> None:
         if Type == 0x01:

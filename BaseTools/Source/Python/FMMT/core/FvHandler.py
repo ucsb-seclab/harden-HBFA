@@ -83,6 +83,7 @@ def PadSectionModify(PadSection, Offset) -> None:
     PadSection.Data.Data = (PadSection.Data.Size - PadSection.Data.HeaderLength) * b'\xff'
 
 def ModifySectionType(TargetSection) -> None:
+    # If Section Size is increased larger than 0xFFFFFF, need modify Section Header from EFI_COMMON_SECTION_HEADER to EFI_COMMON_SECTION_HEADER2.
     if type(TargetSection.Data.Header) == type(EFI_COMMON_SECTION_HEADER()) and TargetSection.Data.Size >= 0xFFFFFF:
         New_Header = EFI_COMMON_SECTION_HEADER2()
         New_Header.Type = TargetSection.Data.Header.Type
@@ -93,6 +94,7 @@ def ModifySectionType(TargetSection) -> None:
         New_Header.ExtendedSize = TargetSection.Data.Size + 4
         TargetSection.Data.Header = New_Header
         TargetSection.Data.Size = TargetSection.Data.Header.SECTION_SIZE
+        # Align the Header's added 4 bit to 8-alignment to promise the following Ffs's align correctly.
         if TargetSection.LastRel.Data.IsPadSection:
             PadSectionModify(TargetSection.LastRel, -4)
         else:
@@ -100,6 +102,7 @@ def ModifySectionType(TargetSection) -> None:
             Target_index = SecParent.Child.index(TargetSection)
             NewPadSection = SectionNode(b'\x00\x00\x00\x19')
             SecParent.insertChild(NewPadSection, Target_index)
+    # If Section Size is decreased smaller than 0xFFFFFF, need modify Section Header from EFI_COMMON_SECTION_HEADER2 to EFI_COMMON_SECTION_HEADER.
     elif type(TargetSection.Data.Header) == type(EFI_COMMON_SECTION_HEADER2()) and TargetSection.Data.Size < 0xFFFFFF:
         New_Header = EFI_COMMON_SECTION_HEADER()
         New_Header.Type = TargetSection.Data.Header.Type
@@ -108,6 +111,7 @@ def ModifySectionType(TargetSection) -> None:
         New_Header.Size[2] = (TargetSection.Data.Size - 4) // (16**4)
         TargetSection.Data.Header = New_Header
         TargetSection.Data.Size = TargetSection.Data.Header.SECTION_SIZE
+        # Align the Header's added 4 bit to 8-alignment to promise the following Ffs's align correctly.
         if TargetSection.LastRel.Data.IsPadSection:
             PadSectionModify(TargetSection.LastRel, -4)
         else:
@@ -167,6 +171,7 @@ class FvHandler:
         NewData = b''
         temp_save_child = TargetTree.Child
         if TargetTree.Data:
+            # Update current node data as adding all the header and data of its child node.
             for item in temp_save_child:
                 if item.type == SECTION_TREE and not item.Data.OriData and item.Data.ExtHeader:
                     NewData += struct2stream(item.Data.Header) + struct2stream(item.Data.ExtHeader) + item.Data.Data + item.Data.PadData
@@ -178,6 +183,8 @@ class FvHandler:
                     NewData += item.Data.Data + item.Data.PadData
                 else:
                     NewData += struct2stream(item.Data.Header) + item.Data.Data + item.Data.PadData
+            # If node is FFS_TREE, update Pad data and Header info.
+            # Remain_New_Free_Space is used for move more free space into lst level Fv.
             if TargetTree.type == FFS_TREE:
                 New_Pad_Size = GetPadSize(len(NewData), 8)
                 Size_delta = len(NewData) - len(TargetTree.Data.Data)
@@ -186,6 +193,8 @@ class FvHandler:
                 self.Remain_New_Free_Space += Delta_Pad_Size
                 TargetTree.Data.PadData = b'\xff' * New_Pad_Size
                 TargetTree.Data.ModCheckSum()
+            # If node is FV_TREE, update Pad data and Header info.
+            # Consume Remain_New_Free_Space is used for move more free space into lst level Fv.
             elif TargetTree.type == FV_TREE or TargetTree.type == SEC_FV_TREE and not pos:
                 if self.Remain_New_Free_Space:
                     if TargetTree.Data.Free_Space:
@@ -207,6 +216,8 @@ class FvHandler:
                 TargetTree.Data.ModExtHeaderData()
                 ModifyFvExtData(TargetTree)
                 TargetTree.Data.ModCheckSum()
+            # If node is SECTION_TREE and not guided section, update Pad data and Header info.
+            # Remain_New_Free_Space is used for move more free space into lst level Fv.
             elif TargetTree.type == SECTION_TREE and TargetTree.Data.Type != 0x02:
                 New_Pad_Size = GetPadSize(len(NewData), 4)
                 Size_delta = len(NewData) - len(TargetTree.Data.Data)
@@ -223,7 +234,7 @@ class FvHandler:
                 raise Exception("Process Failed: GuidTool not found!")
             CompressedData = guidtool.pack(TargetTree.Data.Data)
             if len(CompressedData) < len(TargetTree.Data.OriData):
-                New_Pad_Size = GetPadSize(len(CompressedData), 4)
+                New_Pad_Size = GetPadSize(len(CompressedData), SECTION_COMMON_ALIGNMENT)
                 Size_delta = len(CompressedData) - len(TargetTree.Data.OriData)
                 ChangeSize(TargetTree, -Size_delta)
                 if TargetTree.NextRel:
@@ -236,15 +247,20 @@ class FvHandler:
             elif len(CompressedData) == len(TargetTree.Data.OriData):
                 TargetTree.Data.OriData = CompressedData
             elif len(CompressedData) > len(TargetTree.Data.OriData):
-                New_Pad_Size = GetPadSize(len(CompressedData), 4)
+                New_Pad_Size = GetPadSize(len(CompressedData), SECTION_COMMON_ALIGNMENT)
                 self.Remain_New_Free_Space = len(CompressedData) + New_Pad_Size - len(TargetTree.Data.OriData) - len(TargetTree.Data.PadData)
                 self.ModifyTest(TargetTree, self.Remain_New_Free_Space)
                 self.Status = True
 
     def ModifyTest(self, ParTree, Needed_Space: int) -> None:
+        # If have needed space, will find if there have free space in parent tree, meanwhile update the node data.
         if Needed_Space > 0:
+            # If current node is a Fv node
             if ParTree.type == FV_TREE or ParTree.type == SEC_FV_TREE:
                 ParTree.Data.Data = b''
+                # First check if Fv free space is enough for needed space.
+                # If so, use the current Fv free space;
+                # Else, use all the Free space, and recalculate needed space, continue finding in its parent node.
                 Needed_Space = Needed_Space - ParTree.Data.Free_Space
                 if Needed_Space < 0:
                     ParTree.Child[-1].Data.Data = b'\xff' * (-Needed_Space)
@@ -276,9 +292,11 @@ class FvHandler:
                 ParTree.Data.ModExtHeaderData()
                 ModifyFvExtData(ParTree)
                 ParTree.Data.ModCheckSum()
+            # If current node is a Ffs node
             elif ParTree.type == FFS_TREE:
                 ParTree.Data.Data = b''
                 OriHeaderLen = ParTree.Data.HeaderLength
+                # Update its data as adding all the header and data of its child node.
                 for item in ParTree.Child:
                     if item.Data.OriData:
                         if item.Data.ExtHeader:
@@ -292,16 +310,19 @@ class FvHandler:
                             ParTree.Data.Data += struct2stream(item.Data.Header)+ item.Data.Data + item.Data.PadData
                 ChangeSize(ParTree, -Needed_Space)
                 ModifyFfsType(ParTree)
+                # Recalculate pad data, update needed space with Delta_Pad_Size.
                 Needed_Space += ParTree.Data.HeaderLength - OriHeaderLen
-                New_Pad_Size = GetPadSize(ParTree.Data.Size, 8)
+                New_Pad_Size = GetPadSize(ParTree.Data.Size, FFS_COMMON_ALIGNMENT)
                 Delta_Pad_Size = New_Pad_Size - len(ParTree.Data.PadData)
                 Needed_Space += Delta_Pad_Size
-                ParTree.Data.PadData = b'\xff' * GetPadSize(ParTree.Data.Size, 8)
+                ParTree.Data.PadData = b'\xff' * GetPadSize(ParTree.Data.Size, FFS_COMMON_ALIGNMENT)
                 ParTree.Data.ModCheckSum()
+            # If current node is a Section node
             elif ParTree.type == SECTION_TREE:
                 OriData = ParTree.Data.Data
                 OriHeaderLen = ParTree.Data.HeaderLength
                 ParTree.Data.Data = b''
+                # Update its data as adding all the header and data of its child node.
                 for item in ParTree.Child:
                     if item.type == SECTION_TREE and item.Data.ExtHeader and item.Data.Type != 0x02:
                         ParTree.Data.Data += struct2stream(item.Data.Header) + struct2stream(item.Data.ExtHeader) + item.Data.Data + item.Data.PadData
@@ -309,11 +330,13 @@ class FvHandler:
                         ParTree.Data.Data += struct2stream(item.Data.Header) + struct2stream(item.Data.ExtHeader) + item.Data.OriData + item.Data.PadData
                     else:
                         ParTree.Data.Data += struct2stream(item.Data.Header) + item.Data.Data + item.Data.PadData
+                # If the current section is guided section
                 if ParTree.Data.Type == 0x02:
                     guidtool = GUIDTools().__getitem__(struct2stream(ParTree.Data.ExtHeader.SectionDefinitionGuid))
                     if not guidtool.ifexist:
                         logger.error("GuidTool {} is not found when decompressing {} file.\n".format(guidtool.command, ParTree.Parent.Data.Name))
                         raise Exception("Process Failed: GuidTool not found!")
+                    # Recompress current data, and recalculate the needed space
                     CompressedData = guidtool.pack(ParTree.Data.Data)
                     Needed_Space = len(CompressedData) - len(ParTree.Data.OriData)
                     ParTree.Data.OriData = CompressedData
@@ -324,18 +347,23 @@ class FvHandler:
                     ParTree.Data.Size = ParTree.Data.Header.SECTION_SIZE
                     ModifySectionType(ParTree)
                     Needed_Space += ParTree.Data.HeaderLength - OriHeaderLen
+                    # Update needed space with Delta_Pad_Size
                     if ParTree.NextRel:
-                        New_Pad_Size = GetPadSize(ParTree.Data.Size, 4)
+                        New_Pad_Size = GetPadSize(ParTree.Data.Size, SECTION_COMMON_ALIGNMENT)
                         Delta_Pad_Size = New_Pad_Size - len(ParTree.Data.PadData)
                         ParTree.Data.PadData = b'\x00' * New_Pad_Size
                         Needed_Space += Delta_Pad_Size
                     else:
                         ParTree.Data.PadData = b''
+                    if Needed_Space < 0:
+                        self.Remain_New_Free_Space = len(ParTree.Data.OriData) - len(CompressedData)
+                # If current section is not guided section
                 elif Needed_Space:
                     ChangeSize(ParTree, -Needed_Space)
                     ModifySectionType(ParTree)
+                    # Update needed space with Delta_Pad_Size
                     Needed_Space += ParTree.Data.HeaderLength - OriHeaderLen
-                    New_Pad_Size = GetPadSize(ParTree.Data.Size, 4)
+                    New_Pad_Size = GetPadSize(ParTree.Data.Size, SECTION_COMMON_ALIGNMENT)
                     Delta_Pad_Size = New_Pad_Size - len(ParTree.Data.PadData)
                     Needed_Space += Delta_Pad_Size
                     ParTree.Data.PadData = b'\x00' * New_Pad_Size
@@ -343,7 +371,9 @@ class FvHandler:
             ROOT_TYPE = [ROOT_FV_TREE, ROOT_FFS_TREE, ROOT_SECTION_TREE, ROOT_TREE]
             if NewParTree and NewParTree.type not in ROOT_TYPE:
                 self.ModifyTest(NewParTree, Needed_Space)
+        # If current node have enough space, will recompress all the related node data, return true.
         else:
+            self.CompressData(ParTree)
             self.Status = True
 
     def ReplaceFfs(self) -> bool:
@@ -354,7 +384,7 @@ class FvHandler:
                 self.NewFfs.Data.Header.State = c_uint8(
                     ~self.NewFfs.Data.Header.State)
         # NewFfs parsing will not calculate the PadSize, thus recalculate.
-        self.NewFfs.Data.PadData = b'\xff' * GetPadSize(self.NewFfs.Data.Size, 8)
+        self.NewFfs.Data.PadData = b'\xff' * GetPadSize(self.NewFfs.Data.Size, FFS_COMMON_ALIGNMENT)
         if self.NewFfs.Data.Size >= self.TargetFfs.Data.Size:
             Needed_Space = self.NewFfs.Data.Size + len(self.NewFfs.Data.PadData) - self.TargetFfs.Data.Size - len(self.TargetFfs.Data.PadData)
             # If TargetFv have enough free space, just move part of the free space to NewFfs.
@@ -371,6 +401,7 @@ class FvHandler:
                 TargetFv.Data.ModExtHeaderData()
                 ModifyFvExtData(TargetFv)
                 TargetFv.Data.ModCheckSum()
+                # Recompress from the Fv node to update all the related node data.
                 self.CompressData(TargetFv)
                 # return the Status
                 self.Status = True
@@ -438,6 +469,7 @@ class FvHandler:
             TargetFv.Data.ModExtHeaderData()
             ModifyFvExtData(TargetFv)
             TargetFv.Data.ModCheckSum()
+            # Recompress from the Fv node to update all the related node data.
             self.CompressData(TargetFv)
         logger.debug('Done!')
         return self.Status
@@ -445,7 +477,7 @@ class FvHandler:
     def AddFfs(self) -> bool:
         logger.debug('Start Adding Process......')
         # NewFfs parsing will not calculate the PadSize, thus recalculate.
-        self.NewFfs.Data.PadData = b'\xff' * GetPadSize(self.NewFfs.Data.Size, 8)
+        self.NewFfs.Data.PadData = b'\xff' * GetPadSize(self.NewFfs.Data.Size, FFS_COMMON_ALIGNMENT)
         if self.TargetFfs.type == FFS_FREE_SPACE:
             TargetLen = self.NewFfs.Data.Size + len(self.NewFfs.Data.PadData) - self.TargetFfs.Data.Size - len(self.TargetFfs.Data.PadData)
             TargetFv = self.TargetFfs.Parent
@@ -464,12 +496,14 @@ class FvHandler:
                 TargetFv.Data.ModCheckSum()
                 TargetFv.insertChild(self.NewFfs, -1)
                 ModifyFfsType(self.NewFfs)
+                # Recompress from the Fv node to update all the related node data.
                 self.CompressData(TargetFv)
             elif TargetLen == 0:
                 self.Status = True
                 TargetFv.Child.remove(self.TargetFfs)
                 TargetFv.insertChild(self.NewFfs)
                 ModifyFfsType(self.NewFfs)
+                # Recompress from the Fv node to update all the related node data.
                 self.CompressData(TargetFv)
             # If TargetFv do not have enough free space, need move part of the free space of TargetFv's parent Fv to TargetFv/NewFfs.
             else:
@@ -552,8 +586,12 @@ class FvHandler:
         logger.debug('Start Deleting Process......')
         Delete_Ffs = self.TargetFfs
         Delete_Fv = Delete_Ffs.Parent
+        # Calculate free space
         Add_Free_Space = Delete_Ffs.Data.Size + len(Delete_Ffs.Data.PadData)
+        # If Ffs parent Fv have free space, follow the rules to merge the new free space.
         if Delete_Fv.Data.Free_Space:
+            # If Fv is a Section fv, free space need to be recalculated to keep align with BlockSize.
+            # Other free space saved in self.Remain_New_Free_Space, will be moved to the 1st level Fv.
             if Delete_Fv.type == SEC_FV_TREE:
                 Used_Size = Delete_Fv.Data.Size - Delete_Fv.Data.Free_Space - Add_Free_Space
                 BlockSize = Delete_Fv.Data.Header.BlockMap[0].Length
@@ -561,18 +599,24 @@ class FvHandler:
                 self.Remain_New_Free_Space += Delete_Fv.Data.Free_Space + Add_Free_Space - New_Free_Space
                 Delete_Fv.Child[-1].Data.Data = New_Free_Space * b'\xff'
                 Delete_Fv.Data.Free_Space = New_Free_Space
+            # If Fv is lst level Fv, new free space will be merged with origin free space.
             else:
                 Used_Size = Delete_Fv.Data.Size - Delete_Fv.Data.Free_Space - Add_Free_Space
                 Delete_Fv.Child[-1].Data.Data += Add_Free_Space * b'\xff'
                 Delete_Fv.Data.Free_Space += Add_Free_Space
                 New_Free_Space = Delete_Fv.Data.Free_Space
+        # If Ffs parent Fv not have free space, will create new free space node to save the free space.
         else:
+            # If Fv is a Section fv, new free space need to be recalculated to keep align with BlockSize.
+            # Then create a Free spcae node to save the 0xff data, and insert into the Fv.
+            # If have more space left, move to 1st level fv.
             if Delete_Fv.type == SEC_FV_TREE:
                 Used_Size = Delete_Fv.Data.Size - Add_Free_Space
                 BlockSize = Delete_Fv.Data.Header.BlockMap[0].Length
                 New_Free_Space = BlockSize - Used_Size % BlockSize
                 self.Remain_New_Free_Space += Add_Free_Space - New_Free_Space
                 Add_Free_Space = New_Free_Space
+            # If Fv is lst level Fv, new free space node will be created to save the free space.
             else:
                 Used_Size = Delete_Fv.Data.Size - Add_Free_Space
                 New_Free_Space = Add_Free_Space
@@ -590,6 +634,7 @@ class FvHandler:
         Delete_Fv.Data.ModExtHeaderData()
         ModifyFvExtData(Delete_Fv)
         Delete_Fv.Data.ModCheckSum()
+        # Recompress from the Fv node to update all the related node data.
         self.CompressData(Delete_Fv)
         self.Status = True
         logger.debug('Done!')
