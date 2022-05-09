@@ -22,7 +22,9 @@ APPLICATIONS = \
   TianoCompress \
   VolInfo \
   DevicePath \
-  FMMT
+  FMMT\
+  BfmLib \
+  FCE
 
 
 all: libs apps install

@@ -60,7 +60,9 @@ APPLICATIONS = \
   TianoCompress \
   VolInfo \
   DevicePath \
-  FMMT
+  FMMT\
+  BfmLib \
+  FCE 
 
 
 SUBDIRS := $(LIBRARIES) $(APPLICATIONS)
