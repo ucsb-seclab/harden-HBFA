@@ -2,7 +2,7 @@
 
  The main entry of BFM tool.
 
- Copyright (c) 2011-2019, Intel Corporation. All rights reserved.<BR>
+ Copyright (c) 2011-2022, Intel Corporation. All rights reserved.<BR>
  SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -310,7 +310,10 @@ BfmImageAdd (
   do {
     if ((FvGuidExisted && mFvGuidIsSet && FvInFd->IsInputFvFlag) || ((!FvGuidExisted || (!mFvGuidIsSet)) && FvInFd->IsBfvFlag)) {
 
-      if (FvInFd->IsBfvFlag) {
+      if (FvInFd->IsBfvFlag && !FvGuidExisted) {
+        //
+        // No target FV is set, find the last BFV to insert Binary
+        //
         FvInFdTmp = FdData->Fv;
         while (FvInFdTmp != NULL) {
           if (FvInFdTmp->IsBfvFlag) {
