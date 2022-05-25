@@ -7,6 +7,10 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/TlsLib.h>
+#include <Protocol/Tls.h>
+#include <Library/Tls1.h>
+#include <openssl/obj_mac.h>
 #include "InternalTlsLib.h"
 
 typedef struct {
@@ -39,29 +43,64 @@ typedef struct {
 // Keep the table uniquely sorted by the IanaCipher field, in increasing order.
 //
 STATIC CONST TLS_CIPHER_MAPPING  TlsCipherMappingTable[] = {
-  MAP (0x0001, "NULL-MD5"),                         /// TLS_RSA_WITH_NULL_MD5
-  MAP (0x0002, "NULL-SHA"),                         /// TLS_RSA_WITH_NULL_SHA
-  MAP (0x0004, "RC4-MD5"),                          /// TLS_RSA_WITH_RC4_128_MD5
-  MAP (0x0005, "RC4-SHA"),                          /// TLS_RSA_WITH_RC4_128_SHA
-  MAP (0x000A, "DES-CBC3-SHA"),                     /// TLS_RSA_WITH_3DES_EDE_CBC_SHA, mandatory TLS 1.1
-  MAP (0x0016, "DHE-RSA-DES-CBC3-SHA"),             /// TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA
-  MAP (0x002F, "AES128-SHA"),                       /// TLS_RSA_WITH_AES_128_CBC_SHA, mandatory TLS 1.2
-  MAP (0x0030, "DH-DSS-AES128-SHA"),                /// TLS_DH_DSS_WITH_AES_128_CBC_SHA
-  MAP (0x0031, "DH-RSA-AES128-SHA"),                /// TLS_DH_RSA_WITH_AES_128_CBC_SHA
-  MAP (0x0033, "DHE-RSA-AES128-SHA"),               /// TLS_DHE_RSA_WITH_AES_128_CBC_SHA
-  MAP (0x0035, "AES256-SHA"),                       /// TLS_RSA_WITH_AES_256_CBC_SHA
-  MAP (0x0036, "DH-DSS-AES256-SHA"),                /// TLS_DH_DSS_WITH_AES_256_CBC_SHA
-  MAP (0x0037, "DH-RSA-AES256-SHA"),                /// TLS_DH_RSA_WITH_AES_256_CBC_SHA
-  MAP (0x0039, "DHE-RSA-AES256-SHA"),               /// TLS_DHE_RSA_WITH_AES_256_CBC_SHA
-  MAP (0x003B, "NULL-SHA256"),                      /// TLS_RSA_WITH_NULL_SHA256
-  MAP (0x003C, "AES128-SHA256"),                    /// TLS_RSA_WITH_AES_128_CBC_SHA256
-  MAP (0x003D, "AES256-SHA256"),                    /// TLS_RSA_WITH_AES_256_CBC_SHA256
-  MAP (0x003E, "DH-DSS-AES128-SHA256"),             /// TLS_DH_DSS_WITH_AES_128_CBC_SHA256
-  MAP (0x003F, "DH-RSA-AES128-SHA256"),             /// TLS_DH_RSA_WITH_AES_128_CBC_SHA256
-  MAP (0x0067, "DHE-RSA-AES128-SHA256"),            /// TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
-  MAP (0x0068, "DH-DSS-AES256-SHA256"),             /// TLS_DH_DSS_WITH_AES_256_CBC_SHA256
-  MAP (0x0069, "DH-RSA-AES256-SHA256"),             /// TLS_DH_RSA_WITH_AES_256_CBC_SHA256
-  MAP (0x006B, "DHE-RSA-AES256-SHA256"),            /// TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+  MAP (0x0001, "NULL-MD5"),                                /// TLS_RSA_WITH_NULL_MD5
+  MAP (0x0002, "NULL-SHA"),                                /// TLS_RSA_WITH_NULL_SHA
+  MAP (0x0004, "RC4-MD5"),                                 /// TLS_RSA_WITH_RC4_128_MD5
+  MAP (0x0005, "RC4-SHA"),                                 /// TLS_RSA_WITH_RC4_128_SHA
+  MAP (0x000A, "DES-CBC3-SHA"),                            /// TLS_RSA_WITH_3DES_EDE_CBC_SHA, mandatory TLS 1.1
+  MAP (0x0016, "DHE-RSA-DES-CBC3-SHA"),                    /// TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA
+  MAP (0x002F, "AES128-SHA"),                              /// TLS_RSA_WITH_AES_128_CBC_SHA, mandatory TLS 1.2
+  MAP (0x0030, "DH-DSS-AES128-SHA"),                       /// TLS_DH_DSS_WITH_AES_128_CBC_SHA
+  MAP (0x0031, "DH-RSA-AES128-SHA"),                       /// TLS_DH_RSA_WITH_AES_128_CBC_SHA
+  MAP (0x0033, "DHE-RSA-AES128-SHA"),                      /// TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+  MAP (0x0035, "AES256-SHA"),                              /// TLS_RSA_WITH_AES_256_CBC_SHA
+  MAP (0x0036, "DH-DSS-AES256-SHA"),                       /// TLS_DH_DSS_WITH_AES_256_CBC_SHA
+  MAP (0x0037, "DH-RSA-AES256-SHA"),                       /// TLS_DH_RSA_WITH_AES_256_CBC_SHA
+  MAP (0x0039, "DHE-RSA-AES256-SHA"),                      /// TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+  MAP (0x003B, "NULL-SHA256"),                             /// TLS_RSA_WITH_NULL_SHA256
+  MAP (0x003C, "AES128-SHA256"),                           /// TLS_RSA_WITH_AES_128_CBC_SHA256
+  MAP (0x003D, "AES256-SHA256"),                           /// TLS_RSA_WITH_AES_256_CBC_SHA256
+  MAP (0x003E, "DH-DSS-AES128-SHA256"),                    /// TLS_DH_DSS_WITH_AES_128_CBC_SHA256
+  MAP (0x003F, "DH-RSA-AES128-SHA256"),                    /// TLS_DH_RSA_WITH_AES_128_CBC_SHA256
+  MAP (0x0067, "DHE-RSA-AES128-SHA256"),                   /// TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+  MAP (0x0068, "DH-DSS-AES256-SHA256"),                    /// TLS_DH_DSS_WITH_AES_256_CBC_SHA256
+  MAP (0x0069, "DH-RSA-AES256-SHA256"),                    /// TLS_DH_RSA_WITH_AES_256_CBC_SHA256
+  MAP (0x006B, "DHE-RSA-AES256-SHA256"),                   /// TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+  MAP (0x009F, "DHE-RSA-AES256-GCM-SHA384"),               /// TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+  MAP (0x1302, "TLS_AES_256_GCM_SHA384"),                  /// TLS_AES_256_GCM_SHA384
+  MAP (0x1303, "TLS_CHACHA20_POLY1305_SHA256"),            /// TLS_CHACHA20_POLY1305_SHA256
+  MAP (0x1301, "TLS_AES_128_GCM_SHA256"),                  /// TLS_AES_128_GCM_SHA256
+  MAP (0xC02B, "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"), /// TLS_ECDHE_ECDSA_AES128_GCM_SHA256
+  MAP (0xC02C, "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"), /// TLS_ECDHE_ECDSA_AES256_GCM_SHA384
+  MAP (0xC030, "ECDHE-RSA-AES256-GCM-SHA384"),             /// TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+};
+
+typedef struct {
+  //
+  // TLS Algorithm
+  //
+  UINT8          Algo;
+  //
+  // TLS Algorithm name
+  //
+  CONST CHAR8    *Name;
+} TLS_ALGO_TO_NAME;
+
+STATIC CONST TLS_ALGO_TO_NAME  TlsHashAlgoToName[] = {
+  { TlsHashAlgoNone,   NULL     },
+  { TlsHashAlgoMd5,    "MD5"    },
+  { TlsHashAlgoSha1,   "SHA1"   },
+  { TlsHashAlgoSha224, "SHA224" },
+  { TlsHashAlgoSha256, "SHA256" },
+  { TlsHashAlgoSha384, "SHA384" },
+  { TlsHashAlgoSha512, "SHA512" },
+};
+
+STATIC CONST TLS_ALGO_TO_NAME  TlsSignatureAlgoToName[] = {
+  { TlsSignatureAlgoAnonymous, NULL    },
+  { TlsSignatureAlgoRsa,       "RSA"   },
+  { TlsSignatureAlgoDsa,       "DSA"   },
+  { TlsSignatureAlgoEcdsa,     "ECDSA" },
 };
 
 /**
@@ -852,7 +891,110 @@ TlsSetHostPrivateKey (
   IN     UINTN  DataSize
   )
 {
-  return EFI_UNSUPPORTED;
+  return TlsSetHostPrivateKeyWithPassword (Tls, Data, DataSize, NULL);
+}
+
+/**
+  Adds the local private key to the specified TLS object.
+
+  This function adds the local private key (PEM-encoded RSA or PKCS#8 private
+  key) into the specified TLS object for TLS negotiation.
+
+  @param[in]  Tls         Pointer to the TLS object.
+  @param[in]  Data        Pointer to the data buffer of a PEM-encoded RSA
+                          or PKCS#8 private key.
+  @param[in]  DataSize    The size of data buffer in bytes.
+  @param[in]  Password    Private key password. NULL terminated. Optional
+
+  @retval  EFI_SUCCESS     The operation succeeded.
+  @retval  EFI_UNSUPPORTED This function is not supported.
+  @retval  EFI_ABORTED     Invalid private key data.
+
+**/
+EFI_STATUS
+EFIAPI
+TlsSetHostPrivateKeyWithPassword (
+  IN     VOID   *Tls,
+  IN     VOID   *Data,
+  IN     UINTN  DataSize,
+  IN     CHAR8  *Password  OPTIONAL
+  )
+{
+  TLS_CONNECTION  *TlsConn;
+  BIO             *Bio;
+
+  TlsConn = (TLS_CONNECTION *)Tls;
+
+  if ((TlsConn == NULL) || (TlsConn->Ssl == NULL) || (Data == NULL) || (DataSize == 0)) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  if (SSL_use_PrivateKey_ASN1 (
+        EVP_PKEY_RSA,
+        TlsConn->Ssl,
+        Data,
+        (long)DataSize
+        ) == 1)
+  {
+    goto verify;
+  }
+
+  if (SSL_use_PrivateKey_ASN1 (
+        EVP_PKEY_DSA,
+        TlsConn->Ssl,
+        Data,
+        (long)DataSize
+        ) == 1)
+  {
+    goto verify;
+  }
+
+  if (SSL_use_PrivateKey_ASN1 (
+        EVP_PKEY_EC,
+        TlsConn->Ssl,
+        Data,
+        (long)DataSize
+        ) == 1)
+  {
+    goto verify;
+  }
+
+  if (SSL_use_RSAPrivateKey_ASN1 (
+        TlsConn->Ssl,
+        Data,
+        (long)DataSize
+        ) == 1)
+  {
+    goto verify;
+  }
+
+  // Try to parse the private key in PEM format encoded PKC#8
+  Bio = BIO_new_mem_buf (Data, (long)DataSize);
+  if (Bio != NULL) {
+    EVP_PKEY  *Pkey;
+    BOOLEAN   Verify = FALSE;
+
+    Pkey = PEM_read_bio_PrivateKey (Bio, NULL, NULL, Password);
+    if ((Pkey != NULL) && (SSL_use_PrivateKey (TlsConn->Ssl, Pkey) == 1)) {
+      Verify = TRUE;
+    }
+
+    EVP_PKEY_free (Pkey);
+    BIO_free (Bio);
+
+    if (Verify) {
+      goto verify;
+    }
+  }
+
+  return EFI_ABORTED;
+
+verify:
+  if (SSL_check_private_key (TlsConn->Ssl) == 1) {
+    return EFI_SUCCESS;
+  }
+
+  return EFI_ABORTED;
 }
 
 /**
@@ -877,6 +1019,218 @@ TlsSetCertRevocationList (
   )
 {
   return EFI_UNSUPPORTED;
+}
+
+/**
+  Set the signature algorithm list to used by the TLS object.
+
+  This function sets the signature algorithms for use by a specified TLS object.
+
+  @param[in]  Tls                Pointer to a TLS object.
+  @param[in]  Data               Array of UINT8 of signature algorithms. The array consists of
+                                 pairs of the hash algorithm and the signature algorithm as defined
+                                 in RFC 5246
+  @param[in]  DataSize           The length the SignatureAlgoList. Must be divisible by 2.
+
+  @retval  EFI_SUCCESS           The signature algorithm list was set successfully.
+  @retval  EFI_INVALID_PARAMETER The parameters are invalid.
+  @retval  EFI_UNSUPPORTED       No supported TLS signature algorithm was found in SignatureAlgoList
+  @retval  EFI_OUT_OF_RESOURCES  Memory allocation failed.
+
+**/
+STATIC
+EFI_STATUS
+EFIAPI
+TlsSetSignatureAlgoList (
+  IN     VOID   *Tls,
+  IN     UINT8  *Data,
+  IN     UINTN  DataSize
+  )
+{
+  TLS_CONNECTION  *TlsConn;
+  UINTN           Index;
+  UINTN           SignAlgoStrSize;
+  CHAR8           *SignAlgoStr, *Pos;
+  UINT8           *SignatureAlgoList;
+  EFI_STATUS      Status;
+
+  TlsConn = (TLS_CONNECTION *)Tls;
+
+  if (!TlsConn || !TlsConn->Ssl || !Data || (DataSize < 3) ||
+      !(DataSize % 2) || (Data[0] != DataSize - 1))
+  {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  SignatureAlgoList = Data + 1;
+  SignAlgoStrSize   = 0;
+  for (Index = 0; Index < Data[0]; Index += 2) {
+    CONST CHAR8  *Tmp;
+
+    if (SignatureAlgoList[Index] >= ARRAY_SIZE (TlsHashAlgoToName)) {
+      return EFI_INVALID_PARAMETER;
+    }
+
+    Tmp = TlsHashAlgoToName[SignatureAlgoList[Index]].Name;
+    if (!Tmp) {
+      return EFI_INVALID_PARAMETER;
+    }
+
+    // Add 1 for the '+'
+    SignAlgoStrSize += AsciiStrLen (Tmp) + 1;
+
+    if (SignatureAlgoList[Index + 1] >= ARRAY_SIZE (TlsSignatureAlgoToName)) {
+      return EFI_INVALID_PARAMETER;
+    }
+
+    Tmp = TlsSignatureAlgoToName[SignatureAlgoList[Index + 1]].Name;
+    if (!Tmp) {
+      return EFI_INVALID_PARAMETER;
+    }
+
+    // Add 1 for the ':' or for the NULL terminator
+    SignAlgoStrSize += AsciiStrLen (Tmp) + 1;
+  }
+
+  if (!SignAlgoStrSize) {
+    return EFI_UNSUPPORTED;
+  }
+
+  SignAlgoStr = AllocatePool (SignAlgoStrSize);
+  if (!SignAlgoStr) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+
+  Pos = SignAlgoStr;
+  for (Index = 0; Index < Data[0]; Index += 2) {
+    CONST CHAR8  *Tmp;
+
+    Tmp = TlsHashAlgoToName[SignatureAlgoList[Index]].Name;
+    CopyMem (Pos, Tmp, AsciiStrLen (Tmp));
+    Pos   += AsciiStrLen (Tmp);
+    *Pos++ = '+';
+
+    Tmp = TlsSignatureAlgoToName[SignatureAlgoList[Index + 1]].Name;
+    CopyMem (Pos, Tmp, AsciiStrLen (Tmp));
+    Pos   += AsciiStrLen (Tmp);
+    *Pos++ = ':';
+  }
+
+  *(Pos - 1) = '\0';
+
+  if (SSL_set1_sigalgs_list (TlsConn->Ssl, SignAlgoStr) < 1) {
+    Status = EFI_INVALID_PARAMETER;
+  } else {
+    Status = EFI_SUCCESS;
+  }
+
+  FreePool (SignAlgoStr);
+  return Status;
+}
+
+/**
+  Set the EC curve to be used for TLS flows
+
+  This function sets the EC curve to be used for TLS flows.
+
+  @param[in]  Tls                Pointer to a TLS object.
+  @param[in]  Data               An EC named curve as defined in section 5.1.1 of RFC 4492.
+  @param[in]  DataSize           Size of Data, it should be sizeof (UINT32)
+
+  @retval  EFI_SUCCESS           The EC curve was set successfully.
+  @retval  EFI_INVALID_PARAMETER The parameters are invalid.
+  @retval  EFI_UNSUPPORTED       The requested TLS EC curve is not supported
+
+**/
+EFI_STATUS
+EFIAPI
+TlsSetEcCurve (
+  IN     VOID   *Tls,
+  IN     UINT8  *Data,
+  IN     UINTN  DataSize
+  )
+{
+  TLS_CONNECTION  *TlsConn;
+  EC_KEY          *Ecdh;
+  INT32           Nid, Ret;
+
+  TlsConn = (TLS_CONNECTION *)Tls;
+
+  if (!TlsConn || !TlsConn->Ssl || !Data || (DataSize != sizeof (UINT32))) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  switch (*((UINT32 *)Data)) {
+    case TlsEcNamedCurve_secp256r1:
+      return EFI_UNSUPPORTED;
+    case TlsEcNamedCurve_secp384r1:
+      Nid = NID_secp384r1;
+      break;
+    case TlsEcNamedCurve_secp521r1:
+      Nid = NID_secp521r1;
+      break;
+    case TlsEcNamedCurve_x25519:
+      Nid = NID_X25519;
+      break;
+    case TlsEcNamedCurve_x448:
+      Nid = NID_X448;
+      break;
+    default:
+      return EFI_UNSUPPORTED;
+  }
+
+  if (SSL_set1_curves (TlsConn->Ssl, &Nid, 1) != 1) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  Ecdh = EC_KEY_new_by_curve_name (Nid);
+  if (!Ecdh) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  Ret = SSL_set_tmp_ecdh (TlsConn->Ssl, Ecdh);
+  EC_KEY_free (Ecdh);
+
+  if (Ret != 1) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  return EFI_SUCCESS;
+}
+
+/**
+  Configure the TLS object.
+
+  This function allows to configure the TLS object
+
+  @param[in]  Tls                Pointer to a TLS object.
+  @param[in]  Type               The type of the configuration.
+  @param[in]  Data               The data associated with the configuration type.
+  @param[in]  DataSize           The size of Data.
+
+  @retval  EFI_SUCCESS           The configuration was successful.
+  @retval  EFI_INVALID_PARAMETER The parameters are invalid.
+  @retval  EFI_UNSUPPORTED       The configuration or configuration type are not supported
+  @retval  EFI_OUT_OF_RESOURCES  Memory allocation failed.
+
+**/
+EFI_STATUS
+EFIAPI
+TlsSetConfiguration (
+  IN     VOID                 *Tls,
+  IN     EFI_TLS_CONFIG_TYPE  Type,
+  IN     UINT8                *Data,
+  IN     UINTN                DataSize
+  )
+{
+  switch (Type) {
+    case EfiTlsConfigSignatureAlgo:
+      return TlsSetSignatureAlgoList (Tls, Data, DataSize);
+    case EfiTlsConfigEcCurve:
+      return TlsSetEcCurve (Tls, Data, DataSize);
+    default:
+      return EFI_UNSUPPORTED;
+  }
 }
 
 /**
@@ -1305,4 +1659,54 @@ TlsGetCertRevocationList (
   )
 {
   return EFI_UNSUPPORTED;
+}
+
+/**
+  Derive keying material from a TLS connection.
+
+  This function exports keying material using the mechanism described in RFC
+  5705.
+
+  @param[in]      Tls          Pointer to the TLS object
+  @param[in]      Label        Description of the key for the PRF function
+  @param[in]      Context,     Optional context
+  @param[in]      ContextLen   The length of the context value in bytes
+  @param[out]     KeyBuffer    Buffer to hold the output of the TLS-PRF
+  @param[in]      KeyBufferLen The length of the KeyBuffer
+
+  @retval  EFI_SUCCESS             The operation succeeded.
+  @retval  EFI_INVALID_PARAMETER   The TLS object is invalid.
+  @retval  EFI_PROTOCOL_ERROR      Some other error occurred.
+
+**/
+EFI_STATUS
+EFIAPI
+TlsExportKey (
+  IN     VOID        *Tls,
+  IN     CONST VOID  *Label,
+  IN     CONST VOID  *Context,
+  IN     UINTN       ContextLen,
+  OUT    VOID        *KeyBuffer,
+  IN     UINTN       KeyBufferLen
+  )
+{
+  TLS_CONNECTION  *TlsConn;
+
+  TlsConn = (TLS_CONNECTION *)Tls;
+
+  if (!TlsConn || !TlsConn->Ssl) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  return SSL_export_keying_material (
+           TlsConn->Ssl,
+           KeyBuffer,
+           KeyBufferLen,
+           Label,
+           AsciiStrLen (Label),
+           Context,
+           ContextLen,
+           Context != NULL
+           ) == 1 ?
+         EFI_SUCCESS : EFI_PROTOCOL_ERROR;
 }

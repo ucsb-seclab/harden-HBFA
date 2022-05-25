@@ -2,7 +2,7 @@
   Defines the PCD_CRYPTO_SERVICE_FAMILY_ENABLE structure associated with
   gEfiCryptoPkgTokenSpaceGuid.PcdCryptoServiceFamilyEnable.
 
-  Copyright (c) 2019 - 2020, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2019 - 2022, Intel Corporation. All rights reserved.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -251,6 +251,7 @@ typedef struct {
       UINT8    CtrlTrafficIn  : 1;
       UINT8    Read           : 1;
       UINT8    Write          : 1;
+      UINT8    Shutdown       : 1;
     } Services;
     UINT32    Family;
   } Tls;
@@ -267,6 +268,7 @@ typedef struct {
       UINT8    HostPublicCert     : 1;
       UINT8    HostPrivateKey     : 1;
       UINT8    CertRevocationList : 1;
+      UINT8    Configuration      : 1;
     } Services;
     UINT32    Family;
   } TlsSet;
@@ -285,9 +287,64 @@ typedef struct {
       UINT8    HostPublicCert       : 1;
       UINT8    HostPrivateKey       : 1;
       UINT8    CertRevocationList   : 1;
+      UINT8    ExportKey            : 1;
     } Services;
     UINT32    Family;
   } TlsGet;
+  union {
+    struct {
+      UINT8    Init        : 1;
+      UINT8    FromBin     : 1;
+      UINT8    ToBin       : 1;
+      UINT8    Free        : 1;
+      UINT8    Add         : 1;
+      UINT8    Sub         : 1;
+      UINT8    Mod         : 1;
+      UINT8    ExpMod      : 1;
+      UINT8    InverseMod  : 1;
+      UINT8    Div         : 1;
+      UINT8    MulMod      : 1;
+      UINT8    Cmp         : 1;
+      UINT8    Bits        : 1;
+      UINT8    Bytes       : 1;
+      UINT8    IsWord      : 1;
+      UINT8    IsOdd       : 1;
+      UINT8    Copy        : 1;
+      UINT8    ValueOne    : 1;
+      UINT8    RShift      : 1;
+      UINT8    Consttime   : 1;
+      UINT8    SqrMod      : 1;
+      UINT8    NewContext  : 1;
+      UINT8    ContextFree : 1;
+      UINT8    SetUint     : 1;
+      UINT8    AddMod      : 1;
+    } Services;
+    UINT32    Family;
+  } Bn;
+  union {
+    struct {
+      UINT8    GroupInit                     : 1;
+      UINT8    GroupGetCurve                 : 1;
+      UINT8    GroupGetOrder                 : 1;
+      UINT8    GroupFree                     : 1;
+      UINT8    PointInit                     : 1;
+      UINT8    PointDeInit                   : 1;
+      UINT8    PointGetAffineCoordinates     : 1;
+      UINT8    PointSetAffineCoordinates     : 1;
+      UINT8    PointAdd                      : 1;
+      UINT8    PointMul                      : 1;
+      UINT8    PointInvert                   : 1;
+      UINT8    PointIsOnCurve                : 1;
+      UINT8    PointIsAtInfinity             : 1;
+      UINT8    PointEqual                    : 1;
+      UINT8    PointSetCompressedCoordinates : 1;
+      UINT8    DhGenKey                      : 1;
+      UINT8    DhKeyFree                     : 1;
+      UINT8    DhGetPubKey                   : 1;
+      UINT8    DhDeriveSecret                : 1;
+    } Services;
+    UINT32    Family;
+  } Ec;
 } PCD_CRYPTO_SERVICE_FAMILY_ENABLE;
 
 #endif

@@ -4,7 +4,7 @@
   primitives (Hash Serials, HMAC, RSA, Diffie-Hellman, etc) for UEFI security
   functionality enabling.
 
-Copyright (c) 2009 - 2020, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2009 - 2022, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -2401,6 +2401,793 @@ HkdfSha256ExtractAndExpand (
   IN   UINTN        InfoSize,
   OUT  UINT8        *Out,
   IN   UINTN        OutSize
+  );
+
+// =====================================================================================
+//    Big number primitives
+// =====================================================================================
+
+/**
+  Allocate new Big Number.
+
+  @retval New BigNum opaque structure or NULL on failure.
+**/
+VOID *
+EFIAPI
+BigNumInit (
+  VOID
+  );
+
+/**
+  Allocate new Big Number and assign the provided value to it.
+
+  @param[in]   Buf    Big endian encoded buffer.
+  @param[in]   Len    Buffer length.
+
+  @retval New BigNum opaque structure or NULL on failure.
+**/
+VOID *
+EFIAPI
+BigNumFromBin (
+  IN CONST UINT8  *Buf,
+  IN UINTN        Len
+  );
+
+/**
+  Convert the absolute value of Bn into big-endian form and store it at Buf.
+  The Buf array should have at least BigNumBytes() in it.
+
+  @param[in]   Bn     Big number to convert.
+  @param[out]  Buf    Output buffer.
+
+  @retval The length of the big-endian number placed at Buf or -1 on error.
+**/
+INTN
+EFIAPI
+BigNumToBin (
+  IN CONST VOID  *Bn,
+  OUT UINT8      *Buf
+  );
+
+/**
+  Free the Big Number.
+
+  @param[in]   Bn      Big number to free.
+  @param[in]   Clear   TRUE if the buffer should be cleared.
+**/
+VOID
+EFIAPI
+BigNumFree (
+  IN VOID     *Bn,
+  IN BOOLEAN  Clear
+  );
+
+/**
+  Calculate the sum of two Big Numbers.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnB     Big number.
+  @param[out]  BnRes   The result of BnA + BnB.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumAdd (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB,
+  OUT VOID       *BnRes
+  );
+
+/**
+  Subtract two Big Numbers.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnB     Big number.
+  @param[out]  BnRes   The result of BnA - BnB.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumSub (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB,
+  OUT VOID       *BnRes
+  );
+
+/**
+  Calculate remainder: BnRes = BnA % BnB.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnB     Big number.
+  @param[out]  BnRes   The result of BnA % BnB.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumMod (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB,
+  OUT VOID       *BnRes
+  );
+
+/**
+  Compute BnA to the BnP-th power modulo BnM.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnP     Big number (power).
+  @param[in]   BnM     Big number (modulo).
+  @param[out]  BnRes   The result of (BnA ^ BnP) % BnM.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumExpMod (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnP,
+  IN CONST VOID  *BnM,
+  OUT VOID       *BnRes
+  );
+
+/**
+  Compute BnA inverse modulo BnM.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnM     Big number (modulo).
+  @param[out]  BnRes   The result, such that (BnA * BnRes) % BnM == 1.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumInverseMod (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnM,
+  OUT VOID       *BnRes
+  );
+
+/**
+  Divide two Big Numbers.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnB     Big number.
+  @param[out]  BnRes   The result, such that BnA / BnB.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumDiv (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB,
+  OUT VOID       *BnRes
+  );
+
+/**
+  Multiply two Big Numbers modulo BnM.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnB     Big number.
+  @param[in]   BnM     Big number (modulo).
+  @param[out]  BnRes   The result, such that (BnA * BnB) % BnM.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumMulMod (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB,
+  IN CONST VOID  *BnM,
+  OUT VOID       *BnRes
+  );
+
+/**
+  Compare two Big Numbers.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnB     Big number.
+
+  @retval 0          BnA == BnB.
+  @retval 1          BnA > BnB.
+  @retval -1         BnA < BnB.
+**/
+INTN
+EFIAPI
+BigNumCmp (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB
+  );
+
+/**
+  Get number of bits in Bn.
+
+  @param[in]   Bn     Big number.
+
+  @retval Number of bits.
+**/
+
+UINTN
+EFIAPI
+BigNumBits (
+  IN CONST VOID  *Bn
+  );
+
+/**
+  Get number of bytes in Bn.
+
+  @param[in]   Bn     Big number.
+
+  @retval Number of bytes.
+**/
+UINTN
+EFIAPI
+BigNumBytes (
+  IN CONST VOID  *Bn
+  );
+
+/**
+  Checks if Big Number equals to the given Num.
+
+  @param[in]   Bn     Big number.
+  @param[in]   Num    Number.
+
+  @retval TRUE   iff Bn == Num.
+  @retval FALSE  otherwise.
+**/
+BOOLEAN
+EFIAPI
+BigNumIsWord (
+  IN CONST VOID  *Bn,
+  IN UINTN       Num
+  );
+
+/**
+  Checks if Big Number is odd.
+
+  @param[in]   Bn     Big number.
+
+  @retval TRUE   Bn is odd (Bn % 2 == 1).
+  @retval FALSE  otherwise.
+**/
+BOOLEAN
+EFIAPI
+BigNumIsOdd (
+  IN CONST VOID  *Bn
+  );
+
+/**
+  Copy Big number.
+
+  @param[out]  BnDst     Destination.
+  @param[in]   BnSrc     Source.
+
+  @retval BnDst on success.
+  @retval NULL otherwise.
+**/
+VOID *
+EFIAPI
+BigNumCopy (
+  OUT VOID       *BnDst,
+  IN CONST VOID  *BnSrc
+  );
+
+/**
+  Get constant Big number with value of "1".
+  This may be used to save expensive allocations.
+
+  @retval Big Number with value of 1.
+**/
+CONST VOID *
+EFIAPI
+BigNumValueOne (
+  VOID
+  );
+
+/**
+  Shift right Big Number.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   Bn      Big number.
+  @param[in]   n       Number of bits to shift.
+  @param[out]  BnRes   The result.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumRShift (
+  IN CONST VOID  *Bn,
+  IN UINTN       n,
+  OUT VOID       *BnRes
+  );
+
+/**
+  Mark Big Number for constant time computations.
+  This function should be called before any constant time computations are
+  performed on the given Big number.
+
+  @param[in]   Bn     Big number.
+**/
+VOID
+EFIAPI
+BigNumConsttime (
+  IN VOID  *Bn
+  );
+
+/**
+  Calculate square modulo.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnM     Big number (modulo).
+  @param[out]  BnRes   The result, such that (BnA ^ 2) % BnM.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumSqrMod (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnM,
+  OUT VOID       *BnRes
+  );
+
+/**
+  Create new Big Number computation context. This is an opaque structure
+  which should be passed to any function that requires it. The BN context is
+  needed to optimize calculations and expensive allocations.
+
+  @retval Big Number context struct or NULL on failure.
+**/
+VOID *
+EFIAPI
+BigNumNewContext (
+  VOID
+  );
+
+/**
+  Free Big Number context that was allocated with BigNumNewContext().
+
+  @param[in]   BnCtx     Big number context to free.
+**/
+VOID
+EFIAPI
+BigNumContextFree (
+  IN VOID  *BnCtx
+  );
+
+/**
+  Set Big Number to a given value.
+
+  @param[in]   Bn     Big number to set.
+  @param[in]   Val    Value to set.
+**/
+EFI_STATUS
+EFIAPI
+BigNumSetUint (
+  IN VOID   *Bn,
+  IN UINTN  Val
+  );
+
+/**
+  Add two Big Numbers modulo BnM.
+
+  @param[in]   BnA       Big number.
+  @param[in]   BnB       Big number.
+  @param[in]   BnM       Big number (modulo).
+  @param[out]  BnRes     The result, such that (BnA + BnB) % BnM.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumAddMod (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB,
+  IN CONST VOID  *BnM,
+  OUT VOID       *BnRes
+  );
+
+/**
+  Initialize new opaque EcGroup object. This object represents an EC curve and
+  and is used for calculation within this group. This object should be freed
+  using EcGroupFree() function.
+
+  @param[in]  Group  Identifying number for the ECC group (IANA "Group
+                     Description" attribute registrty for RFC 2409).
+
+  @retval EcGroup object  On success.
+  @retval NULL            On failure.
+**/
+VOID *
+EFIAPI
+EcGroupInit (
+  IN UINTN  Group
+  );
+
+/**
+  Get EC curve parameters. While elliptic curve equation is Y^2 mod P = (X^3 + AX + B) Mod P.
+  This function will set the provided Big Number objects  to the corresponding
+  values. The caller needs to make sure all the "out" BigNumber parameters
+  are properly initialized.
+
+  @param[in]  EcGroup    EC group object.
+  @param[out] BnPrime    Group prime number.
+  @param[out] BnA        A coofecient.
+  @param[out] BnB        B coofecient.
+  @param[in]  BnCtx      BN context.
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcGroupGetCurve (
+  IN CONST VOID  *EcGroup,
+  OUT VOID       *BnPrime,
+  OUT VOID       *BnA,
+  OUT VOID       *BnB,
+  IN VOID        *BnCtx
+  );
+
+/**
+  Get EC group order.
+  This function will set the provided Big Number object to the corresponding
+  value. The caller needs to make sure that the "out" BigNumber parameter
+  is properly initialized.
+
+  @param[in]  EcGroup   EC group object.
+  @param[out] BnOrder   Group prime number.
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcGroupGetOrder (
+  IN VOID   *EcGroup,
+  OUT VOID  *BnOrder
+  );
+
+/**
+  Free previously allocated EC group object using EcGroupInit().
+
+  @param[in]  EcGroup   EC group object to free.
+**/
+VOID
+EFIAPI
+EcGroupFree (
+  IN VOID  *EcGroup
+  );
+
+/**
+  Initialize new opaque EC Point object. This object represents an EC point
+  within the given EC group (curve).
+
+  @param[in]  EC Group, properly initialized using EcGroupInit().
+
+  @retval EC Point object  On success.
+  @retval NULL             On failure.
+**/
+VOID *
+EFIAPI
+EcPointInit (
+  IN CONST VOID  *EcGroup
+  );
+
+/**
+  Free previously allocated EC Point object using EcPointInit().
+
+  @param[in]  EcPoint   EC Point to free.
+  @param[in]  Clear     TRUE iff the memory should be cleared.
+**/
+VOID
+EFIAPI
+EcPointDeInit (
+  IN VOID     *EcPoint,
+  IN BOOLEAN  Clear
+  );
+
+/**
+  Get EC point affine (x,y) coordinates.
+  This function will set the provided Big Number objects to the corresponding
+  values. The caller needs to make sure all the "out" BigNumber parameters
+  are properly initialized.
+
+  @param[in]  EcGroup    EC group object.
+  @param[in]  EcPoint    EC point object.
+  @param[out] BnX        X coordinate.
+  @param[out] BnY        Y coordinate.
+  @param[in]  BnCtx      BN context, created with BigNumNewContext().
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcPointGetAffineCoordinates (
+  IN CONST VOID  *EcGroup,
+  IN CONST VOID  *EcPoint,
+  OUT VOID       *BnX,
+  OUT VOID       *BnY,
+  IN VOID        *BnCtx
+  );
+
+/**
+  Set EC point affine (x,y) coordinates.
+
+  @param[in]  EcGroup    EC group object.
+  @param[in]  EcPoint    EC point object.
+  @param[in]  BnX        X coordinate.
+  @param[in]  BnY        Y coordinate.
+  @param[in]  BnCtx      BN context, created with BigNumNewContext().
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcPointSetAffineCoordinates (
+  IN CONST VOID  *EcGroup,
+  IN VOID        *EcPoint,
+  IN CONST VOID  *BnX,
+  IN CONST VOID  *BnY,
+  IN VOID        *BnCtx
+  );
+
+/**
+  EC Point addition. EcPointResult = EcPointA + EcPointB.
+
+  @param[in]  EcGroup          EC group object.
+  @param[out] EcPointResult    EC point to hold the result. The point should
+                               be properly initialized.
+  @param[in]  EcPointA         EC Point.
+  @param[in]  EcPointB         EC Point.
+  @param[in]  BnCtx            BN context, created with BigNumNewContext().
+
+  @retval EFI_SUCCESS        On success
+  @retval EFI_PROTOCOL_ERROR On failure
+**/
+EFI_STATUS
+EFIAPI
+EcPointAdd (
+  IN CONST VOID  *EcGroup,
+  OUT VOID       *EcPointResult,
+  IN CONST VOID  *EcPointA,
+  IN CONST VOID  *EcPointB,
+  IN VOID        *BnCtx
+  );
+
+/**
+  Variable EC point multiplication. EcPointResult = EcPoint * BnPScalar.
+
+  @param[in]  EcGroup          EC group object.
+  @param[out] EcPointResult    EC point to hold the result. The point should
+                               be properly initialized.
+  @param[in]  EcPoint          EC Point.
+  @param[in]  BnPScalar        P Scalar.
+  @param[in]  BnCtx            BN context, created with BigNumNewContext().
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcPointMul (
+  IN CONST VOID  *EcGroup,
+  OUT VOID       *EcPointResult,
+  IN CONST VOID  *EcPoint,
+  IN CONST VOID  *BnPScalar,
+  IN VOID        *BnCtx
+  );
+
+/**
+  Calculate the inverse of the supplied EC point.
+
+  @param[in]     EcGroup   EC group object.
+  @param[in,out] EcPoint   EC point to invert.
+  @param[in]     BnCtx     BN context, created with BigNumNewContext().
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcPointInvert (
+  IN CONST VOID  *EcGroup,
+  IN OUT VOID    *EcPoint,
+  IN VOID        *BnCtx
+  );
+
+/**
+  Check if the supplied point is on EC curve.
+
+  @param[in]  EcGroup   EC group object.
+  @param[in]  EcPoint   EC point to check.
+  @param[in]  BnCtx     BN context, created with BigNumNewContext().
+
+  @retval TRUE          On curve.
+  @retval FALSE         Otherwise.
+**/
+BOOLEAN
+EFIAPI
+EcPointIsOnCurve (
+  IN CONST VOID  *EcGroup,
+  IN CONST VOID  *EcPoint,
+  IN VOID        *BnCtx
+  );
+
+/**
+  Check if the supplied point is at infinity.
+
+  @param[in]  EcGroup   EC group object.
+  @param[in]  EcPoint   EC point to check.
+
+  @retval TRUE          At infinity.
+  @retval FALSE         Otherwise.
+**/
+BOOLEAN
+EFIAPI
+EcPointIsAtInfinity (
+  IN CONST VOID  *EcGroup,
+  IN CONST VOID  *EcPoint
+  );
+
+/**
+  Check if EC points are equal.
+
+  @param[in]  EcGroup   EC group object.
+  @param[in]  EcPointA  EC point A.
+  @param[in]  EcPointB  EC point B.
+  @param[in]  BnCtx     BN context, created with BigNumNewContext().
+
+  @retval TRUE          A == B.
+  @retval FALSE         Otherwise.
+**/
+BOOLEAN
+EFIAPI
+EcPointEqual (
+  IN CONST VOID  *EcGroup,
+  IN CONST VOID  *EcPointA,
+  IN CONST VOID  *EcPointB,
+  IN VOID        *BnCtx
+  );
+
+/**
+  Set EC point compressed coordinates. Points can be described in terms of
+  their compressed coordinates. For a point (x, y), for any given value for x
+  such that the point is on the curve there will only ever be two possible
+  values for y. Therefore, a point can be set using this function where BnX is
+  the x coordinate and YBit is a value 0 or 1 to identify which of the two
+  possible values for y should be used.
+
+  @param[in]  EcGroup    EC group object.
+  @param[in]  EcPoint    EC Point.
+  @param[in]  BnX        X coordinate.
+  @param[in]  YBit       0 or 1 to identify which Y value is used.
+  @param[in]  BnCtx      BN context, created with BigNumNewContext().
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcPointSetCompressedCoordinates (
+  IN CONST VOID  *EcGroup,
+  IN VOID        *EcPoint,
+  IN CONST VOID  *BnX,
+  IN UINT8       YBit,
+  IN VOID        *BnCtx
+  );
+
+/**
+  Generate a key using ECDH algorithm. Please note, this function uses
+  pseudo random number generator. The caller must make sure RandomSeed()
+  funtion was properly called before.
+
+  @param[in]  Group    Identifying number for the ECC group (IANA "Group
+                       Description" attribute registrty for RFC 2409).
+  @param[out] PKey     Pointer to an object that will hold the ECDH key.
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcDhGenKey (
+  IN UINTN  Group,
+  OUT VOID  **PKey
+  );
+
+/**
+  Free ECDH Key object previously created by EcDhGenKey().
+
+  @param[in] PKey  ECDH Key.
+**/
+VOID
+EFIAPI
+EcDhKeyFree (
+  IN VOID  *PKey
+  );
+
+/**
+  Get the public key EC point. The provided EC point's coordinates will
+  be set accordingly.
+
+  @param[in]  PKey     ECDH Key object.
+  @param[out] EcPoint  Properly initialized EC Point to hold the public key.
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcDhGetPubKey (
+  IN VOID   *PKey,
+  OUT VOID  *EcPoint
+  );
+
+/**
+  Derive ECDH secret.
+
+  @param[in]  PKey           ECDH Key object.
+  @param[in]  Group          Identifying number for the ECC group (IANA "Group
+                             Description" attribute registrty for RFC 2409).
+  @param[in]  EcPointPublic  Peer public key.
+  @param[out] SecretSize     On success, holds secret size.
+  @param[out] Secret         On success, holds the derived secret.
+                             Should be freed by caller using FreePool()
+                             function.
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcDhDeriveSecret (
+  IN VOID    *PKey,
+  IN UINT8   Group,
+  IN VOID    *EcPointPublic,
+  OUT UINTN  *SecretSize,
+  OUT UINT8  **Secret
   );
 
 #endif // __BASE_CRYPT_LIB_H__

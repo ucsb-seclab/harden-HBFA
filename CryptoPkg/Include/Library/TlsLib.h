@@ -9,6 +9,22 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #ifndef __TLS_LIB_H__
 #define __TLS_LIB_H__
 
+///
+/// EFI_TLS_CONFIG_TYPE
+///
+typedef enum {
+  ///
+  /// Configure the allowed signature algorithms for the TLS context
+  ///
+  EfiTlsConfigSignatureAlgo,
+  ///
+  /// Configure the allowed elliptic curve for the TLS context
+  ///
+  EfiTlsConfigEcCurve,
+
+  EfiTlsConfigMaximum
+} EFI_TLS_CONFIG_TYPE;
+
 /**
   Initializes the OpenSSL library.
 
@@ -295,6 +311,25 @@ TlsWrite (
   );
 
 /**
+  Shutdown a TLS connection.
+
+  Shutdown the TLS connection without releasing the resources, meaning a new
+  connection can be started without calling TlsNew() and without setting
+  certificates etc.
+
+  @param[in]       Tls            Pointer to the TLS object to shutdown.
+
+  @retval EFI_SUCCESS             The TLS is shutdown successfully.
+  @retval EFI_INVALID_PARAMETER   Tls is NULL.
+  @retval EFI_PROTOCOL_ERROR      Some other error occurred.
+**/
+EFI_STATUS
+EFIAPI
+TlsShutdown (
+  IN     VOID  *Tls
+  );
+
+/**
   Set a new TLS/SSL method for a particular TLS object.
 
   This function sets a new TLS/SSL method for a particular TLS object.
@@ -514,6 +549,32 @@ TlsSetHostPrivateKey (
   );
 
 /**
+  Adds the local private key to the specified TLS object.
+
+  This function adds the local private key (PEM-encoded RSA or PKCS#8 private
+  key) into the specified TLS object for TLS negotiation.
+
+  @param[in]  Tls         Pointer to the TLS object.
+  @param[in]  Data        Pointer to the data buffer of a PEM-encoded RSA
+                          or PKCS#8 private key.
+  @param[in]  DataSize    The size of data buffer in bytes.
+  @param[in]  Password    Private key password. NULL terminated. Optional
+
+  @retval  EFI_SUCCESS     The operation succeeded.
+  @retval  EFI_UNSUPPORTED This function is not supported.
+  @retval  EFI_ABORTED     Invalid private key data.
+
+**/
+EFI_STATUS
+EFIAPI
+TlsSetHostPrivateKeyWithPassword (
+  IN     VOID   *Tls,
+  IN     VOID   *Data,
+  IN     UINTN  DataSize,
+  IN     CHAR8  *Password  OPTIONAL
+  );
+
+/**
   Adds the CA-supplied certificate revocation list for certificate validation.
 
   This function adds the CA-supplied certificate revocation list data for
@@ -532,6 +593,31 @@ EFIAPI
 TlsSetCertRevocationList (
   IN     VOID   *Data,
   IN     UINTN  DataSize
+  );
+
+/**
+  Configure the TLS object.
+
+  This function allows to configure the TLS object
+
+  @param[in]  Tls                Pointer to a TLS object.
+  @param[in]  Type               The type of the configuration.
+  @param[in]  Data               The data associated with the configuration type.
+  @param[in]  DataSize           The size of Data.
+
+  @retval  EFI_SUCCESS           The configuration was successful.
+  @retval  EFI_INVALID_PARAMETER The parameters are invalid.
+  @retval  EFI_UNSUPPORTED       The configuration or configuration type are not supported
+  @retval  EFI_OUT_OF_RESOURCES  Memory allocation failed.
+
+**/
+EFI_STATUS
+EFIAPI
+TlsSetConfiguration (
+  IN     VOID                 *Tls,
+  IN     EFI_TLS_CONFIG_TYPE  Type,
+  IN     UINT8                *Data,
+  IN     UINTN                DataSize
   );
 
 /**
@@ -808,6 +894,35 @@ EFIAPI
 TlsGetCertRevocationList (
   OUT    VOID   *Data,
   IN OUT UINTN  *DataSize
+  );
+
+/**
+  Derive keying material from a TLS connection.
+
+  This function exports keying material using the mechanism described in RFC
+  5705.
+
+  @param[in]      Tls          Pointer to the TLS object
+  @param[in]      Label        Description of the key for the PRF function
+  @param[in]      Context,     Optional context
+  @param[in]      ContextLen   The length of the context value in bytes
+  @param[out]     KeyBuffer    Buffer to hold the output of the TLS-PRF
+  @param[in]      KeyBufferLen The length of the KeyBuffer
+
+  @retval  EFI_SUCCESS             The operation succeeded.
+  @retval  EFI_INVALID_PARAMETER   The TLS object is invalid.
+  @retval  EFI_PROTOCOL_ERROR      Some other error occurred.
+
+**/
+EFI_STATUS
+EFIAPI
+TlsExportKey (
+  IN     VOID        *Tls,
+  IN     CONST VOID  *Label,
+  IN     CONST VOID  *Context,
+  IN     UINTN       ContextLen,
+  OUT    VOID        *KeyBuffer,
+  IN     UINTN       KeyBufferLen
   );
 
 #endif // __TLS_LIB_H__

@@ -6,7 +6,7 @@
 #  This external input must be validated carefully to avoid security issues such as
 #  buffer overflow or integer overflow.
 #
-#  Copyright (c) 2009 - 2020, Intel Corporation. All rights reserved.<BR>
+#  Copyright (c) 2009 - 2022, Intel Corporation. All rights reserved.<BR>
 #  Copyright (c) 2020, Hewlett Packard Enterprise Development LP. All rights reserved.<BR>
 #  SPDX-License-Identifier: BSD-2-Clause-Patent
 #
@@ -52,6 +52,8 @@
   Pk/CryptRsaPss.c
   Pk/CryptRsaPssSign.c
   Pem/CryptPem.c
+  Bn/CryptBn.c
+  Ec/CryptEc.c
 
   SysCall/CrtWrapper.c
   SysCall/TimerWrapper.c

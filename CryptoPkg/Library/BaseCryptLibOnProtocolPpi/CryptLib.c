@@ -3,7 +3,7 @@
   Protocol/PPI.
 
   Copyright (C) Microsoft Corporation. All rights reserved.
-  Copyright (c) 2019 - 2020, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2019 - 2022, Intel Corporation. All rights reserved.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -2994,6 +2994,28 @@ TlsWrite (
 }
 
 /**
+  Shutdown a TLS connection.
+
+  Shutdown the TLS connection without releasing the resources, meaning a new
+  connection can be started without calling TlsNew() and without setting
+  certificates etc.
+
+  @param[in]       Tls            Pointer to the TLS object to shutdown.
+
+  @retval EFI_SUCCESS             The TLS is shutdown successfully.
+  @retval EFI_INVALID_PARAMETER   Tls is NULL.
+  @retval EFI_PROTOCOL_ERROR      Some other error occurred.
+**/
+EFI_STATUS
+EFIAPI
+TlsShutdown (
+  IN     VOID  *Tls
+  )
+{
+  CALL_CRYPTO_SERVICE (TlsShutdown, (Tls), EFI_UNSUPPORTED);
+}
+
+/**
   Set a new TLS/SSL method for a particular TLS object.
 
   This function sets a new TLS/SSL method for a particular TLS object.
@@ -3243,6 +3265,35 @@ TlsSetHostPrivateKey (
 }
 
 /**
+  Adds the local private key to the specified TLS object.
+
+  This function adds the local private key (PEM-encoded RSA or PKCS#8 private
+  key) into the specified TLS object for TLS negotiation.
+
+  @param[in]  Tls         Pointer to the TLS object.
+  @param[in]  Data        Pointer to the data buffer of a PEM-encoded RSA
+                          or PKCS#8 private key.
+  @param[in]  DataSize    The size of data buffer in bytes.
+  @param[in]  Password    Private key password. NULL terminated. Optional
+
+  @retval  EFI_SUCCESS     The operation succeeded.
+  @retval  EFI_UNSUPPORTED This function is not supported.
+  @retval  EFI_ABORTED     Invalid private key data.
+
+**/
+EFI_STATUS
+EFIAPI
+TlsSetHostPrivateKeyWithPassword (
+  IN     VOID   *Tls,
+  IN     VOID   *Data,
+  IN     UINTN  DataSize,
+  IN     CHAR8  *Password  OPTIONAL
+  )
+{
+  CALL_CRYPTO_SERVICE (TlsSetHostPrivateKeyWithPassword, (Tls, Data, DataSize, Password), EFI_UNSUPPORTED);
+}
+
+/**
   Adds the CA-supplied certificate revocation list for certificate validation.
 
   This function adds the CA-supplied certificate revocation list data for
@@ -3264,6 +3315,38 @@ TlsSetCertRevocationList (
   )
 {
   CALL_CRYPTO_SERVICE (TlsSetCertRevocationList, (Data, DataSize), EFI_UNSUPPORTED);
+}
+
+/**
+  Configure the TLS object.
+
+  This function allows to configure the TLS object
+
+  @param[in]  Tls                Pointer to a TLS object.
+  @param[in]  Type               The type of the configuration.
+  @param[in]  Data               The data associated with the configuration type.
+  @param[in]  DataSize           The size of Data.
+
+  @retval  EFI_SUCCESS           The configuration was successful.
+  @retval  EFI_INVALID_PARAMETER The parameters are invalid.
+  @retval  EFI_UNSUPPORTED       The configuration or configuration type are not supported
+  @retval  EFI_OUT_OF_RESOURCES  Memory allocation failed.
+
+**/
+EFI_STATUS
+EFIAPI
+TlsSetConfiguration (
+  IN     VOID                 *Tls,
+  IN     EFI_TLS_CONFIG_TYPE  Type,
+  IN     UINT8                *Data,
+  IN     UINTN                DataSize
+  )
+{
+  CALL_CRYPTO_SERVICE (
+    TlsSetConfiguration,
+    (Tls, Type, Data, DataSize),
+    EFI_UNSUPPORTED
+    );
 }
 
 /**
@@ -3579,4 +3662,954 @@ TlsGetCertRevocationList (
   )
 {
   CALL_CRYPTO_SERVICE (TlsGetCertRevocationList, (Data, DataSize), EFI_UNSUPPORTED);
+}
+
+/**
+  Derive keying material from a TLS connection.
+
+  This function exports keying material using the mechanism described in RFC
+  5705.
+
+  @param[in]      Tls          Pointer to the TLS object
+  @param[in]      Label        Description of the key for the PRF function
+  @param[in]      Context,     Optional context
+  @param[in]      ContextLen   The length of the context value in bytes
+  @param[out]     KeyBuffer    Buffer to hold the output of the TLS-PRF
+  @param[in]      KeyBufferLen The length of the KeyBuffer
+
+  @retval  EFI_SUCCESS             The operation succeeded.
+  @retval  EFI_INVALID_PARAMETER   The TLS object is invalid.
+  @retval  EFI_PROTOCOL_ERROR      Some other error occurred.
+
+**/
+EFI_STATUS
+EFIAPI
+TlsExportKey (
+  IN     VOID        *Tls,
+  IN     CONST VOID  *Label,
+  IN     CONST VOID  *Context,
+  IN     UINTN       ContextLen,
+  OUT    VOID        *KeyBuffer,
+  IN     UINTN       KeyBufferLen
+  )
+{
+  CALL_CRYPTO_SERVICE (TlsExportKey, (Tls, Label, Context, ContextLen, KeyBuffer, KeyBufferLen), EFI_UNSUPPORTED);
+}
+
+// =====================================================================================
+//    Big number primitive
+// =====================================================================================
+
+/**
+  Allocate new Big Number.
+
+  @retval New BigNum opaque structure or NULL on failure.
+**/
+VOID *
+EFIAPI
+BigNumInit (
+  VOID
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumInit, (), NULL);
+}
+
+/**
+  Allocate new Big Number and assign the provided value to it.
+
+  @param[in]   Buf    Big endian encoded buffer.
+  @param[in]   Len    Buffer length.
+
+  @retval New BigNum opaque structure or NULL on failure.
+**/
+VOID *
+EFIAPI
+BigNumFromBin (
+  IN CONST UINT8  *Buf,
+  IN UINTN        Len
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumFromBin, (Buf, Len), NULL);
+}
+
+/**
+  Convert the absolute value of Bn into big-endian form and store it at Buf.
+  The Buf array should have at least BigNumBytes() in it.
+
+  @param[in]   Bn     Big number to convert.
+  @param[out]  Buf    Output buffer.
+
+  @retval The length of the big-endian number placed at Buf or -1 on error.
+**/
+INTN
+EFIAPI
+BigNumToBin (
+  IN CONST VOID  *Bn,
+  OUT UINT8      *Buf
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumToBin, (Bn, Buf), -1);
+}
+
+/**
+  Free the Big Number.
+
+  @param[in]   Bn      Big number to free.
+  @param[in]   Clear   TRUE if the buffer should be cleared.
+**/
+VOID
+EFIAPI
+BigNumFree (
+  IN VOID     *Bn,
+  IN BOOLEAN  Clear
+  )
+{
+  CALL_VOID_CRYPTO_SERVICE (BigNumFree, (Bn, Clear));
+}
+
+/**
+  Calculate the sum of two Big Numbers.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnB     Big number.
+  @param[out]  BnRes   The result of BnA + BnB.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumAdd (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB,
+  OUT VOID       *BnRes
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumAdd, (BnA, BnB, BnRes), EFI_UNSUPPORTED);
+}
+
+/**
+  Subtract two Big Numbers.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnB     Big number.
+  @param[out]  BnRes   The result of BnA - BnB.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumSub (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB,
+  OUT VOID       *BnRes
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumSub, (BnA, BnB, BnRes), EFI_UNSUPPORTED);
+}
+
+/**
+  Calculate remainder: BnRes = BnA % BnB
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnB     Big number.
+  @param[out]  BnRes   The result of BnA % BnB.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumMod (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB,
+  OUT VOID       *BnRes
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumMod, (BnA, BnB, BnRes), EFI_UNSUPPORTED);
+}
+
+/**
+  Compute BnA to the BnP-th power modulo BnM.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnP     Big number (power).
+  @param[in]   BnM     Big number (modulo).
+  @param[out]  BnRes   The result of (BnA ^ BnP) % BnM.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumExpMod (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnP,
+  IN CONST VOID  *BnM,
+  OUT VOID       *BnRes
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumExpMod, (BnA, BnP, BnM, BnRes), EFI_UNSUPPORTED);
+}
+
+/**
+  Compute BnA inverse modulo BnM.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnM     Big number (modulo).
+  @param[out]  BnRes   The result, such that (BnA * BnRes) % BnM == 1.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumInverseMod (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnM,
+  OUT VOID       *BnRes
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumInverseMod, (BnA, BnM, BnRes), EFI_UNSUPPORTED);
+}
+
+/**
+  Divide two Big Numbers.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnB     Big number.
+  @param[out]  BnRes   The result, such that BnA / BnB.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumDiv (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB,
+  OUT VOID       *BnRes
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumDiv, (BnA, BnB, BnRes), EFI_UNSUPPORTED);
+}
+
+/**
+  Multiply two Big Numbers modulo BnM.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnB     Big number.
+  @param[in]   BnM     Big number (modulo).
+  @param[out]  BnRes   The result, such that (BnA * BnB) % BnM.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumMulMod (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB,
+  IN CONST VOID  *BnM,
+  OUT VOID       *BnRes
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumMulMod, (BnA, BnB, BnM, BnRes), EFI_UNSUPPORTED);
+}
+
+/**
+  Compare two Big Numbers.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnB     Big number.
+
+  @retval 0          BnA == BnB.
+  @retval 1          BnA > BnB.
+  @retval -1         BnA < BnB.
+**/
+INTN
+EFIAPI
+BigNumCmp (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumCmp, (BnA, BnB), 0);
+}
+
+/**
+  Get number of bits in Bn.
+
+  @param[in]   Bn     Big number.
+
+  @retval Number of bits.
+**/
+UINTN
+EFIAPI
+BigNumBits (
+  IN CONST VOID  *Bn
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumBits, (Bn), 0);
+}
+
+/**
+  Get number of bytes in Bn.
+
+  @param[in]   Bn     Big number.
+
+  @retval Number of bytes.
+**/
+UINTN
+EFIAPI
+BigNumBytes (
+  IN CONST VOID  *Bn
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumBytes, (Bn), 0);
+}
+
+/**
+  Checks if Big Number equals to the given Num.
+
+  @param[in]   Bn     Big number.
+  @param[in]   Num    Number.
+
+  @retval TRUE   iff Bn == Num.
+  @retval FALSE  otherwise.
+**/
+BOOLEAN
+EFIAPI
+BigNumIsWord (
+  IN CONST VOID  *Bn,
+  IN UINTN       Num
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumIsWord, (Bn, Num), FALSE);
+}
+
+/**
+  Checks if Big Number is odd.
+
+  @param[in]   Bn     Big number.
+
+  @retval TRUE   Bn is odd (Bn % 2 == 1).
+  @retval FALSE  otherwise.
+**/
+BOOLEAN
+EFIAPI
+BigNumIsOdd (
+  IN CONST VOID  *Bn
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumIsOdd, (Bn), FALSE);
+}
+
+/**
+  Copy Big number.
+
+  @param[out]  BnDst     Destination.
+  @param[in]   BnSrc     Source.
+
+  @retval BnDst on success.
+  @retval NULL otherwise.
+**/
+VOID *
+EFIAPI
+BigNumCopy (
+  OUT VOID       *BnDst,
+  IN CONST VOID  *BnSrc
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumCopy, (BnDst, BnSrc), NULL);
+}
+
+/**
+  Get constant Big number with value of "1".
+  This may be used to save expensive allocations.
+
+  @retval Big Number with value of 1.
+**/
+CONST VOID *
+EFIAPI
+BigNumValueOne (
+  VOID
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumValueOne, (), NULL);
+}
+
+/**
+  Shift right Big Number.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   Bn      Big number.
+  @param[in]   n       Number of bits to shift.
+  @param[out]  BnRes   The result.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumRShift (
+  IN CONST VOID  *Bn,
+  IN UINTN       n,
+  OUT VOID       *BnRes
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumRShift, (Bn, n, BnRes), EFI_UNSUPPORTED);
+}
+
+/**
+  Mark Big Number for constant time computations.
+  This function should be called before any constant time computations are
+  performed on the given Big number.
+
+  @param[in]   Bn     Big number.
+**/
+VOID
+EFIAPI
+BigNumConsttime (
+  IN VOID  *Bn
+  )
+{
+  CALL_VOID_CRYPTO_SERVICE (BigNumConsttime, (Bn));
+}
+
+/**
+  Calculate square modulo.
+  Please note, all "out" Big number arguments should be properly initialized
+  by calling to BigNumInit() or BigNumFromBin() functions.
+
+  @param[in]   BnA     Big number.
+  @param[in]   BnM     Big number (modulo).
+  @param[out]  BnRes   The result, such that (BnA ^ 2) % BnM.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumSqrMod (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnM,
+  OUT VOID       *BnRes
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumSqrMod, (BnA, BnM, BnRes), EFI_UNSUPPORTED);
+}
+
+/**
+  Create new Big Number computation context. This is an opaque structure
+  which should be passed to any function that requires it. The BN context is
+  needed to optimize calculations and expensive allocations.
+
+  @retval Big Number context struct or NULL on failure.
+**/
+VOID *
+EFIAPI
+BigNumNewContext (
+  VOID
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumNewContext, (), NULL);
+}
+
+/**
+  Free Big Number context that was allocated with BigNumNewContext().
+
+  @param[in]   BnCtx     Big number context to free.
+**/
+VOID
+EFIAPI
+BigNumContextFree (
+  IN VOID  *BnCtx
+  )
+{
+  CALL_VOID_CRYPTO_SERVICE (BigNumContextFree, (BnCtx));
+}
+
+/**
+  Set Big Number to a given value.
+
+  @param[in]   Bn     Big number to set.
+  @param[in]   Val    Value to set.
+**/
+EFI_STATUS
+EFIAPI
+BigNumSetUint (
+  IN VOID   *Bn,
+  IN UINTN  Val
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumSetUint, (Bn, Val), EFI_UNSUPPORTED);
+}
+
+/**
+  Add two Big Numbers modulo BnM.
+
+  @param[in]   BnA       Big number.
+  @param[in]   BnB       Big number.
+  @param[in]   BnM       Big number (modulo).
+  @param[out]  BnRes     The result, such that (BnA + BnB) % BnM.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
+**/
+EFI_STATUS
+EFIAPI
+BigNumAddMod (
+  IN CONST VOID  *BnA,
+  IN CONST VOID  *BnB,
+  IN CONST VOID  *BnM,
+  OUT VOID       *BnRes
+  )
+{
+  CALL_CRYPTO_SERVICE (BigNumAddMod, (BnA, BnB, BnM, BnRes), EFI_UNSUPPORTED);
+}
+
+/**
+  Initialize new opaque EcGroup object. This object represents an EC curve and
+  and is used for calculation within this group. This object should be freed
+  using EcGroupFree() function.
+
+  @param[in]  Group  Identifying number for the ECC group (IANA "Group
+                     Description" attribute registrty for RFC 2409).
+
+  @retval EcGroup object  On success.
+  @retval NULL            On failure.
+**/
+VOID *
+EFIAPI
+EcGroupInit (
+  IN UINTN  Group
+  )
+{
+  CALL_CRYPTO_SERVICE (EcGroupInit, (Group), NULL);
+}
+
+/**
+  Get EC curve parameters. While elliptic curve equation is Y^2 mod P = (X^3 + AX + B) Mod P.
+  This function will set the provided Big Number objects  to the corresponding
+  values. The caller needs to make sure all the "out" BigNumber parameters
+  are properly initialized.
+
+  @param[in]  EcGroup    EC group object.
+  @param[out] BnPrime    Group prime number.
+  @param[out] BnA        A coofecient.
+  @param[out] BnB        B coofecient.
+  @param[in]  BnCtx      BN context.
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcGroupGetCurve (
+  IN CONST VOID  *EcGroup,
+  OUT VOID       *BnPrime,
+  OUT VOID       *BnA,
+  OUT VOID       *BnB,
+  IN VOID        *BnCtx
+  )
+{
+  CALL_CRYPTO_SERVICE (EcGroupGetCurve, (EcGroup, BnPrime, BnA, BnB, BnCtx), EFI_UNSUPPORTED);
+}
+
+/**
+  Get EC group order.
+  This function will set the provided Big Number object to the corresponding
+  value. The caller needs to make sure that the "out" BigNumber parameter
+  is properly initialized.
+
+  @param[in]  EcGroup   EC group object.
+  @param[out] BnOrder   Group prime number.
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcGroupGetOrder (
+  IN VOID   *EcGroup,
+  OUT VOID  *BnOrder
+  )
+{
+  CALL_CRYPTO_SERVICE (EcGroupGetOrder, (EcGroup, BnOrder), EFI_UNSUPPORTED);
+}
+
+/**
+  Free previously allocated EC group object using EcGroupInit().
+
+  @param[in]  EcGroup   EC group object to free.
+**/
+VOID
+EFIAPI
+EcGroupFree (
+  IN VOID  *EcGroup
+  )
+{
+  CALL_VOID_CRYPTO_SERVICE (EcGroupFree, (EcGroup));
+}
+
+/**
+  Initialize new opaque EC Point object. This object represents an EC point
+  within the given EC group (curve).
+
+  @param[in]  EC Group, properly initialized using EcGroupInit().
+
+  @retval EC Point object  On success.
+  @retval NULL             On failure.
+**/
+VOID *
+EFIAPI
+EcPointInit (
+  IN CONST VOID  *EcGroup
+  )
+{
+  CALL_CRYPTO_SERVICE (EcPointInit, (EcGroup), NULL);
+}
+
+/**
+  Free previously allocated EC Point object using EcPointInit().
+
+  @param[in]  EcPoint   EC Point to free.
+  @param[in]  Clear     TRUE iff the memory should be cleared.
+**/
+VOID
+EFIAPI
+EcPointDeInit (
+  IN VOID     *EcPoint,
+  IN BOOLEAN  Clear
+  )
+{
+  CALL_VOID_CRYPTO_SERVICE (EcPointDeInit, (EcPoint, Clear));
+}
+
+/**
+  Get EC point affine (x,y) coordinates.
+  This function will set the provided Big Number objects to the corresponding
+  values. The caller needs to make sure all the "out" BigNumber parameters
+  are properly initialized.
+
+  @param[in]  EcGroup    EC group object.
+  @param[in]  EcPoint    EC point object.
+  @param[out] BnX        X coordinate.
+  @param[out] BnY        Y coordinate.
+  @param[in]  BnCtx      BN context, created with BigNumNewContext().
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcPointGetAffineCoordinates (
+  IN CONST VOID  *EcGroup,
+  IN CONST VOID  *EcPoint,
+  OUT VOID       *BnX,
+  OUT VOID       *BnY,
+  IN VOID        *BnCtx
+  )
+{
+  CALL_CRYPTO_SERVICE (EcPointGetAffineCoordinates, (EcGroup, EcPoint, BnX, BnY, BnCtx), EFI_UNSUPPORTED);
+}
+
+/**
+  Set EC point affine (x,y) coordinates.
+
+  @param[in]  EcGroup    EC group object.
+  @param[in]  EcPoint    EC point object.
+  @param[in]  BnX        X coordinate.
+  @param[in]  BnY        Y coordinate.
+  @param[in]  BnCtx      BN context, created with BigNumNewContext().
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcPointSetAffineCoordinates (
+  IN CONST VOID  *EcGroup,
+  IN VOID        *EcPoint,
+  IN CONST VOID  *BnX,
+  IN CONST VOID  *BnY,
+  IN VOID        *BnCtx
+  )
+{
+  CALL_CRYPTO_SERVICE (EcPointSetAffineCoordinates, (EcGroup, EcPoint, BnX, BnY, BnCtx), EFI_UNSUPPORTED);
+}
+
+/**
+  EC Point addition. EcPointResult = EcPointA + EcPointB.
+
+  @param[in]  EcGroup          EC group object.
+  @param[out] EcPointResult    EC point to hold the result. The point should
+                               be properly initialized.
+  @param[in]  EcPointA         EC Point.
+  @param[in]  EcPointB         EC Point.
+  @param[in]  BnCtx            BN context, created with BigNumNewContext().
+
+  @retval EFI_SUCCESS        On success
+  @retval EFI_PROTOCOL_ERROR On failure
+**/
+EFI_STATUS
+EFIAPI
+EcPointAdd (
+  IN CONST VOID  *EcGroup,
+  OUT VOID       *EcPointResult,
+  IN CONST VOID  *EcPointA,
+  IN CONST VOID  *EcPointB,
+  IN VOID        *BnCtx
+  )
+{
+  CALL_CRYPTO_SERVICE (EcPointAdd, (EcGroup, EcPointResult, EcPointA, EcPointB, BnCtx), EFI_UNSUPPORTED);
+}
+
+/**
+  Variable EC point multiplication. EcPointResult = EcPoint * BnPScalar.
+
+  @param[in]  EcGroup          EC group object.
+  @param[out] EcPointResult    EC point to hold the result. The point should
+                               be properly initialized.
+  @param[in]  EcPoint          EC Point.
+  @param[in]  BnPScalar        P Scalar.
+  @param[in]  BnCtx            BN context, created with BigNumNewContext().
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcPointMul (
+  IN CONST VOID  *EcGroup,
+  OUT VOID       *EcPointResult,
+  IN CONST VOID  *EcPoint,
+  IN CONST VOID  *BnPScalar,
+  IN VOID        *BnCtx
+  )
+{
+  CALL_CRYPTO_SERVICE (EcPointMul, (EcGroup, EcPointResult, EcPoint, BnPScalar, BnCtx), EFI_UNSUPPORTED);
+}
+
+/**
+  Calculate the inverse of the supplied EC point.
+
+  @param[in]     EcGroup   EC group object.
+  @param[in,out] EcPoint   EC point to invert.
+  @param[in]     BnCtx     BN context, created with BigNumNewContext().
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcPointInvert (
+  IN CONST VOID  *EcGroup,
+  IN OUT VOID    *EcPoint,
+  IN VOID        *BnCtx
+  )
+{
+  CALL_CRYPTO_SERVICE (EcPointInvert, (EcGroup, EcPoint, BnCtx), EFI_UNSUPPORTED);
+}
+
+/**
+  Check if the supplied point is on EC curve.
+
+  @param[in]  EcGroup   EC group object.
+  @param[in]  EcPoint   EC point to check.
+  @param[in]  BnCtx     BN context, created with BigNumNewContext().
+
+  @retval TRUE          On curve.
+  @retval FALSE         Otherwise.
+**/
+BOOLEAN
+EFIAPI
+EcPointIsOnCurve (
+  IN CONST VOID  *EcGroup,
+  IN CONST VOID  *EcPoint,
+  IN VOID        *BnCtx
+  )
+{
+  CALL_CRYPTO_SERVICE (EcPointIsOnCurve, (EcGroup, EcPoint, BnCtx), FALSE);
+}
+
+/**
+  Check if the supplied point is at infinity.
+
+  @param[in]  EcGroup   EC group object.
+  @param[in]  EcPoint   EC point to check.
+
+  @retval TRUE          At infinity.
+  @retval FALSE         Otherwise.
+**/
+BOOLEAN
+EFIAPI
+EcPointIsAtInfinity (
+  IN CONST VOID  *EcGroup,
+  IN CONST VOID  *EcPoint
+  )
+{
+  CALL_CRYPTO_SERVICE (EcPointIsAtInfinity, (EcGroup, EcPoint), FALSE);
+}
+
+/**
+  Check if EC points are equal.
+
+  @param[in]  EcGroup   EC group object.
+  @param[in]  EcPointA  EC point A.
+  @param[in]  EcPointB  EC point B.
+  @param[in]  BnCtx     BN context, created with BigNumNewContext().
+
+  @retval TRUE          A == B.
+  @retval FALSE         Otherwise.
+**/
+BOOLEAN
+EFIAPI
+EcPointEqual (
+  IN CONST VOID  *EcGroup,
+  IN CONST VOID  *EcPointA,
+  IN CONST VOID  *EcPointB,
+  IN VOID        *BnCtx
+  )
+{
+  CALL_CRYPTO_SERVICE (EcPointEqual, (EcGroup, EcPointA, EcPointB, BnCtx), FALSE);
+}
+
+/**
+  Set EC point compressed coordinates. Points can be described in terms of
+  their compressed coordinates. For a point (x, y), for any given value for x
+  such that the point is on the curve there will only ever be two possible
+  values for y. Therefore, a point can be set using this function where BnX is
+  the x coordinate and YBit is a value 0 or 1 to identify which of the two
+  possible values for y should be used.
+
+  @param[in]  EcGroup    EC group object.
+  @param[in]  EcPoint    EC Point.
+  @param[in]  BnX        X coordinate.
+  @param[in]  YBit       0 or 1 to identify which Y value is used.
+  @param[in]  BnCtx      BN context, created with BigNumNewContext().
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcPointSetCompressedCoordinates (
+  IN CONST VOID  *EcGroup,
+  IN VOID        *EcPoint,
+  IN CONST VOID  *BnX,
+  IN UINT8       YBit,
+  IN VOID        *BnCtx
+  )
+{
+  CALL_CRYPTO_SERVICE (EcPointSetCompressedCoordinates, (EcGroup, EcPoint, BnX, YBit, BnCtx), EFI_UNSUPPORTED);
+}
+
+/**
+  Generate a key using ECDH algorithm. Please note, this function uses
+  pseudo random number generator. The caller must make sure RandomSeed()
+  funtion was properly called before.
+
+  @param[in]  Group    Identifying number for the ECC group (IANA "Group
+                       Description" attribute registrty for RFC 2409).
+  @param[out] PKey     Pointer to an object that will hold the ECDH key.
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcDhGenKey (
+  IN UINTN  Group,
+  OUT VOID  **PKey
+  )
+{
+  CALL_CRYPTO_SERVICE (EcDhGenKey, (Group, PKey), EFI_UNSUPPORTED);
+}
+
+/**
+  Free ECDH Key object previously created by EcDhGenKey().
+
+  @param[in] PKey  ECDH Key.
+**/
+VOID
+EFIAPI
+EcDhKeyFree (
+  IN VOID  *PKey
+  )
+{
+  CALL_VOID_CRYPTO_SERVICE (EcDhKeyFree, (PKey));
+}
+
+/**
+  Get the public key EC point. The provided EC point's coordinates will
+  be set accordingly.
+
+  @param[in]  PKey     ECDH Key object.
+  @param[out] EcPoint  Properly initialized EC Point to hold the public key.
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcDhGetPubKey (
+  IN VOID   *PKey,
+  OUT VOID  *EcPoint
+  )
+{
+  CALL_CRYPTO_SERVICE (EcDhGetPubKey, (PKey, EcPoint), EFI_UNSUPPORTED);
+}
+
+/**
+  Derive ECDH secret.
+
+  @param[in]  PKey           ECDH Key object.
+  @param[in]  Group          Identifying number for the ECC group (IANA "Group
+                             Description" attribute registrty for RFC 2409).
+  @param[in]  EcPointPublic  Peer public key.
+  @param[out] SecretSize     On success, holds secret size.
+  @param[out] Secret         On success, holds the derived secret.
+                             Should be freed by caller using FreePool()
+                             function.
+
+  @retval EFI_SUCCESS        On success.
+  @retval EFI_PROTOCOL_ERROR On failure.
+**/
+EFI_STATUS
+EFIAPI
+EcDhDeriveSecret (
+  IN VOID    *PKey,
+  IN UINT8   Group,
+  IN VOID    *EcPointPublic,
+  OUT UINTN  *SecretSize,
+  OUT UINT8  **Secret
+  )
+{
+  CALL_CRYPTO_SERVICE (EcDhDeriveSecret, (PKey, Group, EcPointPublic, SecretSize, Secret), EFI_UNSUPPORTED);
 }
