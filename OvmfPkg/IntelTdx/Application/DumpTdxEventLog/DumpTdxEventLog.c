@@ -996,7 +996,7 @@ typedef struct {
 } TDX_Event_Log_ACPI_Table; 
 #pragma pack()
 
-#define EFI_ACPI_6_1_TDX_EVENT_LOG_TABLE_SIGNATURE   SIGNATURE_32('T', 'D', 'E', 'L')
+#define EFI_ACPI_6_1_TDX_EVENT_LOG_TABLE_SIGNATURE   SIGNATURE_32('C', 'C', 'E', 'L')
 
 VOID
 DumpAcpiTableHeader (
