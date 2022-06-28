@@ -12,7 +12,7 @@
 
 #include <IndustryStandard/Acpi.h>
 
-#define EFI_TDX_EVENTLOG_ACPI_TABLE_SIGNATURE  SIGNATURE_32('T', 'D', 'E', 'L')
+#define EFI_TDX_EVENTLOG_ACPI_TABLE_SIGNATURE  SIGNATURE_32('C', 'C', 'E', 'L')
 #define EFI_TDX_EVENTLOG_ACPIT_TABLE_REVISION  1
 
 #pragma pack(1)
