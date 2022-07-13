@@ -442,7 +442,6 @@ BigNumValueOne (
   @param[out]  BnRes   The result.
 
   @retval EFI_SUCCESS          On success.
-  @retval EFI_OUT_OF_RESOURCES In case of internal allocation failures.
   @retval EFI_PROTOCOL_ERROR   Otherwise.
 **/
 EFI_STATUS
@@ -453,8 +452,7 @@ BigNumRShift (
   OUT VOID       *BnRes
   )
 {
-  // BN_rshift() does not modify the first argument, so we remove const.
-  if (BN_rshift ((BIGNUM *)Bn, BnRes, (int)n) == 1) {
+  if (BN_rshift (BnRes, Bn, (int)n) == 1) {
     return EFI_SUCCESS;
   } else {
     return EFI_PROTOCOL_ERROR;
@@ -547,6 +545,9 @@ BigNumContextFree (
 
   @param[in]   Bn     Big number to set.
   @param[in]   Val    Value to set.
+
+  @retval EFI_SUCCESS          On success.
+  @retval EFI_PROTOCOL_ERROR   Otherwise.
 **/
 EFI_STATUS
 EFIAPI

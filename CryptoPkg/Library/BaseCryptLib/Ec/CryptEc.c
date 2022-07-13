@@ -21,13 +21,13 @@
 #include <openssl/ec.h>
 
 /**
-  Temp comment.
+  Return the Nid of certain ECC group.
 
   @param[in]  Group  Identifying number for the ECC group (IANA "Group
-                     Description" attribute registrty for RFC 2409).
+                     Description" attribute registry for RFC 2409).
 
-  @retval EcGroup object  On success.
-  @retval NULL            On failure.
+  @retval !=-1    On success.
+  @retval -1      ECC group not supported.
 **/
 STATIC
 INT32
@@ -47,12 +47,6 @@ GroupToNid (
     case 21:
       Nid = NID_secp521r1;
       break;
-    case 25:
-      Nid = NID_X9_62_prime192v1;
-      break;
-    case 26:
-      Nid = NID_secp224r1;
-      break;
     default:
       return -1;
   }
@@ -66,7 +60,7 @@ GroupToNid (
   using EcGroupFree() function.
 
   @param[in]  Group  Identifying number for the ECC group (IANA "Group
-                     Description" attribute registrty for RFC 2409).
+                     Description" attribute registry for RFC 2409).
 
   @retval EcGroup object  On success.
   @retval NULL            On failure.
@@ -96,8 +90,8 @@ EcGroupInit (
 
   @param[in]  EcGroup    EC group object.
   @param[out] BnPrime    Group prime number.
-  @param[out] BnA        A coofecient.
-  @param[out] BnB        B coofecient.
+  @param[out] BnA        A coefficient.
+  @param[out] BnB        B coefficient.
   @param[in]  BnCtx      BN context.
 
   @retval EFI_SUCCESS        On success.
@@ -218,7 +212,7 @@ EcPointGetAffineCoordinates (
   )
 {
   return EC_POINT_get_affine_coordinates (EcGroup, EcPoint, BnX, BnY, BnCtx) ?
-         EFI_SUCCESS : EFI_INVALID_PARAMETER;
+         EFI_SUCCESS : EFI_PROTOCOL_ERROR;
 }
 
 /**
@@ -244,7 +238,7 @@ EcPointSetAffineCoordinates (
   )
 {
   return EC_POINT_set_affine_coordinates (EcGroup, EcPoint, BnX, BnY, BnCtx) ?
-         EFI_SUCCESS : EFI_INVALID_PARAMETER;
+         EFI_SUCCESS : EFI_PROTOCOL_ERROR;
 }
 
 /**
@@ -271,7 +265,7 @@ EcPointAdd (
   )
 {
   return EC_POINT_add (EcGroup, EcPointResult, EcPointA, EcPointB, BnCtx) ?
-         EFI_SUCCESS : EFI_INVALID_PARAMETER;
+         EFI_SUCCESS : EFI_PROTOCOL_ERROR;
 }
 
 /**
@@ -298,7 +292,7 @@ EcPointMul (
   )
 {
   return EC_POINT_mul (EcGroup, EcPointResult, NULL, EcPoint, BnPScalar, BnCtx) ?
-         EFI_SUCCESS : EFI_INVALID_PARAMETER;
+         EFI_SUCCESS : EFI_PROTOCOL_ERROR;
 }
 
 /**
@@ -320,7 +314,7 @@ EcPointInvert (
   )
 {
   return EC_POINT_invert (EcGroup, EcPoint, BnCtx) ?
-         EFI_SUCCESS : EFI_INVALID_PARAMETER;
+         EFI_SUCCESS : EFI_PROTOCOL_ERROR;
 }
 
 /**
@@ -414,19 +408,20 @@ EcPointSetCompressedCoordinates (
   )
 {
   return EC_POINT_set_compressed_coordinates (EcGroup, EcPoint, BnX, YBit, BnCtx) ?
-         EFI_SUCCESS : EFI_INVALID_PARAMETER;
+         EFI_SUCCESS : EFI_PROTOCOL_ERROR;
 }
 
 /**
   Generate a key using ECDH algorithm. Please note, this function uses
   pseudo random number generator. The caller must make sure RandomSeed()
-  funtion was properly called before.
+  function was properly called before.
 
   @param[in]  Group    Identifying number for the ECC group (IANA "Group
-                       Description" attribute registrty for RFC 2409).
+                       Description" attribute registry for RFC 2409).
   @param[out] PKey     Pointer to an object that will hold the ECDH key.
 
   @retval EFI_SUCCESS        On success.
+  @retval EFI_UNSUPPORTED    ECC group not supported.
   @retval EFI_PROTOCOL_ERROR On failure.
 **/
 EFI_STATUS
@@ -508,8 +503,9 @@ EcDhKeyFree (
   @param[in]  PKey     ECDH Key object.
   @param[out] EcPoint  Properly initialized EC Point to hold the public key.
 
-  @retval EFI_SUCCESS        On success.
-  @retval EFI_PROTOCOL_ERROR On failure.
+  @retval EFI_SUCCESS           On success.
+  @retval EFI_INVALID_PARAMETER EcPoint should be initialized properly.
+  @retval EFI_PROTOCOL_ERROR    On failure.
 **/
 EFI_STATUS
 EFIAPI
@@ -553,15 +549,21 @@ out:
 
   @param[in]  PKey           ECDH Key object.
   @param[in]  Group          Identifying number for the ECC group (IANA "Group
-                             Description" attribute registrty for RFC 2409).
-  @param[in]  EcPointPublic  Peer public key.
+                             Description" attribute registry for RFC 2409).
+  @param[in]  EcPointPublic  Peer public key. Certain sanity checks on the key
+                             will be performed to confirm that it is valid.
   @param[out] SecretSize     On success, holds secret size.
   @param[out] Secret         On success, holds the derived secret.
                              Should be freed by caller using FreePool()
                              function.
 
-  @retval EFI_SUCCESS        On success.
-  @retval EFI_PROTOCOL_ERROR On failure.
+  @retval EFI_SUCCESS           On success.
+  @retval EFI_UNSUPPORTED       ECC group not supported.
+  @retval EFI_INVALID_PARAMETER One or more of the following conditions is TRUE:
+                                Secret is NULL.
+                                SecretSize is NULL.
+                                Public key in EcPointPublic is invalid.
+  @retval EFI_PROTOCOL_ERROR    On failure.
 **/
 EFI_STATUS
 EFIAPI
@@ -602,6 +604,11 @@ EcDhDeriveSecret (
 
   PeerKey = EVP_PKEY_new ();
   if ((PeerKey == NULL) || (EVP_PKEY_set1_EC_KEY (PeerKey, EcKey) != 1)) {
+    goto fail;
+  }
+
+  if (!EC_KEY_check_key (EcKey)) {
+    Status = EFI_INVALID_PARAMETER;
     goto fail;
   }
 
