@@ -13,7 +13,7 @@
 * [Related Projects](README.md#related-projects)
 * [Revision history](README.md#revision-history)
 
-<!-- ![C](https://github.com/JoaquinConoBolillo/CdePkg/blob/master/C.png) -->
+<!-- ![C](https://github.com/JoaquinConoBolillo/CdePkg/blob/master/C.png)  -->
 
 ## CdePkgBlog
 
