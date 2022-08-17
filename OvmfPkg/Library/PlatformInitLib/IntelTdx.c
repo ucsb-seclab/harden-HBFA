@@ -622,6 +622,12 @@ TransferTdxHobList (
 
         if (ResourceType == EFI_RESOURCE_SYSTEM_MEMORY) {
           BuildResourceDescriptorHobForUnacceptedMemory (Hob.ResourceDescriptor, MaxAcceptedMemoryAddress);
+        } else if (ResourceType == EFI_RESOURCE_MEMORY_RESERVED) {
+          BuildMemoryAllocationHob (
+            Hob.ResourceDescriptor->PhysicalStart,
+            Hob.ResourceDescriptor->ResourceLength,
+            EfiBootServicesData
+            );
         } else {
           BuildResourceDescriptorHob (
             ResourceType,
@@ -664,32 +670,4 @@ PlatformTdxPublishRamRegions (
   }
 
   TransferTdxHobList ();
-
-  //
-  // The memory region defined by PcdOvmfSecGhcbBackupBase is pre-allocated by
-  // host VMM and used as the td mailbox at the beginning of system boot.
-  //
-  BuildMemoryAllocationHob (
-    FixedPcdGet32 (PcdOvmfSecGhcbBackupBase),
-    FixedPcdGet32 (PcdOvmfSecGhcbBackupSize),
-    EfiACPIMemoryNVS
-    );
-
-  if (FixedPcdGet32 (PcdOvmfWorkAreaSize) != 0) {
-    //
-    // Reserve the work area.
-    //
-    // Since this memory range will be used by the Reset Vector on S3
-    // resume, it must be reserved as ACPI NVS.
-    //
-    // If S3 is unsupported, then various drivers might still write to the
-    // work area. We ought to prevent DXE from serving allocation requests
-    // such that they would overlap the work area.
-    //
-    BuildMemoryAllocationHob (
-      (EFI_PHYSICAL_ADDRESS)(UINTN)FixedPcdGet32 (PcdOvmfWorkAreaBase),
-      (UINT64)(UINTN)FixedPcdGet32 (PcdOvmfWorkAreaSize),
-      EfiBootServicesData
-      );
-  }
 }
