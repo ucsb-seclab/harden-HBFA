@@ -89,3 +89,8 @@
   gUefiOvmfPkgTokenSpaceGuid.PcdOvmfDxeMemFvBase
   gUefiOvmfPkgTokenSpaceGuid.PcdOvmfDxeMemFvSize
   gUefiOvmfPkgTokenSpaceGuid.PcdOvmfWorkAreaBase
+  gEmbeddedTokenSpaceGuid.PcdMemoryTypeEfiACPIMemoryNVS
+  gEmbeddedTokenSpaceGuid.PcdMemoryTypeEfiACPIReclaimMemory
+  gEmbeddedTokenSpaceGuid.PcdMemoryTypeEfiReservedMemoryType
+  gEmbeddedTokenSpaceGuid.PcdMemoryTypeEfiRuntimeServicesCode
+  gEmbeddedTokenSpaceGuid.PcdMemoryTypeEfiRuntimeServicesData
