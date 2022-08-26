@@ -689,20 +689,23 @@ The core idea is to use a "real" Standard C function `fprintf()`, in which cases
 Because internally it is a buffer-less implementation the buffer cannot overflow by design and the message-length is unlimited.
 
 ```c
+#ifndef NCDETRACE
 #define CDETRACE(dbgsig_msg)  \
-do{\
-    size_t dbgsig = __cdeGetDbgSig dbgsig_msg;\
-    if(!(dbgsig & CDEDBG_EN))\
-        break;\
-    if((TRCMSK & dbgsig)){\
-        fprintf((void*)dbgsig,"%s`%s(%d)`%s()`%s> ",\
-            gEfiCallerBaseName,__FILE__,__LINE__,__FUNCTION__,__cdeGetLevelString(dbgsig)),\
-        fprintf dbgsig_msg,\
-        __cdeFatAss(TRCMSK & dbgsig);\
-    }\
-        else\
-            fprintf dbgsig_msg;\
-}while(0)
+do {\
+    CDEDBGFP __cdeDbgFp = __cdeGetDbgFp dbgsig_msg; \
+        if (0 == __cdeDbgFp.CdeDbg.En)\
+            break;\
+        if (BAR != __cdeDbgFp.CdeDbg.Msg) {\
+            fprintf(__cdeDbgFp.ptr, "%s`%s(%d)`%s()`%s> ", gEfiCallerBaseName, __FILE__, __LINE__, __FUNCTION__, __cdeGetSeverityString(__cdeDbgFp)); \
+        }\
+        fprintf dbgsig_msg;\
+        __cdeFatAss(__cdeDbgFp);\
+} while (0)
+#else//NCDETRACE
+
+    #define CDETRACE(dbgsig_msg) ((void)0)
+
+#endif// NCDETRACE
 ```
 
 The first parameter determines the *SEVERITY*:<br>
