@@ -2,6 +2,7 @@
 #  The CPU specific programming for PiSmmCpuDxeSmm module.
 #
 #  Copyright (c) 2009 - 2016, Intel Corporation. All rights reserved.<BR>
+#  Copyright (c) 2022, AMD Incorporated. All rights reserved.
 #  SPDX-License-Identifier: BSD-2-Clause-Patent
 #
 ##
@@ -16,7 +17,10 @@
   LIBRARY_CLASS                  = SmmCpuFeaturesLib
   CONSTRUCTOR                    = SmmCpuFeaturesLibConstructor
 
-[Sources]
+[Sources.Ia32, Sources.X64]
+  X86/SmmCpuFeaturesLibIntel.c
+
+[Sources.common]
   CpuFeaturesLib.h
   SmmCpuFeaturesLib.c
   SmmCpuFeaturesLibCommon.c
