@@ -20,12 +20,12 @@
 
 [Sources.Ia32, Sources.X64]
   X86/SmmCpuFeaturesLibIntel.c
+  X86/SmmStm.c
+  X86/SmmStm.h
 
 [Sources]
   CpuFeaturesLib.h
   SmmCpuFeaturesLibCommon.c
-  SmmStm.c
-  SmmStm.h
   TraditionalMmCpuFeaturesLib.c
 
 [Sources.Ia32]
