@@ -25,18 +25,18 @@
   TraditionalMmCpuFeaturesLib.c
 
 [Sources.Ia32]
-  Ia32/SmmStmSupport.c
+  X86/Ia32/SmmStmSupport.c
 
 
-  Ia32/SmiEntry.nasm
-  Ia32/SmiException.nasm
+  X86/Ia32/SmiEntry.nasm
+  X86/Ia32/SmiException.nasm
 
 [Sources.X64]
-  X64/SmmStmSupport.c
+  X86/X64/SmmStmSupport.c
 
 
-  X64/SmiEntry.nasm
-  X64/SmiException.nasm
+  X86/X64/SmiEntry.nasm
+  X86/X64/SmiException.nasm
 
 [Packages]
   MdePkg/MdePkg.dec
