@@ -178,6 +178,7 @@ ShellCommandRunMemMap (
   PalCodePages        = 0;
   PersistentPages     = 0;
   Size                = 0;
+  UnacceptedPages     = 0;
   Descriptors         = NULL;
   ShellStatus         = SHELL_SUCCESS;
   Status              = EFI_SUCCESS;
