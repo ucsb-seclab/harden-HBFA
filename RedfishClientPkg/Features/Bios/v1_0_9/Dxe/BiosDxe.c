@@ -2,6 +2,7 @@
   Redfish feature driver implementation - Bios
 
   (C) Copyright 2020-2022 Hewlett Packard Enterprise Development LP<BR>
+  Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -9,15 +10,15 @@
 
 #include "../Common/BiosCommon.h"
 
-extern REDFISH_RESOURCE_COMMON_PRIVATE *mRedfishResourcePrivate;
+extern REDFISH_RESOURCE_COMMON_PRIVATE  *mRedfishResourcePrivate;
 
 EFI_STATUS
 HandleResource (
-  IN  REDFISH_RESOURCE_COMMON_PRIVATE *Private,
-  IN  EFI_STRING                      Uri
+  IN  REDFISH_RESOURCE_COMMON_PRIVATE  *Private,
+  IN  EFI_STRING                       Uri
   );
 
-EFI_HANDLE medfishResourceConfigProtocolHandle;
+EFI_HANDLE  medfishResourceConfigProtocolHandle;
 
 /**
   Provising redfish resource by given URI.
@@ -33,16 +34,16 @@ EFI_HANDLE medfishResourceConfigProtocolHandle;
 **/
 EFI_STATUS
 RedfishResourceProvisioningResource (
-  IN     EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL    *This,
-  IN     EFI_STRING                                Uri,
-  IN     BOOLEAN                                   PostMode
+  IN     EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL  *This,
+  IN     EFI_STRING                              Uri,
+  IN     BOOLEAN                                 PostMode
   )
 {
-  REDFISH_RESOURCE_COMMON_PRIVATE *Private;
-  EFI_STATUS                      Status;
-  REDFISH_RESPONSE                Response;
+  REDFISH_RESOURCE_COMMON_PRIVATE  *Private;
+  EFI_STATUS                       Status;
+  REDFISH_RESPONSE                 Response;
 
-  if (This == NULL || IS_EMPTY_STRING (Uri)) {
+  if ((This == NULL) || IS_EMPTY_STRING (Uri)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -60,7 +61,7 @@ RedfishResourceProvisioningResource (
     return Status;
   }
 
-  Private->Uri = Uri;
+  Private->Uri     = Uri;
   Private->Payload = Response.Payload;
   ASSERT (Private->Payload != NULL);
 
@@ -94,16 +95,22 @@ RedfishResourceProvisioningResource (
 **/
 EFI_STATUS
 RedfishResourceConsumeResource (
-  IN     EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL    *This,
-  IN     EFI_STRING                                Uri
+  IN     EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL  *This,
+  IN     EFI_STRING                              Uri
   )
 {
-  REDFISH_RESOURCE_COMMON_PRIVATE *Private;
-  EFI_STATUS                    Status;
-  REDFISH_RESPONSE              Response;
-  CHAR8                         *Etag;
+  REDFISH_RESOURCE_COMMON_PRIVATE  *Private;
+  EFI_STATUS                       Status;
+  REDFISH_RESPONSE                 Response;
+  REDFISH_RESPONSE                 *ExpectedResponse;
+  REDFISH_RESPONSE                 RedfishSettingsResponse;
+  CHAR8                            *Etag;
+  UINTN                            Index;
+  EDKII_JSON_VALUE                 JsonValue;
+  EFI_STRING                       RedfishSettingsUri;
+  CONST CHAR8                      *RedfishSettingsUriKeys[] = { "@Redfish.Settings", "SettingsObject", "@odata.id" };
 
-  if (This == NULL || IS_EMPTY_STRING (Uri)) {
+  if ((This == NULL) || IS_EMPTY_STRING (Uri)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -119,8 +126,38 @@ RedfishResourceConsumeResource (
     return Status;
   }
 
-  Private->Uri = Uri;
-  Private->Payload = Response.Payload;
+  ExpectedResponse   = &Response;
+  RedfishSettingsUri = NULL;
+  JsonValue          = RedfishJsonInPayload (Response.Payload);
+
+  //
+  // Seeking RedfishSettings URI link.
+  //
+  for (Index = 0; Index < sizeof (RedfishSettingsUriKeys) / sizeof (*RedfishSettingsUriKeys); Index++) {
+    if (JsonValue == NULL) {
+      break;
+    }
+
+    JsonValue = JsonObjectGetValue (JsonValueGetObject (JsonValue), RedfishSettingsUriKeys[Index]);
+  }
+
+  if (JsonValue != NULL) {
+    //
+    // Verify RedfishSettings URI link is valid to retrieve resource or not.
+    //
+    RedfishSettingsUri = JsonValueGetUnicodeString (JsonValue);
+
+    Status = GetResourceByUri (Private->RedfishService, RedfishSettingsUri, &RedfishSettingsResponse);
+    if (EFI_ERROR (Status)) {
+      DEBUG ((DEBUG_ERROR, "%a, @Redfish.Settings exists, get resource from: %s failed\n", __FUNCTION__, RedfishSettingsUri));
+    } else {
+      Uri              = RedfishSettingsUri;
+      ExpectedResponse = &RedfishSettingsResponse;
+    }
+  }
+
+  Private->Uri     = Uri;
+  Private->Payload = ExpectedResponse->Payload;
   ASSERT (Private->Payload != NULL);
 
   Private->Json = JsonDumpString (RedfishJsonInPayload (Private->Payload), EDKII_JSON_COMPACT);
@@ -129,8 +166,8 @@ RedfishResourceConsumeResource (
   //
   // Find etag in HTTP response header
   //
-  Etag = NULL;
-  Status = GetEtagAndLocation (&Response, &Etag, NULL);
+  Etag   = NULL;
+  Status = GetEtagAndLocation (ExpectedResponse, &Etag, NULL);
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a, failed to get ETag from HTTP header\n", __FUNCTION__));
   }
@@ -153,12 +190,24 @@ RedfishResourceConsumeResource (
   // Release resource
   //
   if (Private->Payload != NULL) {
-    RedfishFreeResponse (
-      Response.StatusCode,
-      Response.HeaderCount,
-      Response.Headers,
-      Response.Payload
-      );
+    if (Response.Payload != NULL) {
+      RedfishFreeResponse (
+        Response.StatusCode,
+        Response.HeaderCount,
+        Response.Headers,
+        Response.Payload
+        );
+    }
+
+    if (RedfishSettingsResponse.Payload != NULL) {
+      RedfishFreeResponse (
+        RedfishSettingsResponse.StatusCode,
+        RedfishSettingsResponse.HeaderCount,
+        RedfishSettingsResponse.Headers,
+        RedfishSettingsResponse.Payload
+        );
+    }
+
     Private->Payload = NULL;
   }
 
@@ -185,13 +234,13 @@ RedfishResourceConsumeResource (
 **/
 EFI_STATUS
 RedfishResourceGetInfo (
-  IN     EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL    *This,
+  IN     EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL  *This,
   OUT    REDFISH_SCHEMA_INFO                     *Info
   )
 {
-  REDFISH_RESOURCE_COMMON_PRIVATE *Private;
+  REDFISH_RESOURCE_COMMON_PRIVATE  *Private;
 
-  if (This == NULL || Info == NULL) {
+  if ((This == NULL) || (Info == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -217,15 +266,15 @@ RedfishResourceGetInfo (
 **/
 EFI_STATUS
 RedfishResourceUpdate (
-  IN     EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL    *This,
-  IN     EFI_STRING                                Uri
+  IN     EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL  *This,
+  IN     EFI_STRING                              Uri
   )
 {
-  REDFISH_RESOURCE_COMMON_PRIVATE *Private;
-  EFI_STATUS                    Status;
-  REDFISH_RESPONSE              Response;
+  REDFISH_RESOURCE_COMMON_PRIVATE  *Private;
+  EFI_STATUS                       Status;
+  REDFISH_RESPONSE                 Response;
 
-  if (This == NULL || IS_EMPTY_STRING (Uri)) {
+  if ((This == NULL) || IS_EMPTY_STRING (Uri)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -241,7 +290,7 @@ RedfishResourceUpdate (
     return Status;
   }
 
-  Private->Uri = Uri;
+  Private->Uri     = Uri;
   Private->Payload = Response.Payload;
   ASSERT (Private->Payload != NULL);
 
@@ -286,15 +335,15 @@ RedfishResourceUpdate (
 **/
 EFI_STATUS
 RedfishResourceCheck (
-  IN     EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL    *This,
-  IN     EFI_STRING                                Uri
+  IN     EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL  *This,
+  IN     EFI_STRING                              Uri
   )
 {
-  REDFISH_RESOURCE_COMMON_PRIVATE *Private;
-  EFI_STATUS                    Status;
-  REDFISH_RESPONSE              Response;
+  REDFISH_RESOURCE_COMMON_PRIVATE  *Private;
+  EFI_STATUS                       Status;
+  REDFISH_RESPONSE                 Response;
 
-  if (This == NULL || IS_EMPTY_STRING (Uri)) {
+  if ((This == NULL) || IS_EMPTY_STRING (Uri)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -310,7 +359,7 @@ RedfishResourceCheck (
     return Status;
   }
 
-  Private->Uri = Uri;
+  Private->Uri     = Uri;
   Private->Payload = Response.Payload;
   ASSERT (Private->Payload != NULL);
 
@@ -354,18 +403,17 @@ RedfishResourceCheck (
   @retval Others                   Some error happened.
 
 **/
-
 EFI_STATUS
 RedfishResourceIdentify (
   IN     EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL  *This,
   IN     EFI_STRING                              Uri
   )
 {
-  REDFISH_RESOURCE_COMMON_PRIVATE *Private;
-  EFI_STATUS                    Status;
-  REDFISH_RESPONSE              Response;
+  REDFISH_RESOURCE_COMMON_PRIVATE  *Private;
+  EFI_STATUS                       Status;
+  REDFISH_RESPONSE                 Response;
 
-  if (This == NULL || IS_EMPTY_STRING (Uri)) {
+  if ((This == NULL) || IS_EMPTY_STRING (Uri)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -381,7 +429,7 @@ RedfishResourceIdentify (
     return Status;
   }
 
-  Private->Uri = Uri;
+  Private->Uri     = Uri;
   Private->Payload = Response.Payload;
   ASSERT (Private->Payload != NULL);
 
@@ -392,6 +440,7 @@ RedfishResourceIdentify (
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a, identify %s failed: %r\n", __FUNCTION__, Uri, Status));
   }
+
   //
   // Release resource
   //
@@ -413,7 +462,7 @@ RedfishResourceIdentify (
   return Status;
 }
 
-EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL mRedfishResourceConfig = {
+EDKII_REDFISH_RESOURCE_CONFIG_PROTOCOL  mRedfishResourceConfig = {
   RedfishResourceProvisioningResource,
   RedfishResourceConsumeResource,
   RedfishResourceUpdate,
@@ -441,10 +490,10 @@ EFI_STATUS
 EFIAPI
 RedfishResourceInit (
   IN  EDKII_REDFISH_CONFIG_HANDLER_PROTOCOL  *This,
-  IN  REDFISH_CONFIG_SERVICE_INFORMATION   *RedfishConfigServiceInfo
+  IN  REDFISH_CONFIG_SERVICE_INFORMATION     *RedfishConfigServiceInfo
   )
 {
-  REDFISH_RESOURCE_COMMON_PRIVATE *Private;
+  REDFISH_RESOURCE_COMMON_PRIVATE  *Private;
 
   Private = REDFISH_RESOURCE_COMMON_PRIVATE_DATA_FROM_CONFIG_PROTOCOL (This);
 
@@ -468,10 +517,10 @@ RedfishResourceInit (
 EFI_STATUS
 EFIAPI
 RedfishResourceStop (
-  IN  EDKII_REDFISH_CONFIG_HANDLER_PROTOCOL       *This
+  IN  EDKII_REDFISH_CONFIG_HANDLER_PROTOCOL  *This
   )
 {
-  REDFISH_RESOURCE_COMMON_PRIVATE *Private;
+  REDFISH_RESOURCE_COMMON_PRIVATE  *Private;
 
   Private = REDFISH_RESOURCE_COMMON_PRIVATE_DATA_FROM_CONFIG_PROTOCOL (This);
 
@@ -493,7 +542,7 @@ RedfishResourceStop (
   return EFI_SUCCESS;
 }
 
-EDKII_REDFISH_CONFIG_HANDLER_PROTOCOL mRedfishConfigHandler = {
+EDKII_REDFISH_CONFIG_HANDLER_PROTOCOL  mRedfishConfigHandler = {
   RedfishResourceInit,
   RedfishResourceStop
 };
@@ -506,10 +555,9 @@ EDKII_REDFISH_CONFIG_HANDLER_PROTOCOL mRedfishConfigHandler = {
 **/
 VOID
 EFIAPI
-EfiRestJasonStructureProtocolIsReady
- (
-  IN  EFI_EVENT                             Event,
-  IN  VOID                                  *Context
+EfiRestJasonStructureProtocolIsReady (
+  IN  EFI_EVENT  Event,
+  IN  VOID       *Context
   )
 {
   EFI_STATUS  Status;
@@ -523,10 +571,10 @@ EfiRestJasonStructureProtocolIsReady
   }
 
   Status = gBS->LocateProtocol (
-                 &gEfiRestJsonStructureProtocolGuid,
-                 NULL,
-                 (VOID **)&mRedfishResourcePrivate->JsonStructProtocol
-                 );
+                  &gEfiRestJsonStructureProtocolGuid,
+                  NULL,
+                  (VOID **)&mRedfishResourcePrivate->JsonStructProtocol
+                  );
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a, failed to locate gEfiRestJsonStructureProtocolGuid: %r\n", __FUNCTION__, Status));
   }
@@ -550,7 +598,7 @@ RedfishResourceUnload (
   )
 {
   EFI_STATUS                             Status;
-  EDKII_REDFISH_CONFIG_HANDLER_PROTOCOL    *ConfigHandler;
+  EDKII_REDFISH_CONFIG_HANDLER_PROTOCOL  *ConfigHandler;
 
   if (mRedfishResourcePrivate == NULL) {
     return EFI_NOT_READY;
@@ -564,12 +612,12 @@ RedfishResourceUnload (
   Status = gBS->OpenProtocol (
                   ImageHandle,
                   &gEdkIIRedfishConfigHandlerProtocolGuid,
-                  (VOID **) &ConfigHandler,
+                  (VOID **)&ConfigHandler,
                   NULL,
                   NULL,
                   EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
                   );
-  if (EFI_ERROR (Status) || ConfigHandler == NULL) {
+  if (EFI_ERROR (Status) || (ConfigHandler == NULL)) {
     return Status;
   }
 
@@ -612,10 +660,10 @@ RedfishResourceUnload (
 EFI_STATUS
 EFIAPI
 RedfishExternalResourceResourceFeatureCallback (
-  IN     EDKII_REDFISH_FEATURE_PROTOCOL *This,
-  IN     FEATURE_CALLBACK_ACTION        FeatureAction,
-  IN     VOID                           *Context,
-  IN OUT RESOURCE_INFORMATION_EXCHANGE  *InformationExchange
+  IN     EDKII_REDFISH_FEATURE_PROTOCOL  *This,
+  IN     FEATURE_CALLBACK_ACTION         FeatureAction,
+  IN     VOID                            *Context,
+  IN OUT RESOURCE_INFORMATION_EXCHANGE   *InformationExchange
   )
 {
   EFI_STATUS                       Status;
@@ -647,11 +695,12 @@ RedfishExternalResourceResourceFeatureCallback (
   //
   // Create the full URI from Redfish service root.
   //
-  ResourceUri = (EFI_STRING)AllocateZeroPool (MAX_URI_LENGTH * sizeof(CHAR16));
+  ResourceUri = (EFI_STRING)AllocateZeroPool (MAX_URI_LENGTH * sizeof (CHAR16));
   if (ResourceUri == NULL) {
     DEBUG ((DEBUG_ERROR, "%a, Fail to allocate memory for full URI.\n", __FUNCTION__));
     return EFI_OUT_OF_RESOURCES;
   }
+
   StrCatS (ResourceUri, MAX_URI_LENGTH, Private->RedfishVersion);
   StrCatS (ResourceUri, MAX_URI_LENGTH, InformationExchange->SendInformation.FullUri);
 
@@ -681,10 +730,9 @@ RedfishExternalResourceResourceFeatureCallback (
 **/
 VOID
 EFIAPI
-EdkIIRedfishFeatureProtocolIsReady
- (
-  IN  EFI_EVENT                             Event,
-  IN  VOID                                  *Context
+EdkIIRedfishFeatureProtocolIsReady (
+  IN  EFI_EVENT  Event,
+  IN  VOID       *Context
   )
 {
   EFI_STATUS                      Status;
@@ -699,10 +747,10 @@ EdkIIRedfishFeatureProtocolIsReady
   }
 
   Status = gBS->LocateProtocol (
-                 &gEdkIIRedfishFeatureProtocolGuid,
-                 NULL,
-                 (VOID **)&FeatureProtocol
-                 );
+                  &gEdkIIRedfishFeatureProtocolGuid,
+                  NULL,
+                  (VOID **)&FeatureProtocol
+                  );
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a, failed to locate gEdkIIRedfishFeatureProtocolGuid: %r\n", __FUNCTION__, Status));
     gBS->CloseEvent (Event);
@@ -744,8 +792,8 @@ RedfishResourceEntryPoint (
   IN EFI_SYSTEM_TABLE  *SystemTable
   )
 {
-  EFI_STATUS               Status;
-  VOID                     *Registration;
+  EFI_STATUS  Status;
+  VOID        *Registration;
 
   if (mRedfishResourcePrivate != NULL) {
     return EFI_ALREADY_STARTED;
