@@ -1,7 +1,7 @@
 /** @file
   Miscellaneous routines specific to Https for HttpDxe driver.
 
-Copyright (c) 2016 - 2018, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2016 - 2022, Intel Corporation. All rights reserved.<BR>
 (C) Copyright 2016 Hewlett Packard Enterprise Development LP<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -644,11 +644,17 @@ TlsConfigureSession (
   //
   // TlsConfigData initialization
   //
-  HttpInstance->TlsConfigData.ConnectionEnd       = EfiTlsClient;
-  HttpInstance->TlsConfigData.VerifyMethod        = EFI_TLS_VERIFY_PEER;
-  HttpInstance->TlsConfigData.VerifyHost.Flags    = EFI_TLS_VERIFY_FLAG_NONE;
-  HttpInstance->TlsConfigData.VerifyHost.HostName = HttpInstance->RemoteHost;
-  HttpInstance->TlsConfigData.SessionState        = EfiTlsSessionNotStarted;
+  HttpInstance->TlsConfigData.ConnectionEnd    = EfiTlsClient;
+  HttpInstance->TlsConfigData.VerifyMethod     = EFI_TLS_VERIFY_PEER;
+  HttpInstance->TlsConfigData.VerifyHost.Flags = EFI_TLS_VERIFY_FLAG_NONE;
+  HttpInstance->TlsConfigData.SessionState     = EfiTlsSessionNotStarted;
+
+  if (HttpInstance->ProxyConnected) {
+    ASSERT (HttpInstance->EndPointHostName != NULL);
+    HttpInstance->TlsConfigData.VerifyHost.HostName = HttpInstance->EndPointHostName;
+  } else {
+    HttpInstance->TlsConfigData.VerifyHost.HostName = HttpInstance->RemoteHost;
+  }
 
   //
   // EfiTlsConnectionEnd,
