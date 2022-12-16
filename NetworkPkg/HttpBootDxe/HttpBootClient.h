@@ -1,7 +1,7 @@
 /** @file
   Declaration of the boot file download function.
 
-Copyright (c) 2015 - 2021, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2015 - 2022, Intel Corporation. All rights reserved.<BR>
 (C) Copyright 2016 Hewlett Packard Enterprise Development LP<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -83,6 +83,21 @@ HttpBootDiscoverBootInfo (
 **/
 EFI_STATUS
 HttpBootCreateHttpIo (
+  IN     HTTP_BOOT_PRIVATE_DATA  *Private
+  );
+
+/**
+  This function establishes a connection through a proxy server
+
+  @param[in]       Private         The pointer to the driver's private data.
+
+  @retval EFI_SUCCESS              Connection successful.
+  @retval EFI_OUT_OF_RESOURCES     Could not allocate needed resources
+  @retval Others                   Unexpected error happened.
+
+**/
+EFI_STATUS
+HttpBootConnectProxy (
   IN     HTTP_BOOT_PRIVATE_DATA  *Private
   );
 
