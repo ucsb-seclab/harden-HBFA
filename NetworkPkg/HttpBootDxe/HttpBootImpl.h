@@ -1,7 +1,7 @@
 /** @file
   The declaration of UEFI HTTP boot function.
 
-Copyright (c) 2015 - 2018, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2015 - 2022, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -10,6 +10,13 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define __EFI_HTTP_BOOT_IMPL_H__
 
 #define HTTP_BOOT_CHECK_MEDIA_WAITING_TIME  EFI_TIMER_PERIOD_SECONDS(20)
+
+typedef enum {
+  GetBootFileHead,
+  GetBootFileGet,
+  LoadBootFile,
+  GetBootFileError
+} HTTP_GET_BOOT_FILE_STATE;
 
 /**
   Attempt to complete a DHCPv4 D.O.R.A or DHCPv6 S.R.A.A sequence to retrieve the boot resource information.
