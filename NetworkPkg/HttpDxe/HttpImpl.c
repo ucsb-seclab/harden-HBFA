@@ -162,6 +162,7 @@ EfiHttpConfigure (
     HttpInstance->TimeOutMillisec    = HttpConfigData->TimeOutMillisec;
     HttpInstance->LocalAddressIsIPv6 = HttpConfigData->LocalAddressIsIPv6;
     HttpInstance->ConnectionClose    = FALSE;
+    HttpInstance->ProxyConnected     = FALSE;
 
     if (HttpConfigData->LocalAddressIsIPv6) {
       CopyMem (
@@ -233,6 +234,7 @@ EfiHttpRequest (
   EFI_HTTP_MESSAGE       *HttpMsg;
   EFI_HTTP_REQUEST_DATA  *Request;
   VOID                   *UrlParser;
+  VOID                   *EndPointUrlParser;
   EFI_STATUS             Status;
   CHAR8                  *HostName;
   UINTN                  HostNameSize;
@@ -244,24 +246,33 @@ EfiHttpRequest (
   CHAR8                  *RequestMsg;
   CHAR8                  *Url;
   UINTN                  UrlLen;
+  CHAR8                  *ProxyUrl;
+  UINTN                  ProxyUrlLen;
+  CHAR8                  *ParseUrl;
   CHAR16                 *HostNameStr;
   HTTP_TOKEN_WRAP        *Wrap;
   CHAR8                  *FileUrl;
   UINTN                  RequestMsgSize;
   EFI_HANDLE             ImageHandle;
+  UINT16                 EndPointRemotePort;
+  CHAR8                  *EndPointUrlMsg;
 
   //
   // Initializations
   //
-  Url          = NULL;
-  UrlParser    = NULL;
-  RemotePort   = 0;
-  HostName     = NULL;
-  RequestMsg   = NULL;
-  HostNameStr  = NULL;
-  Wrap         = NULL;
-  FileUrl      = NULL;
-  TlsConfigure = FALSE;
+  Url                = NULL;
+  ProxyUrl           = NULL;
+  UrlParser          = NULL;
+  EndPointUrlParser  = NULL;
+  RemotePort         = 0;
+  HostName           = NULL;
+  RequestMsg         = NULL;
+  HostNameStr        = NULL;
+  Wrap               = NULL;
+  FileUrl            = NULL;
+  TlsConfigure       = FALSE;
+  EndPointUrlMsg     = NULL;
+  EndPointRemotePort = 0;
 
   if ((This == NULL) || (Token == NULL)) {
     return EFI_INVALID_PARAMETER;
@@ -275,14 +286,26 @@ EfiHttpRequest (
   Request = HttpMsg->Data.Request;
 
   //
-  // Only support GET, HEAD, DELETE, PATCH, PUT and POST method in current implementation.
+  // Only support GET, HEAD, DELETE, CONNECT, PATCH, PUT and POST method in current implementation.
   //
-  if ((Request != NULL) && (Request->Method != HttpMethodGet) &&
-      (Request->Method != HttpMethodHead) && (Request->Method != HttpMethodDelete) &&
-      (Request->Method != HttpMethodPut) && (Request->Method != HttpMethodPost) &&
-      (Request->Method != HttpMethodPatch))
-  {
-    return EFI_UNSUPPORTED;
+  if (Request != NULL) {
+    switch (Request->Method) {
+      case HttpMethodGet:
+      case HttpMethodHead:
+      case HttpMethodDelete:
+      case HttpMethodPut:
+      case HttpMethodPost:
+      case HttpMethodPatch:
+        break;
+      case HttpMethodConnect:
+        if (Request->ProxyUrl == NULL) {
+          return EFI_INVALID_PARAMETER;
+        }
+
+        break;
+      default:
+        return EFI_UNSUPPORTED;
+    }
   }
 
   HttpInstance = HTTP_INSTANCE_FROM_PROTOCOL (This);
@@ -337,7 +360,7 @@ EfiHttpRequest (
     }
 
     //
-    // Parse the URI of the remote host.
+    // Parse the Request URI.
     //
     Url    = HttpInstance->Url;
     UrlLen = StrLen (Request->Url) + 1;
@@ -356,6 +379,29 @@ EfiHttpRequest (
     }
 
     UnicodeStrToAsciiStrS (Request->Url, Url, UrlLen);
+
+    //
+    // In case of HTTP Connect, parse proxy URI from Request.
+    //
+    if (Request->Method == HttpMethodConnect) {
+      ProxyUrl    = HttpInstance->ProxyUrl;
+      ProxyUrlLen = StrLen (Request->ProxyUrl) + 1;
+      if (ProxyUrlLen > HttpInstance->ProxyUrlLen) {
+        ProxyUrl = AllocateZeroPool (ProxyUrlLen);
+        if (ProxyUrl == NULL) {
+          return EFI_OUT_OF_RESOURCES;
+        }
+
+        if (HttpInstance->ProxyUrl != NULL) {
+          FreePool (HttpInstance->ProxyUrl);
+        }
+
+        HttpInstance->ProxyUrl    = ProxyUrl;
+        HttpInstance->ProxyUrlLen = ProxyUrlLen;
+      }
+
+      UnicodeStrToAsciiStrS (Request->ProxyUrl, ProxyUrl, ProxyUrlLen);
+    }
 
     //
     // From the information in Url, the HTTP instance will
@@ -398,13 +444,26 @@ EfiHttpRequest (
       TlsConfigure = TRUE;
     }
 
-    UrlParser = NULL;
-    Status    = HttpParseUrl (Url, (UINT32)AsciiStrLen (Url), FALSE, &UrlParser);
+    //
+    // Setup RemoteAddress and RemotePort of HttpInstance.
+    //
+    if (Request->Method == HttpMethodConnect) {
+      // Case 1: HTTP Connect request
+      ParseUrl = ProxyUrl;
+    } else if (HttpInstance->ProxyConnected == TRUE) {
+      // Case 2: Other HTTP request (proxy connected)
+      ParseUrl = HttpInstance->ProxyUrl;
+    } else {
+      // Case 3: Other HTTP request (proxy not connected)
+      ParseUrl = Url;
+    }
+
+    Status = HttpParseUrl (ParseUrl, (UINT32)AsciiStrLen (ParseUrl), FALSE, &UrlParser);
     if (EFI_ERROR (Status)) {
       goto Error1;
     }
 
-    Status = HttpUrlGetHostName (Url, UrlParser, &HostName);
+    Status = HttpUrlGetHostName (ParseUrl, UrlParser, &HostName);
     if (EFI_ERROR (Status)) {
       goto Error1;
     }
@@ -422,7 +481,7 @@ EfiHttpRequest (
       }
     }
 
-    Status = HttpUrlGetPort (Url, UrlParser, &RemotePort);
+    Status = HttpUrlGetPort (ParseUrl, UrlParser, &RemotePort);
     if (EFI_ERROR (Status)) {
       if (HttpInstance->UseHttps) {
         RemotePort = HTTPS_DEFAULT_PORT;
@@ -518,7 +577,7 @@ EfiHttpRequest (
     if (!HttpInstance->LocalAddressIsIPv6) {
       Status = NetLibAsciiStrToIp4 (HostName, &HttpInstance->RemoteAddr);
     } else {
-      Status = HttpUrlGetIp6 (Url, UrlParser, &HttpInstance->RemoteIpv6Addr);
+      Status = HttpUrlGetIp6 (ParseUrl, UrlParser, &HttpInstance->RemoteIpv6Addr);
     }
 
     if (EFI_ERROR (Status)) {
@@ -616,27 +675,74 @@ EfiHttpRequest (
   //
   // Create request message.
   //
-  FileUrl = Url;
-  if ((Url != NULL) && (*FileUrl != '/')) {
+  if (Request->Method == HttpMethodConnect) {
     //
-    // Convert the absolute-URI to the absolute-path
+    // HTTP Connect shall contain EndPoint host name in URI
     //
-    while (*FileUrl != ':') {
-      FileUrl++;
-    }
-
-    if ((*(FileUrl+1) == '/') && (*(FileUrl+2) == '/')) {
-      FileUrl += 3;
-      while (*FileUrl != '/') {
-        FileUrl++;
-      }
-    } else {
-      Status = EFI_INVALID_PARAMETER;
+    Status = HttpParseUrl (Url, (UINT32)AsciiStrLen (Url), FALSE, &EndPointUrlParser);
+    if (EFI_ERROR (Status)) {
       goto Error3;
     }
-  }
 
-  Status = HttpGenRequestMessage (HttpMsg, FileUrl, &RequestMsg, &RequestMsgSize);
+    Status = HttpUrlGetHostName (
+               Url,
+               EndPointUrlParser,
+               &HttpInstance->EndPointHostName
+               );
+    if (EFI_ERROR (Status)) {
+      goto Error3;
+    }
+
+    Status = HttpUrlGetPort (Url, EndPointUrlParser, &EndPointRemotePort);
+    if (EFI_ERROR (Status)) {
+      if (IsHttpsUrl (Url)) {
+        EndPointRemotePort = HTTPS_DEFAULT_PORT;
+      } else {
+        EndPointRemotePort = HTTP_DEFAULT_PORT;
+      }
+    }
+
+    EndPointUrlMsg = AllocateZeroPool (URI_STR_MAX_SIZE);
+    if (EndPointUrlMsg == NULL) {
+      Status = EFI_OUT_OF_RESOURCES;
+      goto Error3;
+    }
+
+    AsciiSPrint (
+      EndPointUrlMsg,
+      URI_STR_MAX_SIZE,
+      "%a:%d",
+      HttpInstance->EndPointHostName,
+      EndPointRemotePort
+      );
+
+    Status = HttpGenRequestMessage (HttpMsg, EndPointUrlMsg, &RequestMsg, &RequestMsgSize);
+
+    FreePool (EndPointUrlMsg);
+    HttpUrlFreeParser (EndPointUrlParser);
+  } else {
+    FileUrl = Url;
+    if ((Url != NULL) && (*FileUrl != '/')) {
+      //
+      // Convert the absolute-URI to the absolute-path
+      //
+      while (*FileUrl != ':') {
+        FileUrl++;
+      }
+
+      if ((*(FileUrl+1) == '/') && (*(FileUrl+2) == '/')) {
+        FileUrl += 3;
+        while (*FileUrl != '/') {
+          FileUrl++;
+        }
+      } else {
+        Status = EFI_INVALID_PARAMETER;
+        goto Error3;
+      }
+    }
+
+    Status = HttpGenRequestMessage (HttpMsg, FileUrl, &RequestMsg, &RequestMsgSize);
+  }
 
   if (EFI_ERROR (Status) || (NULL == RequestMsg)) {
     goto Error3;
@@ -671,6 +777,10 @@ EfiHttpRequest (
   }
 
   DispatchDpc ();
+
+  if (HttpInstance->Method == HttpMethodConnect) {
+    HttpInstance->ProxyConnected = TRUE;
+  }
 
   if (HostName != NULL) {
     FreePool (HostName);
@@ -717,6 +827,14 @@ Error2:
   }
 
 Error1:
+  if (EndPointUrlMsg != NULL) {
+    FreePool (EndPointUrlMsg);
+  }
+
+  if (EndPointUrlParser != NULL) {
+    HttpUrlFreeParser (EndPointUrlParser);
+  }
+
   if (HostName != NULL) {
     FreePool (HostName);
   }

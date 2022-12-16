@@ -1,7 +1,7 @@
 /** @file
   The header files of the driver binding and service binding protocol for HttpDxe driver.
 
-  Copyright (c) 2015 - 2021, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2015 - 2022, Intel Corporation. All rights reserved.<BR>
   (C) Copyright 2016 Hewlett Packard Enterprise Development LP<BR>
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
@@ -26,6 +26,7 @@
 #include <Library/NetLib.h>
 #include <Library/HttpLib.h>
 #include <Library/DpcLib.h>
+#include <Library/PrintLib.h>
 
 //
 // UEFI Driver Model Protocols
@@ -64,6 +65,7 @@
 // Driver Version
 //
 #define HTTP_DRIVER_VERSION  0xa
+#define URI_STR_MAX_SIZE     255
 
 //
 // Protocol instances
