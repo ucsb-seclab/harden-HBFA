@@ -2,7 +2,7 @@
   This library is used to share code between UEFI network stack modules.
   It provides the helper routines to parse the HTTP message byte stream.
 
-Copyright (c) 2015 - 2019, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2015 - 2022, Intel Corporation. All rights reserved.<BR>
 (C) Copyright 2016 - 2020  Hewlett Packard Enterprise Development LP<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -1925,6 +1925,11 @@ HttpGenRequestMessage (
       case HttpMethodDelete:
         StrLength = sizeof (HTTP_METHOD_DELETE) - 1;
         CopyMem (RequestPtr, HTTP_METHOD_DELETE, StrLength);
+        RequestPtr += StrLength;
+        break;
+      case HttpMethodConnect:
+        StrLength = sizeof (HTTP_METHOD_CONNECT) - 1;
+        CopyMem (RequestPtr, HTTP_METHOD_CONNECT, StrLength);
         RequestPtr += StrLength;
         break;
       default:
