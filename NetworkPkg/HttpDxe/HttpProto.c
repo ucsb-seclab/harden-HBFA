@@ -1,7 +1,7 @@
 /** @file
   Miscellaneous routines for HttpDxe driver.
 
-Copyright (c) 2015 - 2021, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2015 - 2022, Intel Corporation. All rights reserved.<BR>
 (C) Copyright 2016 Hewlett Packard Enterprise Development LP<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -737,6 +737,8 @@ HttpInitProtocol (
     goto ON_ERROR;
   }
 
+  HttpInstance->UrlLen = HTTP_URL_BUFFER_LEN;
+
   return EFI_SUCCESS;
 
 ON_ERROR:
@@ -846,7 +848,8 @@ HttpCleanProtocol (
 
   if (HttpInstance->Url != NULL) {
     FreePool (HttpInstance->Url);
-    HttpInstance->Url = NULL;
+    HttpInstance->Url    = NULL;
+    HttpInstance->UrlLen = 0;
   }
 
   NetMapClean (&HttpInstance->TxTokens);

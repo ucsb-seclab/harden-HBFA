@@ -1,7 +1,7 @@
 /** @file
   The header files of miscellaneous routines for HttpDxe driver.
 
-Copyright (c) 2015 - 2021, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2015 - 2022, Intel Corporation. All rights reserved.<BR>
 (C) Copyright 2016 Hewlett Packard Enterprise Development LP<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -164,6 +164,7 @@ typedef struct _HTTP_PROTOCOL {
   NET_MAP                           RxTokens;
 
   CHAR8                             *Url;
+  UINTN                             UrlLen;
 
   //
   // Https Support
