@@ -1,7 +1,7 @@
 /** @file
   UEFI HTTP boot driver's private data structure and interfaces declaration.
 
-Copyright (c) 2015 - 2018, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2015 - 2022, Intel Corporation. All rights reserved.<BR>
 (C) Copyright 2016 - 2020 Hewlett Packard Enterprise Development LP<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -222,6 +222,12 @@ struct _HTTP_BOOT_PRIVATE_DATA {
   //
   CHAR8                                        *FilePathUri;
   VOID                                         *FilePathUriParser;
+
+  //
+  // URI string for the Proxy host if BootFileUri contains a Proxy
+  // URI in the path
+  //
+  CHAR8                                        *ProxyUri;
 
   //
   // Cached HTTP data
