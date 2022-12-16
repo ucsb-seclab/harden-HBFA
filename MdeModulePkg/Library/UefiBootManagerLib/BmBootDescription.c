@@ -1,7 +1,7 @@
 /** @file
   Library functions which relate with boot option description.
 
-Copyright (c) 2011 - 2018, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2011 - 2022, Intel Corporation. All rights reserved.<BR>
 (C) Copyright 2015 Hewlett Packard Enterprise Development LP<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -412,8 +412,8 @@ BmGetNetworkDescription (
   //   ....../Mac(...)[/Vlan(...)][/Wi-Fi(...)]/IPv6(...)
   //
   // The HTTP device path is like:
-  //   ....../Mac(...)[/Vlan(...)][/Wi-Fi(...)]/IPv4(...)[/Dns(...)]/Uri(...)
-  //   ....../Mac(...)[/Vlan(...)][/Wi-Fi(...)]/IPv6(...)[/Dns(...)]/Uri(...)
+  //   ....../Mac(...)[/Vlan(...)][/Wi-Fi(...)]/IPv4(...)[/Dns(...)][/Uri(...)]/Uri(...)
+  //   ....../Mac(...)[/Vlan(...)][/Wi-Fi(...)]/IPv6(...)[/Dns(...)][/Uri(...)]/Uri(...)
   //
   while (!IsDevicePathEnd (DevicePath) &&
          ((DevicePathType (DevicePath) != MESSAGING_DEVICE_PATH) ||
