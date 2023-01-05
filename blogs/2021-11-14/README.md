@@ -70,7 +70,7 @@ It will look similiar to this:
 ![repoclone](repoclone.png)
 
 Change into the `blogs\2021-11-14` folder by typing:<br>
-`cd blogs\2021-11-14`<br>
+`cd blogs\2021-11-14\lib`<br>
 and type: `type WELCOME.c | find /n /v ""` to see what `WELCOME.c` truly is.
 ![welcomelist](welcomelist.png)
 
