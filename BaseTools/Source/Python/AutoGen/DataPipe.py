@@ -173,3 +173,5 @@ class MemoryDataPipe(DataPipe):
         self.DataContainer = {"gPlatformFinalPcds":GlobalData.gPlatformFinalPcds}
 
         self.DataContainer = {"VfrYamlEnable": GlobalData.gVfrYamlEnable}
+
+        self.DataContainer = {"GenDefaultVarBin": GlobalData.gGenDefaultVarBin}

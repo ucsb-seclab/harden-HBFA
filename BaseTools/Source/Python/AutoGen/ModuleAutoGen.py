@@ -442,6 +442,14 @@ class ModuleAutoGen(AutoGen):
                 rt.append(os.path.join(self.OutputDir, "{}.i".format(SrcFile.BaseName)))
         return rt
 
+    @cached_property
+    def VarJsonFiles(self):
+        rt = []
+        for SrcFile in self.SourceFileList:
+            if SrcFile.Ext.lower() == '.vfr':
+                rt.append(os.path.join(self.OutputDir, "{}.json".format(SrcFile.BaseName)))
+        return rt
+
     ## Return the path of custom file
     @cached_property
     def CustomMakefile(self):

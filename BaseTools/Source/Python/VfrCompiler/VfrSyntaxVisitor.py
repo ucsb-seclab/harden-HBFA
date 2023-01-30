@@ -4560,7 +4560,7 @@ class VfrSyntaxVisitor(ParseTreeVisitor):
                         '0x%x'%(pVsNode.Guid.Data4[4]), '0x%x'%(pVsNode.Guid.Data4[5]), '0x%x'%(pVsNode.Guid.Data4[6]), '0x%x'%(pVsNode.Guid.Data4[7])) + ' }}\",\n')
                         f.write('        \"VarName\": \"{}\",\n'.format(str(pVsNode.Name)))
                         f.write('        \"DefaultStore\": \"{}\",\n'.format(str(pVsNode.Id)))
-                        f.write('        \"Size\": \"{}\",\n'.format(str(pInfoNode.Width)))
+                        f.write('        \"Size\": {},\n'.format(str(pInfoNode.Width)))
                         f.write('        \"Offset\": {},\n'.format(str(pInfoNode.Offset)))
                         #f.write('        \"Value\": \"{}\"\n'.format(str(pInfoNode.Value)))
                         if pInfoNode.Type == EFI_IFR_TYPE_DATE:
@@ -4574,15 +4574,15 @@ class VfrSyntaxVisitor(ParseTreeVisitor):
                         if pInfoNode.Type == EFI_IFR_TYPE_STRING:
                             f.write('        \"Value\": \"{}\"\n'.format(pInfoNode.Value.string))
                         if pInfoNode.Type == EFI_IFR_TYPE_NUM_SIZE_8:
-                            f.write('        \"Value\": \"{}\"\n'.format(pInfoNode.Value.u8))
+                            f.write('        \"Value\": \"{}\"\n'.format(hex(pInfoNode.Value.u8)))
                         if pInfoNode.Type == EFI_IFR_TYPE_NUM_SIZE_16:
-                            f.write('        \"Value\": \"{}\"\n'.format(pInfoNode.Value.u16))
+                            f.write('        \"Value\": \"{}\"\n'.format(hex(pInfoNode.Value.u16)))
                         if pInfoNode.Type == EFI_IFR_TYPE_NUM_SIZE_32:
-                            f.write('        \"Value\": \"{}\"\n'.format(pInfoNode.Value.u32))
+                            f.write('        \"Value\": \"{}\"\n'.format(hex(pInfoNode.Value.u32)))
                         if pInfoNode.Type == EFI_IFR_TYPE_NUM_SIZE_64:
-                            f.write('        \"Value\": \"{}\"\n'.format(pInfoNode.Value.u64))
+                            f.write('        \"Value\": \"{}\"\n'.format(hex(pInfoNode.Value.u64)))
                         if pInfoNode.Type == EFI_IFR_TYPE_BOOLEAN:
-                            f.write('        \"Value\": \"{}\"\n'.format(pInfoNode.Value.b))
+                            f.write('        \"Value\": \"{}\"\n'.format(hex(pInfoNode.Value.b)))
 
                         f.write('      },\n')
                         pInfoNode = pInfoNode.Next

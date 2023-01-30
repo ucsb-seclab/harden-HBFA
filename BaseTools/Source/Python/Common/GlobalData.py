@@ -127,3 +127,8 @@ file_lock = None
 # Build flag for generate Yaml file from Vfr file
 #
 gVfrYamlEnable = False
+
+#
+# Build flag for generate default variable binary file
+#
+gGenDefaultVarBin = False

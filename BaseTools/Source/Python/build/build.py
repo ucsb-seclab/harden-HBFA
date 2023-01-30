@@ -749,6 +749,7 @@ class Build():
         GlobalData.gEnableGenfdsMultiThread = not BuildOptions.NoGenfdsMultiThread
         GlobalData.gDisableIncludePathCheck = BuildOptions.DisableIncludePathCheck
         GlobalData.gVfrYamlEnable = BuildOptions.VfrYamlEnable
+        GlobalData.gGenDefaultVarBin = BuildOptions.GenDefaultVarBin
 
         if GlobalData.gBinCacheDest and not GlobalData.gUseHashCache:
             EdkLogger.error("build", OPTION_NOT_SUPPORTED, ExtraData="--binary-destination must be used together with --hash.")
@@ -1472,6 +1473,10 @@ class Build():
                             yamloutputfile = inputfile.split(".")[0] + '.yaml'
                             jsonoutputfile = inputfile.split(".")[0] + '.json'
                             VfrParse(inputfile, yamloutputfile, jsonoutputfile)
+            if GlobalData.gGenDefaultVarBin:
+                from AutoGen.GenDefaultVar import DefaultVariableGenerator
+                variable_json_filelist = os.path.join(AutoGenObject.BuildDir,"variable_json_filelist.txt")
+                DefaultVariableGenerator().generate(variable_json_filelist, AutoGenObject.FvDir, GlobalData.gOptions.Macros)
             if GenFdsApi(AutoGenObject.GenFdsCommandDict, self.Db):
                 EdkLogger.error("build", COMMAND_FAILURE)
             Threshold = self.GetFreeSizeThreshold()
@@ -2259,7 +2264,9 @@ class Build():
             fw.write("BuildDir=%s\n" % Wa.BuildDir)
             fw.write("PlatformGuid=%s\n" % str(Wa.AutoGenObjectList[0].Guid))
         variable_i_filelist = os.path.join(Wa.BuildDir,"variable_i_filelist.txt")
+        variable_json_filelist = os.path.join(Wa.BuildDir,"variable_json_filelist.txt")
         vfr_var_i = []
+        vfr_var_json = []
         if GlobalData.gVfrYamlEnable:
             for ma in self.AllModules:
                 vfr_var_i.extend(ma.VarIFiles)
@@ -2267,6 +2274,13 @@ class Build():
         else:
             if os.path.exists(variable_i_filelist):
                 os.remove(variable_i_filelist)
+        if GlobalData.gGenDefaultVarBin:
+            for ma in self.AllModules:
+                vfr_var_json.extend(ma.VarJsonFiles)
+            SaveFileOnChange(variable_json_filelist, "\n".join(vfr_var_json), False)
+        else:
+            if os.path.exists(variable_json_filelist):
+                os.remove(variable_json_filelist)
 
         if GlobalData.gBinCacheSource:
             BuildModules.extend(self.MakeCacheMiss)
@@ -2389,8 +2403,11 @@ class Build():
                                         inputfile = i_file.replace("\n", "")
                                         yamloutputfile = inputfile.split(".")[0] + '.yaml'
                                         jsonoutputfile = inputfile.split(".")[0] + '.json'
-                                        print('inputfile ', inputfile)
                                         VfrParse(inputfile, yamloutputfile, jsonoutputfile)
+                        if GlobalData.gGenDefaultVarBin:
+                            from AutoGen.GenDefaultVar import DefaultVariableGenerator
+                            variable_json_filelist = os.path.join(Wa.BuildDir,"variable_json_filelist.txt")
+                            DefaultVariableGenerator().generate(variable_json_filelist, Wa.FvDir, GlobalData.gOptions.Macros)
                         GenFdsStart = time.time()
                         if GenFdsApi(Wa.GenFdsCommandDict, self.Db):
                             EdkLogger.error("build", COMMAND_FAILURE)
