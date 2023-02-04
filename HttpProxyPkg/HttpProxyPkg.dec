@@ -1,0 +1,28 @@
+## @file
+# HTTP Proxy Feature Package
+#
+# This package provides an implementation of a HTTP Proxy feature
+# instance that supports the HTTP Proxy feature as an extension to
+# NetworkPkg.
+#
+# Copyright (c) 2023, Intel Corporation. All rights reserved.<BR>
+#
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION = 0x00010005
+  PACKAGE_NAME      = HttpProxyPkg
+  PACKAGE_GUID      = ddf9b82e-2d92-4956-a6b1-92712369da3b
+  PACKAGE_VERSION   = 0.1
+
+[Includes]
+  Include
+
+[LibraryClasses]
+  HttpLib|Include/Library/HttpLib.h
+
+[Protocols]
+  ## Include/Protocol/HttpWithProxy.h
+  gEfiHttpProtocolGuid                 = { 0x7a59b29b, 0x910b, 0x4171, {0x82, 0x42, 0xa8, 0x5a, 0x0d, 0xf2, 0x5b, 0x5b }}
