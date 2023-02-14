@@ -2,7 +2,7 @@
   Redfish feature utility library implementation
 
   (C) Copyright 2020-2022 Hewlett Packard Enterprise Development LP<BR>
-  Copyright (c) 2022, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+  Copyright (c) 2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -10,7 +10,7 @@
 
 #include "RedfishFeatureUtilityInternal.h"
 
-EDKII_REDFISH_ETAG_PROTOCOL             *mEtagProtocol = NULL;
+EDKII_REDFISH_ETAG_PROTOCOL             *mEtagProtocol          = NULL;
 EDKII_REDFISH_CONFIG_LANG_MAP_PROTOCOL  *mConfigLangMapProtocol = NULL;
 
 /**
@@ -33,7 +33,7 @@ RedfishLocateProtocol (
 {
   EFI_STATUS  Status;
 
-  if (ProtocolInstance == NULL || ProtocolGuid == NULL) {
+  if ((ProtocolInstance == NULL) || (ProtocolGuid == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -62,14 +62,14 @@ RedfishLocateProtocol (
 **/
 EFI_STATUS
 GetArraykeyFromUri (
-  IN  CHAR8   *Uri,
-  OUT CHAR8   **ArrayKey
+  IN  CHAR8  *Uri,
+  OUT CHAR8  **ArrayKey
   )
 {
-  CHAR8      *LeftBracket;
-  UINTN      Index;
+  CHAR8  *LeftBracket;
+  UINTN  Index;
 
-  if (IS_EMPTY_STRING (Uri) || ArrayKey == NULL) {
+  if (IS_EMPTY_STRING (Uri) || (ArrayKey == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -207,19 +207,19 @@ GetEtagWithUri (
 **/
 CHAR8 *
 StrUnicodeToAscii (
-  IN EFI_STRING   UnicodeStr
+  IN EFI_STRING  UnicodeStr
   )
 {
-  CHAR8 *AsciiStr;
-  UINTN AsciiStrSize;
-  EFI_STATUS Status;
+  CHAR8       *AsciiStr;
+  UINTN       AsciiStrSize;
+  EFI_STATUS  Status;
 
   if (IS_EMPTY_STRING (UnicodeStr)) {
     return NULL;
   }
 
   AsciiStrSize = StrLen (UnicodeStr) + 1;
-  AsciiStr = AllocatePool (AsciiStrSize);
+  AsciiStr     = AllocatePool (AsciiStrSize);
   if (AsciiStr == NULL) {
     return NULL;
   }
@@ -258,7 +258,7 @@ StrAsciiToUnicode (
   }
 
   UnicodeStrSize = (AsciiStrLen (AsciiStr) + 1) * sizeof (CHAR16);
-  UnicodeStr = AllocatePool (UnicodeStrSize);
+  UnicodeStr     = AllocatePool (UnicodeStrSize);
   if (UnicodeStr == NULL) {
     return NULL;
   }
@@ -288,16 +288,16 @@ StrAsciiToUnicode (
 **/
 EFI_STATUS
 ApplyFeatureSettingsStringType (
-  IN  CHAR8      *Schema,
-  IN  CHAR8      *Version,
-  IN  EFI_STRING ConfigureLang,
-  IN  CHAR8      *FeatureValue
+  IN  CHAR8       *Schema,
+  IN  CHAR8       *Version,
+  IN  EFI_STRING  ConfigureLang,
+  IN  CHAR8       *FeatureValue
   )
 {
-  EFI_STATUS          Status;
-  EDKII_REDFISH_VALUE RedfishValue;
+  EFI_STATUS           Status;
+  EDKII_REDFISH_VALUE  RedfishValue;
 
-  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || FeatureValue == NULL) {
+  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || (FeatureValue == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -308,9 +308,8 @@ ApplyFeatureSettingsStringType (
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a, %a.%a %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureLang, Status));
   } else {
-
     if (RedfishValue.Type != REDFISH_VALUE_TYPE_STRING) {
-       DEBUG ((DEBUG_ERROR, "%a, %a.%a %s value is not string type\n", __FUNCTION__, Schema, Version, ConfigureLang));
+      DEBUG ((DEBUG_ERROR, "%a, %a.%a %s value is not string type\n", __FUNCTION__, Schema, Version, ConfigureLang));
       return EFI_DEVICE_ERROR;
     }
 
@@ -324,7 +323,12 @@ ApplyFeatureSettingsStringType (
       RedfishValue.Value.Buffer = FeatureValue;
 
       Status = RedfishPlatformConfigSetValue (Schema, Version, ConfigureLang, RedfishValue);
-      if (EFI_ERROR (Status)) {
+      if (!EFI_ERROR (Status)) {
+        //
+        // Configuration changed. Enable system reboot flag.
+        //
+        REDFISH_ENABLE_SYSTEM_REBOOT ();
+      } else {
         DEBUG ((DEBUG_ERROR, "%a, apply %s to %s failed: %r\n", __FUNCTION__, ConfigureLang, FeatureValue, Status));
       }
     } else {
@@ -350,14 +354,14 @@ ApplyFeatureSettingsStringType (
 **/
 EFI_STATUS
 ApplyFeatureSettingsNumericType (
-  IN  CHAR8      *Schema,
-  IN  CHAR8      *Version,
-  IN  EFI_STRING ConfigureLang,
-  IN  INTN       FeatureValue
+  IN  CHAR8       *Schema,
+  IN  CHAR8       *Version,
+  IN  EFI_STRING  ConfigureLang,
+  IN  INTN        FeatureValue
   )
 {
-  EFI_STATUS          Status;
-  EDKII_REDFISH_VALUE RedfishValue;
+  EFI_STATUS           Status;
+  EDKII_REDFISH_VALUE  RedfishValue;
 
   if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang)) {
     return EFI_INVALID_PARAMETER;
@@ -368,11 +372,10 @@ ApplyFeatureSettingsNumericType (
   //
   Status = RedfishPlatformConfigGetValue (Schema, Version, ConfigureLang, &RedfishValue);
   if (EFI_ERROR (Status)) {
-   DEBUG ((DEBUG_ERROR, "%a, %a.%a %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureLang, Status));
+    DEBUG ((DEBUG_ERROR, "%a, %a.%a %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureLang, Status));
   } else {
-
     if (RedfishValue.Type != REDFISH_VALUE_TYPE_INTEGER) {
-       DEBUG ((DEBUG_ERROR, "%a, %a.%a %s value is not numeric type\n", __FUNCTION__, Schema, Version, ConfigureLang));
+      DEBUG ((DEBUG_ERROR, "%a, %a.%a %s value is not numeric type\n", __FUNCTION__, Schema, Version, ConfigureLang));
       return EFI_DEVICE_ERROR;
     }
 
@@ -385,7 +388,12 @@ ApplyFeatureSettingsNumericType (
       RedfishValue.Value.Integer = (INT64)FeatureValue;
 
       Status = RedfishPlatformConfigSetValue (Schema, Version, ConfigureLang, RedfishValue);
-      if (EFI_ERROR (Status)) {
+      if (!EFI_ERROR (Status)) {
+        //
+        // Configuration changed. Enable system reboot flag.
+        //
+        REDFISH_ENABLE_SYSTEM_REBOOT ();
+      } else {
         DEBUG ((DEBUG_ERROR, "%a, apply %s to 0x%x failed: %r\n", __FUNCTION__, ConfigureLang, FeatureValue, Status));
       }
     } else {
@@ -411,14 +419,14 @@ ApplyFeatureSettingsNumericType (
 **/
 EFI_STATUS
 ApplyFeatureSettingsBooleanType (
-  IN  CHAR8      *Schema,
-  IN  CHAR8      *Version,
-  IN  EFI_STRING ConfigureLang,
-  IN  BOOLEAN    FeatureValue
+  IN  CHAR8       *Schema,
+  IN  CHAR8       *Version,
+  IN  EFI_STRING  ConfigureLang,
+  IN  BOOLEAN     FeatureValue
   )
 {
-  EFI_STATUS          Status;
-  EDKII_REDFISH_VALUE RedfishValue;
+  EFI_STATUS           Status;
+  EDKII_REDFISH_VALUE  RedfishValue;
 
   if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang)) {
     return EFI_INVALID_PARAMETER;
@@ -429,11 +437,10 @@ ApplyFeatureSettingsBooleanType (
   //
   Status = RedfishPlatformConfigGetValue (Schema, Version, ConfigureLang, &RedfishValue);
   if (EFI_ERROR (Status)) {
-   DEBUG ((DEBUG_ERROR, "%a, %a.%a %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureLang, Status));
+    DEBUG ((DEBUG_ERROR, "%a, %a.%a %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureLang, Status));
   } else {
-
     if (RedfishValue.Type != REDFISH_VALUE_TYPE_BOOLEAN) {
-       DEBUG ((DEBUG_ERROR, "%a, %a.%a %s value is not boolean type\n", __FUNCTION__, Schema, Version, ConfigureLang));
+      DEBUG ((DEBUG_ERROR, "%a, %a.%a %s value is not boolean type\n", __FUNCTION__, Schema, Version, ConfigureLang));
       return EFI_DEVICE_ERROR;
     }
 
@@ -446,7 +453,12 @@ ApplyFeatureSettingsBooleanType (
       RedfishValue.Value.Boolean = FeatureValue;
 
       Status = RedfishPlatformConfigSetValue (Schema, Version, ConfigureLang, RedfishValue);
-      if (EFI_ERROR (Status)) {
+      if (!EFI_ERROR (Status)) {
+        //
+        // Configuration changed. Enable system reboot flag.
+        //
+        REDFISH_ENABLE_SYSTEM_REBOOT ();
+      } else {
         DEBUG ((DEBUG_ERROR, "%a, apply %s to %a failed: %r\n", __FUNCTION__, ConfigureLang, (FeatureValue ? "True" : "False"), Status));
       }
     } else {
@@ -473,23 +485,23 @@ ApplyFeatureSettingsBooleanType (
 **/
 EFI_STATUS
 ApplyFeatureSettingsVagueType (
-  IN  CHAR8                             *Schema,
-  IN  CHAR8                             *Version,
-  IN  EFI_STRING                        ConfigureLang,
-  IN  RedfishCS_EmptyProp_KeyValue      *VagueValuePtr,
-  IN  UINT32                            NumberOfVagueValues
+  IN  CHAR8                         *Schema,
+  IN  CHAR8                         *Version,
+  IN  EFI_STRING                    ConfigureLang,
+  IN  RedfishCS_EmptyProp_KeyValue  *VagueValuePtr,
+  IN  UINT32                        NumberOfVagueValues
   )
 {
-  EFI_STATUS                Status;
-  UINTN                     StrSize;
-  CHAR8                     *ConfigureLangAscii;
-  CHAR8                     *ConfigureLangKeyAscii;
-  EFI_STRING                ConfigureKeyLang;
-  EDKII_REDFISH_VALUE       RedfishValue;
-  EDKII_REDFISH_VALUE_TYPES PropertyDatatype;
-  RedfishCS_EmptyProp_KeyValue *CurrentVagueValuePtr;
+  EFI_STATUS                    Status;
+  UINTN                         StrSize;
+  CHAR8                         *ConfigureLangAscii;
+  CHAR8                         *ConfigureLangKeyAscii;
+  EFI_STRING                    ConfigureKeyLang;
+  EDKII_REDFISH_VALUE           RedfishValue;
+  EDKII_REDFISH_VALUE_TYPES     PropertyDatatype;
+  RedfishCS_EmptyProp_KeyValue  *CurrentVagueValuePtr;
 
-  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || VagueValuePtr == NULL || NumberOfVagueValues == 0) {
+  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || (VagueValuePtr == NULL) || (NumberOfVagueValues == 0)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -499,6 +511,7 @@ ApplyFeatureSettingsVagueType (
     DEBUG ((DEBUG_ERROR, "%a, Allocate memory for generate ConfigureLang of vague key of %a.%a %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureLang, Status));
     return Status;
   }
+
   Status = UnicodeStrToAsciiStrS (ConfigureLang, ConfigureLangAscii, StrLen (ConfigureLang) + 1);
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a, Convert the configureLang of vague key of %a.%a %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureLang, Status));
@@ -510,18 +523,19 @@ ApplyFeatureSettingsVagueType (
     //
     // Generate ConfigureLang with the key name
     //
-    //ConfigureKeyLang = GetConfigureLang (ConfigureLangAscii, CurrentVagueValuePtr->KeyNamePtr);
-    StrSize = AsciiStrLen (ConfigureLangAscii) + AsciiStrLen (CurrentVagueValuePtr->KeyNamePtr) + 2;
+    // ConfigureKeyLang = GetConfigureLang (ConfigureLangAscii, CurrentVagueValuePtr->KeyNamePtr);
+    StrSize               = AsciiStrLen (ConfigureLangAscii) + AsciiStrLen (CurrentVagueValuePtr->KeyNamePtr) + 2;
     ConfigureLangKeyAscii = AllocateZeroPool (StrSize);
-    ConfigureKeyLang = AllocateZeroPool (StrSize * sizeof (CHAR16));
-    if (ConfigureLangKeyAscii == NULL || ConfigureKeyLang == NULL) {
-        DEBUG ((DEBUG_ERROR, "%a, Generate ConfigureLang of vague key of %a.%a %s %a failed!\n", __FUNCTION__, Schema, Version, ConfigureLang, CurrentVagueValuePtr->KeyNamePtr));
-        goto ErrorContinue;
+    ConfigureKeyLang      = AllocateZeroPool (StrSize * sizeof (CHAR16));
+    if ((ConfigureLangKeyAscii == NULL) || (ConfigureKeyLang == NULL)) {
+      DEBUG ((DEBUG_ERROR, "%a, Generate ConfigureLang of vague key of %a.%a %s %a failed!\n", __FUNCTION__, Schema, Version, ConfigureLang, CurrentVagueValuePtr->KeyNamePtr));
+      goto ErrorContinue;
     }
-    AsciiStrCatS(ConfigureLangKeyAscii, StrSize, ConfigureLangAscii);
-    AsciiStrCatS(ConfigureLangKeyAscii, StrSize, "/");
-    AsciiStrCatS(ConfigureLangKeyAscii, StrSize, CurrentVagueValuePtr->KeyNamePtr);
-    AsciiStrToUnicodeStrS(ConfigureLangKeyAscii, ConfigureKeyLang, StrSize);
+
+    AsciiStrCatS (ConfigureLangKeyAscii, StrSize, ConfigureLangAscii);
+    AsciiStrCatS (ConfigureLangKeyAscii, StrSize, "/");
+    AsciiStrCatS (ConfigureLangKeyAscii, StrSize, CurrentVagueValuePtr->KeyNamePtr);
+    AsciiStrToUnicodeStrS (ConfigureLangKeyAscii, ConfigureKeyLang, StrSize);
     FreePool (ConfigureLangKeyAscii);
     ConfigureLangKeyAscii = NULL;
     //
@@ -534,7 +548,7 @@ ApplyFeatureSettingsVagueType (
     } else if (CurrentVagueValuePtr->Value->DataType == RedfishCS_Vague_DataType_Int64) {
       PropertyDatatype = REDFISH_VALUE_TYPE_INTEGER;
     } else {
-      DEBUG((DEBUG_ERROR, "%a, %a.%a %s Unsupported Redfish property data type\n", __FUNCTION__, Schema, Version, ConfigureLang));
+      DEBUG ((DEBUG_ERROR, "%a, %a.%a %s Unsupported Redfish property data type\n", __FUNCTION__, Schema, Version, ConfigureLang));
       goto ErrorContinue;
     }
 
@@ -546,9 +560,10 @@ ApplyFeatureSettingsVagueType (
       DEBUG ((DEBUG_ERROR, "%a, %a.%a %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureKeyLang, Status));
     } else {
       if (RedfishValue.Type != PropertyDatatype) {
-        DEBUG((DEBUG_ERROR, "%a, %a.%a %s mismatched data type\n", __FUNCTION__, Schema, Version, ConfigureKeyLang));
+        DEBUG ((DEBUG_ERROR, "%a, %a.%a %s mismatched data type\n", __FUNCTION__, Schema, Version, ConfigureKeyLang));
         goto ErrorContinue;
       }
+
       if (PropertyDatatype == REDFISH_VALUE_TYPE_STRING) {
         //
         // This is a string property.
@@ -560,8 +575,13 @@ ApplyFeatureSettingsVagueType (
           DEBUG ((DEBUG_INFO, "%a, %a.%a apply %s from %a to %a\n", __FUNCTION__, Schema, Version, ConfigureKeyLang, RedfishValue.Value.Buffer, CurrentVagueValuePtr->Value->DataValue.CharPtr));
           FreePool (RedfishValue.Value.Buffer);
           RedfishValue.Value.Buffer = CurrentVagueValuePtr->Value->DataValue.CharPtr;
-          Status = RedfishPlatformConfigSetValue (Schema, Version, ConfigureKeyLang, RedfishValue);
-          if (EFI_ERROR (Status)) {
+          Status                    = RedfishPlatformConfigSetValue (Schema, Version, ConfigureKeyLang, RedfishValue);
+          if (!EFI_ERROR (Status)) {
+            //
+            // Configuration changed. Enable system reboot flag.
+            //
+            REDFISH_ENABLE_SYSTEM_REBOOT ();
+          } else {
             DEBUG ((DEBUG_ERROR, "%a, apply %a to %a failed: %r\n", __FUNCTION__, ConfigureKeyLang, CurrentVagueValuePtr->Value->DataValue.CharPtr, Status));
           }
         } else {
@@ -575,17 +595,25 @@ ApplyFeatureSettingsVagueType (
           //
           // Apply settings from redfish
           //
-          DEBUG ((DEBUG_INFO, "%a, %a.%a apply %s from %a to %a\n",
-                  __FUNCTION__,
-                  Schema,
-                  Version,
-                  ConfigureKeyLang,
-                  (RedfishValue.Value.Boolean ? "True" : "False"),
-                  (*CurrentVagueValuePtr->Value->DataValue.BoolPtr ? "True" : "False")));
+          DEBUG ((
+            DEBUG_INFO,
+            "%a, %a.%a apply %s from %a to %a\n",
+            __FUNCTION__,
+            Schema,
+            Version,
+            ConfigureKeyLang,
+            (RedfishValue.Value.Boolean ? "True" : "False"),
+            (*CurrentVagueValuePtr->Value->DataValue.BoolPtr ? "True" : "False")
+            ));
 
           RedfishValue.Value.Boolean = (BOOLEAN)*CurrentVagueValuePtr->Value->DataValue.BoolPtr;
-          Status = RedfishPlatformConfigSetValue (Schema, Version, ConfigureKeyLang, RedfishValue);
-          if (EFI_ERROR (Status)) {
+          Status                     = RedfishPlatformConfigSetValue (Schema, Version, ConfigureKeyLang, RedfishValue);
+          if (!EFI_ERROR (Status)) {
+            //
+            // Configuration changed. Enable system reboot flag.
+            //
+            REDFISH_ENABLE_SYSTEM_REBOOT ();
+          } else {
             DEBUG ((DEBUG_ERROR, "%a, apply %s to %a failed: %r\n", __FUNCTION__, ConfigureKeyLang, (*CurrentVagueValuePtr->Value->DataValue.BoolPtr ? "True" : "False"), Status));
           }
         } else {
@@ -602,15 +630,20 @@ ApplyFeatureSettingsVagueType (
           DEBUG ((DEBUG_INFO, "%a, %a.%a apply %s from 0x%x to 0x%x\n", __FUNCTION__, Schema, Version, ConfigureKeyLang, RedfishValue.Value.Integer, *CurrentVagueValuePtr->Value->DataValue.Int64Ptr));
 
           RedfishValue.Value.Integer = (INT64)*CurrentVagueValuePtr->Value->DataValue.Int64Ptr;
-          Status = RedfishPlatformConfigSetValue (Schema, Version, ConfigureKeyLang, RedfishValue);
-          if (EFI_ERROR (Status)) {
+          Status                     = RedfishPlatformConfigSetValue (Schema, Version, ConfigureKeyLang, RedfishValue);
+          if (!EFI_ERROR (Status)) {
+            //
+            // Configuration changed. Enable system reboot flag.
+            //
+            REDFISH_ENABLE_SYSTEM_REBOOT ();
+          } else {
             DEBUG ((DEBUG_ERROR, "%a, apply %s to 0x%x failed: %r\n", __FUNCTION__, ConfigureKeyLang, *CurrentVagueValuePtr->Value->DataValue.Int64Ptr, Status));
           }
         } else {
           DEBUG ((DEBUG_INFO, "%a, %a.%a %s value is: 0x%x\n", __FUNCTION__, Schema, Version, ConfigureKeyLang, RedfishValue.Value.Integer, Status));
         }
       } else {
-        DEBUG((DEBUG_ERROR, "%a, %a.%a %s Unsupported Redfish property data type\n", __FUNCTION__, Schema, Version, ConfigureLang));
+        DEBUG ((DEBUG_ERROR, "%a, %a.%a %s Unsupported Redfish property data type\n", __FUNCTION__, Schema, Version, ConfigureLang));
         goto ErrorContinue;
       }
     }
@@ -620,22 +653,27 @@ ErrorContinue:;
       FreePool (ConfigureLangKeyAscii);
       ConfigureLangKeyAscii = NULL;
     }
+
     if (ConfigureKeyLang != NULL) {
       FreePool (ConfigureKeyLang);
       ConfigureKeyLang = NULL;
     }
+
     CurrentVagueValuePtr = CurrentVagueValuePtr->NextKeyValuePtr;
-  };
+  }
 
   if (ConfigureLangAscii != NULL) {
     FreePool (ConfigureLangAscii);
   }
+
   if (ConfigureLangKeyAscii != NULL) {
     FreePool (ConfigureLangKeyAscii);
   }
+
   if (ConfigureKeyLang != NULL) {
     FreePool (ConfigureKeyLang);
   }
+
   return EFI_SUCCESS;
 }
 
@@ -648,16 +686,16 @@ ErrorContinue:;
 **/
 VOID
 FreeArrayTypeRedfishValue (
-  EDKII_REDFISH_VALUE *RedfishValue
+  EDKII_REDFISH_VALUE  *RedfishValue
   )
 {
-  UINTN Index;
+  UINTN  Index;
 
   if (RedfishValue == NULL) {
     return;
   }
 
-  if (RedfishValue->Type != REDFISH_VALUE_TYPE_INTEGER_ARRAY && RedfishValue->Type != REDFISH_VALUE_TYPE_STRING_ARRAY) {
+  if ((RedfishValue->Type != REDFISH_VALUE_TYPE_INTEGER_ARRAY) && (RedfishValue->Type != REDFISH_VALUE_TYPE_STRING_ARRAY)) {
     return;
   }
 
@@ -666,6 +704,7 @@ FreeArrayTypeRedfishValue (
       for (Index = 0; Index < RedfishValue->ArrayCount; Index++) {
         FreePool (RedfishValue->Value.StringArray[Index]);
       }
+
       FreePool (RedfishValue->Value.StringArray);
       RedfishValue->Value.StringArray = NULL;
       break;
@@ -686,7 +725,6 @@ FreeArrayTypeRedfishValue (
 
   RedfishValue->ArrayCount = 0;
 }
-
 
 /**
 
@@ -714,7 +752,7 @@ ApplyFeatureSettingsStringArrayType (
   UINTN                 Index;
   RedfishCS_char_Array  *Buffer;
 
-  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || ArrayHead == NULL) {
+  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || (ArrayHead == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -725,9 +763,8 @@ ApplyFeatureSettingsStringArrayType (
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a, %a.%a %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureLang, Status));
   } else {
-
     if (RedfishValue.Type != REDFISH_VALUE_TYPE_STRING_ARRAY) {
-       DEBUG ((DEBUG_ERROR, "%a, %a.%a %s value is not string array type\n", __FUNCTION__, Schema, Version, ConfigureLang));
+      DEBUG ((DEBUG_ERROR, "%a, %a.%a %s value is not string array type\n", __FUNCTION__, Schema, Version, ConfigureLang));
       return EFI_DEVICE_ERROR;
     }
 
@@ -745,10 +782,10 @@ ApplyFeatureSettingsStringArrayType (
       // Convert array from RedfishCS_char_Array to EDKII_REDFISH_VALUE
       //
       RedfishValue.ArrayCount = 0;
-      Buffer = ArrayHead;
+      Buffer                  = ArrayHead;
       while (Buffer != NULL) {
         RedfishValue.ArrayCount += 1;
-        Buffer = Buffer->Next;
+        Buffer                   = Buffer->Next;
       }
 
       //
@@ -761,13 +798,14 @@ ApplyFeatureSettingsStringArrayType (
       }
 
       Buffer = ArrayHead;
-      Index = 0;
+      Index  = 0;
       while (Buffer != NULL) {
         RedfishValue.Value.StringArray[Index] = AllocateCopyPool (AsciiStrSize (Buffer->ArrayValue), Buffer->ArrayValue);
         if (RedfishValue.Value.StringArray[Index] == NULL) {
           ASSERT (FALSE);
           return EFI_OUT_OF_RESOURCES;
         }
+
         Buffer = Buffer->Next;
         Index++;
       }
@@ -775,7 +813,12 @@ ApplyFeatureSettingsStringArrayType (
       ASSERT (Index <= RedfishValue.ArrayCount);
 
       Status = RedfishPlatformConfigSetValue (Schema, Version, ConfigureLang, RedfishValue);
-      if (EFI_ERROR (Status)) {
+      if (!EFI_ERROR (Status)) {
+        //
+        // Configuration changed. Enable system reboot flag.
+        //
+        REDFISH_ENABLE_SYSTEM_REBOOT ();
+      } else {
         DEBUG ((DEBUG_ERROR, "%a, apply %s array failed: %r\n", __FUNCTION__, ConfigureLang, Status));
       }
     } else {
@@ -801,18 +844,18 @@ ApplyFeatureSettingsStringArrayType (
 **/
 EFI_STATUS
 ApplyFeatureSettingsNumericArrayType (
-  IN  CHAR8                 *Schema,
-  IN  CHAR8                 *Version,
-  IN  EFI_STRING            ConfigureLang,
+  IN  CHAR8                  *Schema,
+  IN  CHAR8                  *Version,
+  IN  EFI_STRING             ConfigureLang,
   IN  RedfishCS_int64_Array  *ArrayHead
   )
 {
-  EFI_STATUS            Status;
-  EDKII_REDFISH_VALUE   RedfishValue;
-  UINTN                 Index;
-  RedfishCS_int64_Array *Buffer;
+  EFI_STATUS             Status;
+  EDKII_REDFISH_VALUE    RedfishValue;
+  UINTN                  Index;
+  RedfishCS_int64_Array  *Buffer;
 
-  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || ArrayHead == NULL) {
+  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || (ArrayHead == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -823,7 +866,6 @@ ApplyFeatureSettingsNumericArrayType (
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a, %a.%a %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureLang, Status));
   } else {
-
     if (RedfishValue.Type != REDFISH_VALUE_TYPE_INTEGER_ARRAY) {
       DEBUG ((DEBUG_ERROR, "%a, %a.%a %s value is not string array type\n", __FUNCTION__, Schema, Version, ConfigureLang));
       return EFI_DEVICE_ERROR;
@@ -843,10 +885,10 @@ ApplyFeatureSettingsNumericArrayType (
       // Convert array from RedfishCS_int64_Array to EDKII_REDFISH_VALUE
       //
       RedfishValue.ArrayCount = 0;
-      Buffer = ArrayHead;
+      Buffer                  = ArrayHead;
       while (Buffer != NULL) {
         RedfishValue.ArrayCount += 1;
-        Buffer = Buffer->Next;
+        Buffer                   = Buffer->Next;
       }
 
       //
@@ -859,17 +901,22 @@ ApplyFeatureSettingsNumericArrayType (
       }
 
       Buffer = ArrayHead;
-      Index = 0;
+      Index  = 0;
       while (Buffer != NULL) {
         RedfishValue.Value.IntegerArray[Index] = (INT64)*Buffer->ArrayValue;
-        Buffer = Buffer->Next;
+        Buffer                                 = Buffer->Next;
         Index++;
       }
 
       ASSERT (Index <= RedfishValue.ArrayCount);
 
       Status = RedfishPlatformConfigSetValue (Schema, Version, ConfigureLang, RedfishValue);
-      if (EFI_ERROR (Status)) {
+      if (!EFI_ERROR (Status)) {
+        //
+        // Configuration changed. Enable system reboot flag.
+        //
+        REDFISH_ENABLE_SYSTEM_REBOOT ();
+      } else {
         DEBUG ((DEBUG_ERROR, "%a, apply %s array failed: %r\n", __FUNCTION__, ConfigureLang, Status));
       }
     } else {
@@ -904,9 +951,9 @@ ApplyFeatureSettingsBooleanArrayType (
   EFI_STATUS            Status;
   EDKII_REDFISH_VALUE   RedfishValue;
   UINTN                 Index;
-  RedfishCS_bool_Array *Buffer;
+  RedfishCS_bool_Array  *Buffer;
 
-  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || ArrayHead == NULL) {
+  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || (ArrayHead == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -917,7 +964,6 @@ ApplyFeatureSettingsBooleanArrayType (
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a, %a.%a %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureLang, Status));
   } else {
-
     if (RedfishValue.Type != REDFISH_VALUE_TYPE_BOOLEAN_ARRAY) {
       DEBUG ((DEBUG_ERROR, "%a, %a.%a %s value is not string array type\n", __FUNCTION__, Schema, Version, ConfigureLang));
       return EFI_DEVICE_ERROR;
@@ -937,10 +983,10 @@ ApplyFeatureSettingsBooleanArrayType (
       // Convert array from RedfishCS_int64_Array to EDKII_REDFISH_VALUE
       //
       RedfishValue.ArrayCount = 0;
-      Buffer = ArrayHead;
+      Buffer                  = ArrayHead;
       while (Buffer != NULL) {
         RedfishValue.ArrayCount += 1;
-        Buffer = Buffer->Next;
+        Buffer                   = Buffer->Next;
       }
 
       //
@@ -953,17 +999,22 @@ ApplyFeatureSettingsBooleanArrayType (
       }
 
       Buffer = ArrayHead;
-      Index = 0;
+      Index  = 0;
       while (Buffer != NULL) {
         RedfishValue.Value.BooleanArray[Index] = (BOOLEAN)*Buffer->ArrayValue;
-        Buffer = Buffer->Next;
+        Buffer                                 = Buffer->Next;
         Index++;
       }
 
       ASSERT (Index <= RedfishValue.ArrayCount);
 
       Status = RedfishPlatformConfigSetValue (Schema, Version, ConfigureLang, RedfishValue);
-      if (EFI_ERROR (Status)) {
+      if (!EFI_ERROR (Status)) {
+        //
+        // Configuration changed. Enable system reboot flag.
+        //
+        REDFISH_ENABLE_SYSTEM_REBOOT ();
+      } else {
         DEBUG ((DEBUG_ERROR, "%a, apply %s array failed: %r\n", __FUNCTION__, ConfigureLang, Status));
       }
     } else {
@@ -988,15 +1039,15 @@ ApplyFeatureSettingsBooleanArrayType (
 **/
 EFI_STATUS
 GetResourceByUri (
-  IN  REDFISH_SERVICE           *Service,
-  IN  EFI_STRING                ResourceUri,
-  OUT REDFISH_RESPONSE          *Response
+  IN  REDFISH_SERVICE   *Service,
+  IN  EFI_STRING        ResourceUri,
+  OUT REDFISH_RESPONSE  *Response
   )
 {
   EFI_STATUS  Status;
   CHAR8       *AsciiResourceUri;
 
-  if (Service == NULL || Response == NULL || IS_EMPTY_STRING (ResourceUri)) {
+  if ((Service == NULL) || (Response == NULL) || IS_EMPTY_STRING (ResourceUri)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -1051,9 +1102,9 @@ GetResourceByUri (
 **/
 EFI_STATUS
 IsRedpathArray (
-  IN EFI_STRING ConfigureLang,
-  OUT EFI_STRING *ArraySignatureOpen OPTIONAL,
-  OUT EFI_STRING *ArraySignatureClose OPTIONAL
+  IN EFI_STRING   ConfigureLang,
+  OUT EFI_STRING  *ArraySignatureOpen OPTIONAL,
+  OUT EFI_STRING  *ArraySignatureClose OPTIONAL
   )
 {
   CHAR16  *IndexString;
@@ -1061,9 +1112,11 @@ IsRedpathArray (
   if (ConfigureLang == NULL) {
     return EFI_INVALID_PARAMETER;
   }
+
   if (ArraySignatureOpen != NULL) {
     *ArraySignatureOpen = NULL;
   }
+
   if (ArraySignatureClose != NULL) {
     *ArraySignatureClose = NULL;
   }
@@ -1076,6 +1129,7 @@ IsRedpathArray (
     if (ArraySignatureOpen != NULL) {
       *ArraySignatureOpen = IndexString;
     }
+
     //
     // Skip "{"
     //
@@ -1087,11 +1141,14 @@ IsRedpathArray (
     if (IndexString == NULL) {
       return EFI_INVALID_PARAMETER;
     }
+
     if (ArraySignatureClose != NULL) {
       *ArraySignatureClose = IndexString;
     }
+
     return EFI_SUCCESS;
   }
+
   return EFI_NOT_FOUND;
 }
 
@@ -1106,23 +1163,25 @@ IsRedpathArray (
 **/
 UINTN
 GetNumberOfRedpathNodes (
-  IN EFI_STRING NodeString
+  IN EFI_STRING  NodeString
   )
 {
-  UINTN Index;
-  UINTN NumberNodes;
-  UINTN StringLen;
+  UINTN  Index;
+  UINTN  NumberNodes;
+  UINTN  StringLen;
 
   NumberNodes = 0;
-  StringLen = StrLen (NodeString);
-  Index = 1; // ConfigLang always starts with '/'.
+  StringLen   = StrLen (NodeString);
+  Index       = 1; // ConfigLang always starts with '/'.
   while (Index < StringLen) {
     if (*(NodeString + Index) == L'/') {
-      NumberNodes ++;
+      NumberNodes++;
     }
-    Index ++;
-  };
-  NumberNodes ++;
+
+    Index++;
+  }
+
+  NumberNodes++;
 
   return (NumberNodes);
 }
@@ -1141,24 +1200,25 @@ GetNumberOfRedpathNodes (
 **/
 EFI_STRING
 GetRedpathNodeByIndex (
-  IN  EFI_STRING   NodeString,
-  IN  UINTN        Index,
-  OUT EFI_STRING   *EndOfNodePtr OPTIONAL
+  IN  EFI_STRING  NodeString,
+  IN  UINTN       Index,
+  OUT EFI_STRING  *EndOfNodePtr OPTIONAL
   )
 {
-  UINTN NumberNodes;
-  UINTN StringLen;
-  UINTN StringIndex;
-  EFI_STRING NodeStart;
-  EFI_STRING NodeEnd;
+  UINTN       NumberNodes;
+  UINTN       StringLen;
+  UINTN       StringIndex;
+  EFI_STRING  NodeStart;
+  EFI_STRING  NodeEnd;
 
   NumberNodes = 0;
-  StringLen = StrLen (NodeString);
+  StringLen   = StrLen (NodeString);
   StringIndex = 1; // ConfigLang always starts with '/'.
-  NodeStart = NodeString;
+  NodeStart   = NodeString;
   if (EndOfNodePtr != NULL) {
     *EndOfNodePtr = NULL;
   }
+
   while (StringIndex < StringLen) {
     if (*(NodeString + StringIndex) == L'/') {
       NodeEnd = NodeString + StringIndex - 1;
@@ -1166,14 +1226,17 @@ GetRedpathNodeByIndex (
         if (EndOfNodePtr != NULL) {
           *EndOfNodePtr = NodeEnd;
         }
+
         return NodeStart;
       } else {
         NodeStart = NodeString + StringIndex + 1;
       }
     }
-    StringIndex ++;
-  };
- return (NULL);
+
+    StringIndex++;
+  }
+
+  return (NULL);
 }
 
 /**
@@ -1192,18 +1255,18 @@ GetRedpathNodeByIndex (
 **/
 EFI_STATUS
 GetArrayIndexFromArrayTypeConfigureLang (
-  IN  CHAR16 *ConfigureLang,
-  OUT CHAR16 **UnifiedConfigureLang,
-  OUT UINTN  *Index
+  IN  CHAR16  *ConfigureLang,
+  OUT CHAR16  **UnifiedConfigureLang,
+  OUT UINTN   *Index
   )
 {
-  EFI_STATUS Status;
-  CHAR16  *TmpConfigureLang;
-  CHAR16  *ArrayOpenStr;
-  CHAR16  *ArrayCloseStr;
-  INTN    StringIndex;
+  EFI_STATUS  Status;
+  CHAR16      *TmpConfigureLang;
+  CHAR16      *ArrayOpenStr;
+  CHAR16      *ArrayCloseStr;
+  INTN        StringIndex;
 
-  if (ConfigureLang == NULL || UnifiedConfigureLang == NULL || Index == NULL) {
+  if ((ConfigureLang == NULL) || (UnifiedConfigureLang == NULL) || (Index == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -1227,28 +1290,30 @@ GetArrayIndexFromArrayTypeConfigureLang (
     //
     // Resotre the '}' character and remove rest of string.
     //
-    ArrayCloseStr[0] = L'}';
-    ArrayCloseStr[1] = '\0';
+    ArrayCloseStr[0]      = L'}';
+    ArrayCloseStr[1]      = '\0';
     *UnifiedConfigureLang = TmpConfigureLang;
   } else {
     if (Status == EFI_NOT_FOUND) {
       //
       // This is not the redpath array. Search "/" for the parent root.
       //
-      *Index = 0;
+      *Index      = 0;
       StringIndex = StrLen (TmpConfigureLang) - 1;
       while (StringIndex >= 0 && *(TmpConfigureLang + StringIndex) != '/') {
-        StringIndex --;
-      };
+        StringIndex--;
+      }
+
       if (StringIndex >= 0 ) {
         *(TmpConfigureLang + StringIndex) = '\0';
-        *UnifiedConfigureLang = TmpConfigureLang;
-        Status = EFI_SUCCESS;
+        *UnifiedConfigureLang             = TmpConfigureLang;
+        Status                            = EFI_SUCCESS;
       } else {
         Status = EFI_INVALID_PARAMETER;
       }
     }
   }
+
   return Status;
 }
 
@@ -1265,27 +1330,30 @@ GetArrayIndexFromArrayTypeConfigureLang (
 **/
 EFI_STATUS
 CopyConfiglanguageList (
-  IN   REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG_LIST *SourceConfigureLangList,
-  OUT  REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG_LIST *DestConfigureLangList
+  IN   REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG_LIST  *SourceConfigureLangList,
+  OUT  REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG_LIST  *DestConfigureLangList
   )
 {
-  UINTN Index;
+  UINTN  Index;
 
-  if (SourceConfigureLangList == NULL || DestConfigureLangList == NULL) {
+  if ((SourceConfigureLangList == NULL) || (DestConfigureLangList == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
+
   DestConfigureLangList->Count = SourceConfigureLangList->Count;
-  DestConfigureLangList->List =
-      (REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG *)AllocateZeroPool (sizeof (REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG) * DestConfigureLangList->Count);
+  DestConfigureLangList->List  =
+    (REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG *)AllocateZeroPool (sizeof (REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG) * DestConfigureLangList->Count);
   if (DestConfigureLangList->List == NULL) {
     DEBUG ((DEBUG_ERROR, "%a, Fail to allocate memory for REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG.\n", __FUNCTION__));
     return EFI_OUT_OF_RESOURCES;
   }
+
   for (Index = 0; Index < SourceConfigureLangList->Count; Index++) {
-    DestConfigureLangList->List [Index].Index = SourceConfigureLangList->List[Index].Index;
-    DestConfigureLangList->List [Index].ConfigureLang =
-      (EFI_STRING)AllocateCopyPool(StrSize(SourceConfigureLangList->List[Index].ConfigureLang), (VOID *)SourceConfigureLangList->List[Index].ConfigureLang);
+    DestConfigureLangList->List[Index].Index         = SourceConfigureLangList->List[Index].Index;
+    DestConfigureLangList->List[Index].ConfigureLang =
+      (EFI_STRING)AllocateCopyPool (StrSize (SourceConfigureLangList->List[Index].ConfigureLang), (VOID *)SourceConfigureLangList->List[Index].ConfigureLang);
   }
+
   return EFI_SUCCESS;
 }
 
@@ -1300,39 +1368,45 @@ CopyConfiglanguageList (
 **/
 UINTN
 ConfiglanguageGetInstanceIndex (
-  IN EFI_STRING ConfigureLang
+  IN EFI_STRING  ConfigureLang
   )
 {
-  INTN LeftBracketIndex;
-  INTN RightBracketIndex;
-  INTN Index;
-  UINT64 Instance;
-  EFI_STATUS Status;
+  INTN        LeftBracketIndex;
+  INTN        RightBracketIndex;
+  INTN        Index;
+  UINT64      Instance;
+  EFI_STATUS  Status;
 
   if (ConfigureLang == NULL) {
     return 0;
   }
-  LeftBracketIndex = 0;
+
+  LeftBracketIndex  = 0;
   RightBracketIndex = 0;
-  Index = StrLen (ConfigureLang) - 1;
+  Index             = StrLen (ConfigureLang) - 1;
   while (Index >= 0) {
     if (*(ConfigureLang + Index) == L'{') {
       LeftBracketIndex = Index;
       break;
     }
+
     if (*(ConfigureLang + Index) == L'}') {
       RightBracketIndex = Index;
     }
-    Index --;
-  };
+
+    Index--;
+  }
+
   if ((RightBracketIndex - LeftBracketIndex) <= 1) {
     return 0;
   }
+
   *(ConfigureLang + RightBracketIndex) = 0;
-  Status = StrDecimalToUint64S (ConfigureLang + LeftBracketIndex + 1, NULL, &Instance);
-  if (EFI_ERROR(Status)) {
+  Status                               = StrDecimalToUint64S (ConfigureLang + LeftBracketIndex + 1, NULL, &Instance);
+  if (EFI_ERROR (Status)) {
     Instance = 0;
   }
+
   //
   // Restore right curly bracket.
   //
@@ -1353,20 +1427,22 @@ ConfiglanguageGetInstanceIndex (
 **/
 EFI_STATUS
 DestroyConfiglanguageList (
-  IN   REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG_LIST *ConfigureLangList
+  IN   REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG_LIST  *ConfigureLangList
   )
 {
-  UINTN Index;
+  UINTN  Index;
 
   if (ConfigureLangList == NULL) {
     return EFI_INVALID_PARAMETER;
   }
+
   if (ConfigureLangList->List != NULL) {
     for (Index = 0; Index < ConfigureLangList->Count; Index++) {
-      if (ConfigureLangList->List [Index].ConfigureLang != NULL) {
-        FreePool (ConfigureLangList->List [Index].ConfigureLang);
+      if (ConfigureLangList->List[Index].ConfigureLang != NULL) {
+        FreePool (ConfigureLangList->List[Index].ConfigureLang);
       }
     }
+
     FreePool (ConfigureLangList->List);
     ConfigureLangList->List = NULL;
   }
@@ -1391,56 +1467,60 @@ DestroyConfiglanguageList (
 **/
 EFI_STATUS
 SetResourceConfigLangMemberInstance (
-  IN EFI_STRING                               *DestConfigLang,
-  IN UINTN                                    MaxtLengthConfigLang,
-  IN REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG   *ConfigLangInstance
+  IN EFI_STRING                              *DestConfigLang,
+  IN UINTN                                   MaxtLengthConfigLang,
+  IN REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG  *ConfigLangInstance
   )
 {
-  EFI_STRING ThisConfigLang;
-  EFI_STRING NewConfigLang;
-  CHAR16 InstanceStr [10];
-  INTN Index;
-  UINTN Length;
-  UINTN MaxStrLength;
+  EFI_STRING  ThisConfigLang;
+  EFI_STRING  NewConfigLang;
+  CHAR16      InstanceStr[10];
+  INTN        Index;
+  UINTN       Length;
+  UINTN       MaxStrLength;
 
-  if (DestConfigLang == NULL || ConfigLangInstance == NULL) {
+  if ((DestConfigLang == NULL) || (ConfigLangInstance == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
+
   UnicodeSPrint ((CHAR16 *)&InstanceStr, 10, L"%d", ConfigLangInstance->Index);
 
   ThisConfigLang = *DestConfigLang;
-  if (ThisConfigLang [0] == 0) {
+  if (ThisConfigLang[0] == 0) {
     //
     // Return ConfigLangInstance->ConfigureLang
     //
     if (ConfigLangInstance->ConfigureLang == NULL) {
       return EFI_INVALID_PARAMETER;
     } else {
-      StrCatS(*DestConfigLang, MaxtLengthConfigLang, ConfigLangInstance->ConfigureLang);
+      StrCatS (*DestConfigLang, MaxtLengthConfigLang, ConfigLangInstance->ConfigureLang);
       return EFI_SUCCESS;
     }
   }
 
-  MaxStrLength = StrSize (ThisConfigLang) + StrSize ((EFI_STRING)&InstanceStr);
+  MaxStrLength  = StrSize (ThisConfigLang) + StrSize ((EFI_STRING)&InstanceStr);
   NewConfigLang = ThisConfigLang;
   if (MaxtLengthConfigLang < MaxStrLength) {
-    NewConfigLang = (EFI_STRING)AllocateZeroPool(MaxStrLength);
+    NewConfigLang = (EFI_STRING)AllocateZeroPool (MaxStrLength);
     if (NewConfigLang == NULL) {
       DEBUG ((DEBUG_ERROR, "%a, Fail to allocate memory for NewConfigLang.\n", __FUNCTION__));
       return EFI_OUT_OF_RESOURCES;
     }
   }
+
   //
   // Search the last "{"
   //
   Index = StrLen (ThisConfigLang) - 1;
   while ((ThisConfigLang[Index] != '{') && (Index >= 0)) {
-    Index --;
-  };
+    Index--;
+  }
+
   if (Index == -1) {
     if (NewConfigLang != ThisConfigLang) {
-      FreePool(NewConfigLang);
+      FreePool (NewConfigLang);
     }
+
     return EFI_NOT_FOUND;
   }
 
@@ -1449,15 +1529,17 @@ SetResourceConfigLangMemberInstance (
   //
   Length = 0;
   while (Index >= 0) {
-    NewConfigLang [Index] = ThisConfigLang[Index];
-    Index --;
-    Length ++;
-  };
+    NewConfigLang[Index] = ThisConfigLang[Index];
+    Index--;
+    Length++;
+  }
+
   UnicodeSPrint ((CHAR16 *)(NewConfigLang + Length), MaxStrLength, L"%d", ConfigLangInstance->Index);
   StrCatS (NewConfigLang, MaxStrLength, L"}");
   if (NewConfigLang != ThisConfigLang) {
     FreePool (ThisConfigLang);
   }
+
   *DestConfigLang = NewConfigLang;
   return EFI_SUCCESS;
 }
@@ -1478,28 +1560,28 @@ SetResourceConfigLangMemberInstance (
 **/
 EFI_STATUS
 RedfishFeatureGetUnifiedArrayTypeConfigureLang (
-  IN     CHAR8                                        *Schema,
-  IN     CHAR8                                        *Version,
-  IN     EFI_STRING                                   Pattern,  OPTIONAL
+  IN     CHAR8 *Schema,
+  IN     CHAR8 *Version,
+  IN     EFI_STRING Pattern, OPTIONAL
   OUT    REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG_LIST  *UnifiedConfigureLangList
   )
 {
-  EFI_STATUS Status;
-  EFI_STRING *ConfigureLangList;
-  UINTN      Count;
-  UINTN      Index;
-  UINTN      Index2;
-  UINTN      ArrayIndex;
-  EFI_STRING UnifiedConfigureLang;
-  BOOLEAN    Duplicated;
-  REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG UnifiedConfigureLangPool[BIOS_CONFIG_TO_REDFISH_REDPATH_POOL_SIZE];
+  EFI_STATUS                              Status;
+  EFI_STRING                              *ConfigureLangList;
+  UINTN                                   Count;
+  UINTN                                   Index;
+  UINTN                                   Index2;
+  UINTN                                   ArrayIndex;
+  EFI_STRING                              UnifiedConfigureLang;
+  BOOLEAN                                 Duplicated;
+  REDFISH_FEATURE_ARRAY_TYPE_CONFIG_LANG  UnifiedConfigureLangPool[BIOS_CONFIG_TO_REDFISH_REDPATH_POOL_SIZE];
 
-  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || UnifiedConfigureLangList == NULL) {
+  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || (UnifiedConfigureLangList == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
 
   UnifiedConfigureLangList->Count = 0;
-  UnifiedConfigureLangList->List = NULL;
+  UnifiedConfigureLangList->List  = NULL;
   ZeroMem (UnifiedConfigureLangPool, sizeof (UnifiedConfigureLangPool));
 
   Status = RedfishPlatformConfigGetConfigureLang (Schema, Version, Pattern, &ConfigureLangList, &Count);
@@ -1514,7 +1596,7 @@ RedfishFeatureGetUnifiedArrayTypeConfigureLang (
 
   for (Index = 0; Index < Count; Index++) {
     Status = GetArrayIndexFromArrayTypeConfigureLang (ConfigureLangList[Index], &UnifiedConfigureLang, &ArrayIndex);
-    if (EFI_ERROR (Status) && Status == EFI_INVALID_PARAMETER) {
+    if (EFI_ERROR (Status) && (Status == EFI_INVALID_PARAMETER)) {
       ASSERT (FALSE);
       continue;
     }
@@ -1550,7 +1632,7 @@ RedfishFeatureGetUnifiedArrayTypeConfigureLang (
     //
 
     UnifiedConfigureLangPool[UnifiedConfigureLangList->Count].ConfigureLang = UnifiedConfigureLang;
-    UnifiedConfigureLangPool[UnifiedConfigureLangList->Count].Index = ArrayIndex;
+    UnifiedConfigureLangPool[UnifiedConfigureLangList->Count].Index         = ArrayIndex;
     ++UnifiedConfigureLangList->Count;
   }
 
@@ -1578,23 +1660,23 @@ RedfishFeatureGetUnifiedArrayTypeConfigureLang (
 **/
 EFI_STATUS
 GetEtagAndLocation (
-  IN  REDFISH_RESPONSE  *Response,
-  OUT CHAR8             **Etag,       OPTIONAL
+  IN  REDFISH_RESPONSE *Response,
+  OUT CHAR8 **Etag, OPTIONAL
   OUT EFI_STRING        *Location    OPTIONAL
   )
 {
-  EDKII_JSON_VALUE   JsonValue;
-  EDKII_JSON_VALUE   OdataValue;
-  CHAR8              *OdataString;
-  CHAR8              *AsciiLocation;
-  EFI_HTTP_HEADER    *Header;
-  EFI_STATUS         Status;
+  EDKII_JSON_VALUE  JsonValue;
+  EDKII_JSON_VALUE  OdataValue;
+  CHAR8             *OdataString;
+  CHAR8             *AsciiLocation;
+  EFI_HTTP_HEADER   *Header;
+  EFI_STATUS        Status;
 
   if (Response == NULL) {
     return EFI_INVALID_PARAMETER;
   }
 
-  if (Etag == NULL && Location == NULL) {
+  if ((Etag == NULL) && (Location == NULL)) {
     return EFI_SUCCESS;
   }
 
@@ -1614,7 +1696,7 @@ GetEtagAndLocation (
     //
     // No header is returned. Search payload for location.
     //
-    if (*Etag == NULL && Response->Payload != NULL) {
+    if ((*Etag == NULL) && (Response->Payload != NULL)) {
       JsonValue = RedfishJsonInPayload (Response->Payload);
       if (JsonValue != NULL) {
         OdataValue = JsonObjectGetValue (JsonValueGetObject (JsonValue), "@odata.etag");
@@ -1649,7 +1731,7 @@ GetEtagAndLocation (
     //
     // No header is returned. Search payload for location.
     //
-    if (*Location == NULL && Response->Payload != NULL) {
+    if ((*Location == NULL) && (Response->Payload != NULL)) {
       JsonValue = RedfishJsonInPayload (Response->Payload);
       if (JsonValue != NULL) {
         OdataValue = JsonObjectGetValue (JsonValueGetObject (JsonValue), "@odata.id");
@@ -1675,6 +1757,7 @@ GetEtagAndLocation (
 
   return Status;
 }
+
 /**
 
   Create HTTP payload and send them to redfish service with PATCH method.
@@ -1690,25 +1773,25 @@ GetEtagAndLocation (
 **/
 EFI_STATUS
 CreatePayloadToPatchResource (
-  IN  REDFISH_SERVICE *Service,
-  IN  REDFISH_PAYLOAD *TargetPayload,
-  IN  CHAR8           *Json,
-  OUT CHAR8           **Etag
+  IN  REDFISH_SERVICE  *Service,
+  IN  REDFISH_PAYLOAD  *TargetPayload,
+  IN  CHAR8            *Json,
+  OUT CHAR8            **Etag
   )
 {
-  REDFISH_PAYLOAD    Payload;
-  EDKII_JSON_VALUE   ResourceJsonValue;
-  REDFISH_RESPONSE   PostResponse;
-  EFI_STATUS         Status;
+  REDFISH_PAYLOAD   Payload;
+  EDKII_JSON_VALUE  ResourceJsonValue;
+  REDFISH_RESPONSE  PostResponse;
+  EFI_STATUS        Status;
 
-  if (Service == NULL || TargetPayload == NULL || IS_EMPTY_STRING (Json) || Etag == NULL) {
+  if ((Service == NULL) || (TargetPayload == NULL) || IS_EMPTY_STRING (Json) || (Etag == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
 
   ResourceJsonValue = JsonLoadString (Json, 0, NULL);
-  Payload = RedfishCreatePayload (ResourceJsonValue, Service);
+  Payload           = RedfishCreatePayload (ResourceJsonValue, Service);
   if (Payload == NULL) {
-    DEBUG ((DEBUG_ERROR, "%a:%d Failed to create JSON payload from JSON value!\n",__FUNCTION__, __LINE__));
+    DEBUG ((DEBUG_ERROR, "%a:%d Failed to create JSON payload from JSON value!\n", __FUNCTION__, __LINE__));
     Status =  EFI_DEVICE_ERROR;
     goto EXIT_FREE_JSON_VALUE;
   }
@@ -1716,7 +1799,7 @@ CreatePayloadToPatchResource (
   ZeroMem (&PostResponse, sizeof (REDFISH_RESPONSE));
   Status = RedfishPatchToPayload (TargetPayload, Payload, &PostResponse);
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "%a:%d Failed to PATCH payload to Redfish service.\n",__FUNCTION__, __LINE__));
+    DEBUG ((DEBUG_ERROR, "%a:%d Failed to PATCH payload to Redfish service.\n", __FUNCTION__, __LINE__));
     goto EXIT_FREE_JSON_VALUE;
   }
 
@@ -1761,26 +1844,26 @@ EXIT_FREE_JSON_VALUE:
 **/
 EFI_STATUS
 CreatePayloadToPostResource (
-  IN  REDFISH_SERVICE *Service,
-  IN  REDFISH_PAYLOAD *TargetPayload,
-  IN  CHAR8           *Json,
-  OUT EFI_STRING      *Location,
-  OUT CHAR8           **Etag
+  IN  REDFISH_SERVICE  *Service,
+  IN  REDFISH_PAYLOAD  *TargetPayload,
+  IN  CHAR8            *Json,
+  OUT EFI_STRING       *Location,
+  OUT CHAR8            **Etag
   )
 {
-  REDFISH_PAYLOAD    Payload;
-  EDKII_JSON_VALUE   ResourceJsonValue;
-  REDFISH_RESPONSE   PostResponse;
-  EFI_STATUS         Status;
+  REDFISH_PAYLOAD   Payload;
+  EDKII_JSON_VALUE  ResourceJsonValue;
+  REDFISH_RESPONSE  PostResponse;
+  EFI_STATUS        Status;
 
-  if (Service == NULL || TargetPayload == NULL || IS_EMPTY_STRING (Json) || Location == NULL || Etag == NULL) {
+  if ((Service == NULL) || (TargetPayload == NULL) || IS_EMPTY_STRING (Json) || (Location == NULL) || (Etag == NULL)) {
     return EFI_INVALID_PARAMETER;
   }
 
   ResourceJsonValue = JsonLoadString (Json, 0, NULL);
-  Payload = RedfishCreatePayload (ResourceJsonValue, Service);
+  Payload           = RedfishCreatePayload (ResourceJsonValue, Service);
   if (Payload == NULL) {
-    DEBUG ((DEBUG_ERROR, "%a:%d Failed to create JSON payload from JSON value!\n",__FUNCTION__, __LINE__));
+    DEBUG ((DEBUG_ERROR, "%a:%d Failed to create JSON payload from JSON value!\n", __FUNCTION__, __LINE__));
     Status =  EFI_DEVICE_ERROR;
     goto EXIT_FREE_JSON_VALUE;
   }
@@ -1788,7 +1871,7 @@ CreatePayloadToPostResource (
   ZeroMem (&PostResponse, sizeof (REDFISH_RESPONSE));
   Status = RedfishPostToPayload (TargetPayload, Payload, &PostResponse);
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "%a:%d Failed to POST Attribute Registry to Redfish service.\n",__FUNCTION__, __LINE__));
+    DEBUG ((DEBUG_ERROR, "%a:%d Failed to POST Attribute Registry to Redfish service.\n", __FUNCTION__, __LINE__));
     goto EXIT_FREE_JSON_VALUE;
   }
 
@@ -1827,19 +1910,19 @@ EXIT_FREE_JSON_VALUE:
 **/
 EFI_STRING
 RedfishGetUri (
-  IN  EFI_STRING ConfigLang
+  IN  EFI_STRING  ConfigLang
   )
 {
-  EFI_STATUS Status;
-  EFI_STRING Target;
-  EFI_STRING Found;
-  EFI_STRING TempStr;
-  EFI_STRING ResultStr;
-  EFI_STRING Head;
-  EFI_STRING CloseBracket;
-  UINTN      TempStrSize;
-  UINTN      RemainingLen;
-  UINTN      ConfigLangLen;
+  EFI_STATUS  Status;
+  EFI_STRING  Target;
+  EFI_STRING  Found;
+  EFI_STRING  TempStr;
+  EFI_STRING  ResultStr;
+  EFI_STRING  Head;
+  EFI_STRING  CloseBracket;
+  UINTN       TempStrSize;
+  UINTN       RemainingLen;
+  UINTN       ConfigLangLen;
 
   Status = RedfishLocateProtocol ((VOID **)&mConfigLangMapProtocol, &gEdkIIRedfishConfigLangMapProtocolGuid);
   if (EFI_ERROR (Status)) {
@@ -1875,7 +1958,7 @@ RedfishGetUri (
   //
   do {
     ConfigLangLen = StrLen (Head);
-    Target = CloseBracket;
+    Target        = CloseBracket;
 
     //
     // Look for next ConfigLang
@@ -1895,13 +1978,14 @@ RedfishGetUri (
     //
     // Copy current ConfigLang to temporary string and do a query
     //
-    Target += 1;
+    Target      += 1;
     RemainingLen = StrLen (Target);
-    TempStrSize = (ConfigLangLen - RemainingLen + 1) * sizeof (CHAR16);
-    TempStr = AllocateCopyPool (TempStrSize, Head);
+    TempStrSize  = (ConfigLangLen - RemainingLen + 1) * sizeof (CHAR16);
+    TempStr      = AllocateCopyPool (TempStrSize, Head);
     if (TempStr == NULL) {
       return NULL;
     }
+
     TempStr[ConfigLangLen - RemainingLen] = '\0';
 
     Status = mConfigLangMapProtocol->Get (
@@ -1926,7 +2010,7 @@ RedfishGetUri (
     //
     // Prepare for next ConfigLang
     //
-    Head = Target;
+    Head         = Target;
     CloseBracket = StrStr (Head, L"{");
   } while (CloseBracket != NULL);
 
@@ -1954,7 +2038,7 @@ RedfishGetUri (
 **/
 EFI_STRING
 RedfishGetConfigLanguage (
-  IN  EFI_STRING Uri
+  IN  EFI_STRING  Uri
   )
 {
   EFI_STATUS  Status;
@@ -1973,13 +2057,12 @@ RedfishGetConfigLanguage (
   }
 
   ConfigLang = NULL;
-  Status = mConfigLangMapProtocol->Get (
-                                     mConfigLangMapProtocol,
-                                     RedfishGetTypeUri,
-                                     Uri,
-                                     &ConfigLang
-                                     );
-
+  Status     = mConfigLangMapProtocol->Get (
+                                         mConfigLangMapProtocol,
+                                         RedfishGetTypeUri,
+                                         Uri,
+                                         &ConfigLang
+                                         );
 
   return ConfigLang;
 }
@@ -1997,8 +2080,8 @@ RedfishGetConfigLanguage (
 **/
 EFI_STRING
 GetConfigureLang (
-  IN  CHAR8 *Uri,
-  IN  CHAR8 *PropertyName   OPTIONAL
+  IN  CHAR8  *Uri,
+  IN  CHAR8  *PropertyName   OPTIONAL
   )
 {
   EFI_STRING  ConfigLang;
@@ -2032,7 +2115,7 @@ GetConfigureLang (
   }
 
   StringSize = StrSize (ConfigLang) + ((AsciiStrLen (PropertyName) + 1) * sizeof (CHAR16));
-  ResultStr = AllocatePool (StringSize);
+  ResultStr  = AllocatePool (StringSize);
   if (ResultStr == NULL) {
     return NULL;
   }
@@ -2059,7 +2142,7 @@ RedfisSetRedfishUri (
   IN    EFI_STRING  Uri
   )
 {
-  EFI_STATUS Status;
+  EFI_STATUS  Status;
 
   if (IS_EMPTY_STRING (ConfigLang) || IS_EMPTY_STRING (Uri)) {
     return EFI_INVALID_PARAMETER;
@@ -2088,12 +2171,12 @@ RedfisSetRedfishUri (
 **/
 EFI_STRING
 GetOdataId (
-  IN  REDFISH_PAYLOAD *Payload
+  IN  REDFISH_PAYLOAD  *Payload
   )
 {
-  EDKII_JSON_VALUE *JsonValue;
-  EDKII_JSON_VALUE *OdataId;
-  EFI_STRING       OdataIdString;
+  EDKII_JSON_VALUE  *JsonValue;
+  EDKII_JSON_VALUE  *OdataId;
+  EFI_STRING        OdataIdString;
 
   if (Payload == NULL) {
     return NULL;
@@ -2117,7 +2200,6 @@ GetOdataId (
   return AllocateCopyPool (StrSize (OdataIdString), OdataIdString);
 }
 
-
 /**
 
   Get the property name by given Configure Langauge.
@@ -2131,25 +2213,27 @@ GetOdataId (
 **/
 EFI_STRING
 GetPropertyFromConfigureLang (
-  IN EFI_STRING ResourceUri,
-  IN EFI_STRING ConfigureLang
+  IN EFI_STRING  ResourceUri,
+  IN EFI_STRING  ConfigureLang
   )
 {
   EFI_STATUS  Status;
   EFI_STRING  TempString;
 
-  if (ConfigureLang == NULL || ResourceUri == NULL) {
+  if ((ConfigureLang == NULL) || (ResourceUri == NULL)) {
     return NULL;
   }
 
   Status = IsRedpathArray (ConfigureLang, NULL, &TempString);
-  if (!EFI_ERROR(Status)) {
+  if (!EFI_ERROR (Status)) {
     TempString += 2; // Advance two characters for '}' and '/'
     return TempString;
   }
+
   if (Status != EFI_NOT_FOUND) {
     return NULL;
   }
+
   //
   // The ConigLang has no '{}'
   //
@@ -2160,6 +2244,7 @@ GetPropertyFromConfigureLang (
   if (GetRedpathNodeByIndex (ConfigureLang, 0, &TempString) == NULL) {
     return NULL;
   }
+
   //
   // Advance two characters to the starting
   // pointer of next node.
@@ -2182,17 +2267,17 @@ GetPropertyFromConfigureLang (
 **/
 CHAR8 *
 GetPropertyStringValue (
-  IN CHAR8      *Schema,
-  IN CHAR8      *Version,
-  IN EFI_STRING PropertyName,
-  IN EFI_STRING ConfigureLang
+  IN CHAR8       *Schema,
+  IN CHAR8       *Version,
+  IN EFI_STRING  PropertyName,
+  IN EFI_STRING  ConfigureLang
   )
 {
-  EFI_STATUS          Status;
-  EDKII_REDFISH_VALUE RedfishValue;
-  EFI_STRING          ConfigureLangBuffer;
-  UINTN               BufferSize;
-  CHAR8               *AsciiStringValue;
+  EFI_STATUS           Status;
+  EDKII_REDFISH_VALUE  RedfishValue;
+  EFI_STRING           ConfigureLangBuffer;
+  UINTN                BufferSize;
+  CHAR8                *AsciiStringValue;
 
   if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || IS_EMPTY_STRING (PropertyName)) {
     return NULL;
@@ -2201,7 +2286,7 @@ GetPropertyStringValue (
   //
   // Configure Language buffer.
   //
-  BufferSize = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
+  BufferSize          = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
   ConfigureLangBuffer = AllocatePool (BufferSize);
   if (ConfigureLangBuffer == NULL) {
     return NULL;
@@ -2240,17 +2325,17 @@ GetPropertyStringValue (
 **/
 INT64 *
 GetPropertyNumericValue (
-  IN CHAR8      *Schema,
-  IN CHAR8      *Version,
-  IN EFI_STRING PropertyName,
-  IN EFI_STRING ConfigureLang
+  IN CHAR8       *Schema,
+  IN CHAR8       *Version,
+  IN EFI_STRING  PropertyName,
+  IN EFI_STRING  ConfigureLang
   )
 {
-  EFI_STATUS          Status;
-  EDKII_REDFISH_VALUE RedfishValue;
-  EFI_STRING          ConfigureLangBuffer;
-  UINTN               BufferSize;
-  INT64               *ResultValue;
+  EFI_STATUS           Status;
+  EDKII_REDFISH_VALUE  RedfishValue;
+  EFI_STRING           ConfigureLangBuffer;
+  UINTN                BufferSize;
+  INT64                *ResultValue;
 
   if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || IS_EMPTY_STRING (PropertyName)) {
     return NULL;
@@ -2259,7 +2344,7 @@ GetPropertyNumericValue (
   //
   // Configure Language buffer.
   //
-  BufferSize = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
+  BufferSize          = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
   ConfigureLangBuffer = AllocatePool (BufferSize);
   if (ConfigureLangBuffer == NULL) {
     return NULL;
@@ -2302,17 +2387,17 @@ GetPropertyNumericValue (
 **/
 BOOLEAN *
 GetPropertyBooleanValue (
-  IN CHAR8      *Schema,
-  IN CHAR8      *Version,
-  IN EFI_STRING PropertyName,
-  IN EFI_STRING ConfigureLang
+  IN CHAR8       *Schema,
+  IN CHAR8       *Version,
+  IN EFI_STRING  PropertyName,
+  IN EFI_STRING  ConfigureLang
   )
 {
-  EFI_STATUS          Status;
-  EDKII_REDFISH_VALUE RedfishValue;
-  EFI_STRING          ConfigureLangBuffer;
-  UINTN               BufferSize;
-  BOOLEAN             *ResultValue;
+  EFI_STATUS           Status;
+  EDKII_REDFISH_VALUE  RedfishValue;
+  EFI_STRING           ConfigureLangBuffer;
+  UINTN                BufferSize;
+  BOOLEAN              *ResultValue;
 
   if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || IS_EMPTY_STRING (PropertyName)) {
     return NULL;
@@ -2321,7 +2406,7 @@ GetPropertyBooleanValue (
   //
   // Configure Language buffer.
   //
-  BufferSize = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
+  BufferSize          = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
   ConfigureLangBuffer = AllocatePool (BufferSize);
   if (ConfigureLangBuffer == NULL) {
     return NULL;
@@ -2366,8 +2451,8 @@ GetAttributeNameFromConfigLanguage (
   IN  EFI_STRING  ConfigureLanguage
   )
 {
-  UINTN StringLen;
-  UINTN Index;
+  UINTN  StringLen;
+  UINTN  Index;
 
   if (IS_EMPTY_STRING (ConfigureLanguage)) {
     return NULL;
@@ -2398,21 +2483,21 @@ GetAttributeNameFromConfigLanguage (
 **/
 CHAR8 **
 GetPropertyStringArrayValue (
-  IN  CHAR8               *Schema,
-  IN  CHAR8               *Version,
-  IN  EFI_STRING          PropertyName,
-  IN  EFI_STRING          ConfigureLang,
-  OUT UINTN               *ArraySize
+  IN  CHAR8       *Schema,
+  IN  CHAR8       *Version,
+  IN  EFI_STRING  PropertyName,
+  IN  EFI_STRING  ConfigureLang,
+  OUT UINTN       *ArraySize
   )
 {
-  EFI_STATUS          Status;
-  EDKII_REDFISH_VALUE RedfishValue;
-  EFI_STRING          ConfigureLangBuffer;
-  UINTN               BufferSize;
-  CHAR8               **StringArray;
-  UINTN               Index;
+  EFI_STATUS           Status;
+  EDKII_REDFISH_VALUE  RedfishValue;
+  EFI_STRING           ConfigureLangBuffer;
+  UINTN                BufferSize;
+  CHAR8                **StringArray;
+  UINTN                Index;
 
-  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || IS_EMPTY_STRING (PropertyName) || ArraySize == NULL) {
+  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || IS_EMPTY_STRING (PropertyName) || (ArraySize == NULL)) {
     return NULL;
   }
 
@@ -2421,7 +2506,7 @@ GetPropertyStringArrayValue (
   //
   // Configure Language buffer.
   //
-  BufferSize = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
+  BufferSize          = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
   ConfigureLangBuffer = AllocatePool (BufferSize);
   if (ConfigureLangBuffer == NULL) {
     DEBUG ((DEBUG_ERROR, "%a, out of resource\n", __FUNCTION__));
@@ -2469,21 +2554,21 @@ GetPropertyStringArrayValue (
 **/
 INT64 *
 GetPropertyNumericArrayValue (
-  IN  CHAR8               *Schema,
-  IN  CHAR8               *Version,
-  IN  EFI_STRING          PropertyName,
-  IN  EFI_STRING          ConfigureLang,
-  OUT UINTN               *ArraySize
+  IN  CHAR8       *Schema,
+  IN  CHAR8       *Version,
+  IN  EFI_STRING  PropertyName,
+  IN  EFI_STRING  ConfigureLang,
+  OUT UINTN       *ArraySize
   )
 {
-  EFI_STATUS          Status;
-  EDKII_REDFISH_VALUE RedfishValue;
-  EFI_STRING          ConfigureLangBuffer;
-  UINTN               BufferSize;
-  INT64               *IntegerArray;
-  UINTN               Index;
+  EFI_STATUS           Status;
+  EDKII_REDFISH_VALUE  RedfishValue;
+  EFI_STRING           ConfigureLangBuffer;
+  UINTN                BufferSize;
+  INT64                *IntegerArray;
+  UINTN                Index;
 
-  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || IS_EMPTY_STRING (PropertyName) || ArraySize == NULL) {
+  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || IS_EMPTY_STRING (PropertyName) || (ArraySize == NULL)) {
     return NULL;
   }
 
@@ -2492,7 +2577,7 @@ GetPropertyNumericArrayValue (
   //
   // Configure Language buffer.
   //
-  BufferSize = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
+  BufferSize          = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
   ConfigureLangBuffer = AllocatePool (BufferSize);
   if (ConfigureLangBuffer == NULL) {
     DEBUG ((DEBUG_ERROR, "%a, out of resource\n", __FUNCTION__));
@@ -2540,21 +2625,21 @@ GetPropertyNumericArrayValue (
 **/
 BOOLEAN *
 GetPropertyBooleanArrayValue (
-  IN  CHAR8               *Schema,
-  IN  CHAR8               *Version,
-  IN  EFI_STRING          PropertyName,
-  IN  EFI_STRING          ConfigureLang,
-  OUT UINTN               *ArraySize
+  IN  CHAR8       *Schema,
+  IN  CHAR8       *Version,
+  IN  EFI_STRING  PropertyName,
+  IN  EFI_STRING  ConfigureLang,
+  OUT UINTN       *ArraySize
   )
 {
-  EFI_STATUS          Status;
-  EDKII_REDFISH_VALUE RedfishValue;
-  EFI_STRING          ConfigureLangBuffer;
-  UINTN               BufferSize;
-  BOOLEAN             *BooleanArray;
-  UINTN               Index;
+  EFI_STATUS           Status;
+  EDKII_REDFISH_VALUE  RedfishValue;
+  EFI_STRING           ConfigureLangBuffer;
+  UINTN                BufferSize;
+  BOOLEAN              *BooleanArray;
+  UINTN                Index;
 
-  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || IS_EMPTY_STRING (PropertyName) || ArraySize == NULL) {
+  if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || IS_EMPTY_STRING (PropertyName) || (ArraySize == NULL)) {
     return NULL;
   }
 
@@ -2563,7 +2648,7 @@ GetPropertyBooleanArrayValue (
   //
   // Configure Language buffer.
   //
-  BufferSize = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
+  BufferSize          = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
   ConfigureLangBuffer = AllocatePool (BufferSize);
   if (ConfigureLangBuffer == NULL) {
     DEBUG ((DEBUG_ERROR, "%a, out of resource\n", __FUNCTION__));
@@ -2605,25 +2690,28 @@ GetPropertyBooleanArrayValue (
 **/
 VOID
 FreeEmptyPropKeyValueList (
-  RedfishCS_EmptyProp_KeyValue *EmptyPropKeyValueListHead
+  RedfishCS_EmptyProp_KeyValue  *EmptyPropKeyValueListHead
   )
 {
-  RedfishCS_EmptyProp_KeyValue *NextEmptyPropKeyValueList;
+  RedfishCS_EmptyProp_KeyValue  *NextEmptyPropKeyValueList;
 
   while (EmptyPropKeyValueListHead != NULL) {
     NextEmptyPropKeyValueList = EmptyPropKeyValueListHead->NextKeyValuePtr;
     if (EmptyPropKeyValueListHead->Value->DataValue.CharPtr != NULL) {
-      FreePool(EmptyPropKeyValueListHead->Value->DataValue.CharPtr);
+      FreePool (EmptyPropKeyValueListHead->Value->DataValue.CharPtr);
     }
+
     if (EmptyPropKeyValueListHead->Value != NULL) {
-      FreePool(EmptyPropKeyValueListHead->Value);
+      FreePool (EmptyPropKeyValueListHead->Value);
     }
+
     if (EmptyPropKeyValueListHead->KeyNamePtr != NULL) {
-      FreePool(EmptyPropKeyValueListHead->KeyNamePtr);
+      FreePool (EmptyPropKeyValueListHead->KeyNamePtr);
     }
+
     FreePool (EmptyPropKeyValueListHead);
     EmptyPropKeyValueListHead = NextEmptyPropKeyValueList;
-  };
+  }
 }
 
 /**
@@ -2640,26 +2728,28 @@ FreeEmptyPropKeyValueList (
 RedfishCS_EmptyProp_KeyValue *
 NewEmptyPropKeyValueFromRedfishValue (
   IN  EFI_STRING           KeyName,
-  IN  EDKII_REDFISH_VALUE *RedfishValue
+  IN  EDKII_REDFISH_VALUE  *RedfishValue
   )
 {
-  RedfishCS_EmptyProp_KeyValue *EmptyPropKeyValue;
-  RedfishCS_Vague              *VagueValue;
-  RedfishCS_char               *KeyNameChar;
-  VOID                         *Data;
-  UINTN                        DataSize;
-  INT32                        Bool32;
+  RedfishCS_EmptyProp_KeyValue  *EmptyPropKeyValue;
+  RedfishCS_Vague               *VagueValue;
+  RedfishCS_char                *KeyNameChar;
+  VOID                          *Data;
+  UINTN                         DataSize;
+  INT32                         Bool32;
 
-  KeyNameChar = StrUnicodeToAscii(KeyName);
+  KeyNameChar = StrUnicodeToAscii (KeyName);
   if (KeyNameChar == NULL) {
     DEBUG ((DEBUG_ERROR, "%a, Failed to convert unicode to ASCII.\n", __FUNCTION__));
     return NULL;
   }
+
   EmptyPropKeyValue = (RedfishCS_EmptyProp_KeyValue *)AllocateZeroPool (sizeof (RedfishCS_EmptyProp_KeyValue));
   if (EmptyPropKeyValue == NULL) {
     DEBUG ((DEBUG_ERROR, "%a, Failed to allocate memory for EmptyPropKeyValue\n", __FUNCTION__));
     return NULL;
   }
+
   VagueValue = (RedfishCS_Vague *)AllocateZeroPool (sizeof (RedfishCS_Vague));
   if (VagueValue == NULL) {
     DEBUG ((DEBUG_ERROR, "%a, Failed to allocate memory for VagueValue\n", __FUNCTION__));
@@ -2669,29 +2759,30 @@ NewEmptyPropKeyValueFromRedfishValue (
 
   if (RedfishValue->Type == REDFISH_VALUE_TYPE_BOOLEAN) {
     VagueValue->DataType = RedfishCS_Vague_DataType_Bool;
-    DataSize = sizeof (BOOLEAN);
+    DataSize             = sizeof (BOOLEAN);
     //
     // Redfish JSON to C strcuture converter uses
     // "int" for the BOOLEAN.
     //
     Bool32 = (INT32)RedfishValue->Value.Boolean;
-    Data = (VOID *)&Bool32;
+    Data   = (VOID *)&Bool32;
   } else if (RedfishValue->Type == REDFISH_VALUE_TYPE_INTEGER) {
     VagueValue->DataType = RedfishCS_Vague_DataType_Int64;
-    DataSize = sizeof (INT64);
-    Data = (VOID *)&RedfishValue->Value.Integer;
+    DataSize             = sizeof (INT64);
+    Data                 = (VOID *)&RedfishValue->Value.Integer;
   } else if (RedfishValue->Type == REDFISH_VALUE_TYPE_STRING) {
     VagueValue->DataType = RedfishCS_Vague_DataType_String;
-    DataSize = AsciiStrSize(RedfishValue->Value.Buffer);
-    Data = (VOID *)RedfishValue->Value.Buffer;
+    DataSize             = AsciiStrSize (RedfishValue->Value.Buffer);
+    Data                 = (VOID *)RedfishValue->Value.Buffer;
   } else {
     DEBUG ((DEBUG_ERROR, "%a, wrong type of RedfishValue: %x\n", __FUNCTION__, RedfishValue->Type));
     FreePool (VagueValue);
     FreePool (EmptyPropKeyValue);
     return NULL;
   }
-  VagueValue->DataValue.CharPtr = (RedfishCS_char *)AllocateCopyPool(DataSize, Data);
-  EmptyPropKeyValue->Value = VagueValue;
+
+  VagueValue->DataValue.CharPtr = (RedfishCS_char *)AllocateCopyPool (DataSize, Data);
+  EmptyPropKeyValue->Value      = VagueValue;
   EmptyPropKeyValue->KeyNamePtr = KeyNameChar;
   return EmptyPropKeyValue;
 }
@@ -2712,25 +2803,25 @@ NewEmptyPropKeyValueFromRedfishValue (
 **/
 RedfishCS_EmptyProp_KeyValue *
 GetPropertyVagueValue (
-  IN CHAR8      *Schema,
-  IN CHAR8      *Version,
-  IN EFI_STRING PropertyName,
-  IN EFI_STRING ConfigureLang,
-  OUT UINT32    *NumberOfValues
+  IN CHAR8       *Schema,
+  IN CHAR8       *Version,
+  IN EFI_STRING  PropertyName,
+  IN EFI_STRING  ConfigureLang,
+  OUT UINT32     *NumberOfValues
   )
 {
-  EFI_STATUS                   Status;
-  RedfishCS_EmptyProp_KeyValue *EmptyPropKeyValueList;
-  RedfishCS_EmptyProp_KeyValue *PreEmptyPropKeyValueList;
-  RedfishCS_EmptyProp_KeyValue *FirstEmptyPropKeyValueList;
-  EDKII_REDFISH_VALUE          RedfishValue;
-  EFI_STRING                   ConfigureLangBuffer;
-  EFI_STRING                   KeyName;
-  EFI_STRING                   *ConfigureLangList;
-  EFI_STRING                   SearchPattern;
-  UINTN                        BufferSize;
-  UINTN                        ConfigListCount;
-  UINTN                        ConfigListCountIndex;
+  EFI_STATUS                    Status;
+  RedfishCS_EmptyProp_KeyValue  *EmptyPropKeyValueList;
+  RedfishCS_EmptyProp_KeyValue  *PreEmptyPropKeyValueList;
+  RedfishCS_EmptyProp_KeyValue  *FirstEmptyPropKeyValueList;
+  EDKII_REDFISH_VALUE           RedfishValue;
+  EFI_STRING                    ConfigureLangBuffer;
+  EFI_STRING                    KeyName;
+  EFI_STRING                    *ConfigureLangList;
+  EFI_STRING                    SearchPattern;
+  UINTN                         BufferSize;
+  UINTN                         ConfigListCount;
+  UINTN                         ConfigListCountIndex;
 
   if (IS_EMPTY_STRING (Schema) || IS_EMPTY_STRING (Version) || IS_EMPTY_STRING (ConfigureLang) || IS_EMPTY_STRING (PropertyName)) {
     return NULL;
@@ -2739,24 +2830,26 @@ GetPropertyVagueValue (
   //
   // Configure Language buffer.
   //
-  BufferSize = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
+  BufferSize          = sizeof (CHAR16) * MAX_CONF_LANG_LEN;
   ConfigureLangBuffer = AllocatePool (BufferSize);
   if (ConfigureLangBuffer == NULL) {
     DEBUG ((DEBUG_ERROR, "%a, Failed to allocate memory for ConfigureLangBuffer\n", __FUNCTION__));
     return NULL;
   }
+
   UnicodeSPrint (ConfigureLangBuffer, BufferSize, L"%s/%s", ConfigureLang, PropertyName);
 
   //
   // Initial search pattern
   //
-  BufferSize = (StrLen (ConfigureLangBuffer) + StrLen (L"/.*") + 1) * sizeof (CHAR16); // Increase one for the NULL terminator.
+  BufferSize    = (StrLen (ConfigureLangBuffer) + StrLen (L"/.*") + 1) * sizeof (CHAR16); // Increase one for the NULL terminator.
   SearchPattern = AllocatePool (BufferSize);
   if (SearchPattern == NULL) {
     DEBUG ((DEBUG_ERROR, "%a, Failed to allocate memory for SearchPattern\n", __FUNCTION__));
     FreePool (ConfigureLangBuffer);
     return NULL;
   }
+
   BufferSize = BufferSize / sizeof (CHAR16);
   StrCpyS (SearchPattern, BufferSize, ConfigureLangBuffer);
   StrCatS (SearchPattern, BufferSize, L"/.*");
@@ -2769,28 +2862,30 @@ GetPropertyVagueValue (
   //
   // Build up the list of RedfishCS_EmptyProp_KeyValue.
   //
-  ConfigListCountIndex = 0;
-  PreEmptyPropKeyValueList = NULL;
+  ConfigListCountIndex       = 0;
+  PreEmptyPropKeyValueList   = NULL;
   FirstEmptyPropKeyValueList = NULL;
   while (ConfigListCountIndex < ConfigListCount) {
-    Status = RedfishPlatformConfigGetValue(Schema, Version, ConfigureLangList [ConfigListCountIndex], &RedfishValue);
+    Status = RedfishPlatformConfigGetValue (Schema, Version, ConfigureLangList[ConfigListCountIndex], &RedfishValue);
     if (EFI_ERROR (Status)) {
-      DEBUG ((DEBUG_ERROR, "%a, %a.%a query current setting for %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureLangList [ConfigListCountIndex], Status));
+      DEBUG ((DEBUG_ERROR, "%a, %a.%a query current setting for %s failed: %r\n", __FUNCTION__, Schema, Version, ConfigureLangList[ConfigListCountIndex], Status));
       goto ErrorLeave;
     }
+
     //
     // Get the key name.
     //
-    KeyName = GetAttributeNameFromConfigLanguage (ConfigureLangList [ConfigListCountIndex]);
+    KeyName = GetAttributeNameFromConfigLanguage (ConfigureLangList[ConfigListCountIndex]);
     //
     // Create an entry of RedfishCS_EmptyProp_KeyValue.
     //
     EmptyPropKeyValueList = NewEmptyPropKeyValueFromRedfishValue (KeyName, &RedfishValue);
     if (EmptyPropKeyValueList == NULL) {
       DEBUG ((DEBUG_ERROR, "%a, Failed to create an entry of EmptyPropKeyValueList\n", __FUNCTION__));
-      ConfigListCountIndex ++;
+      ConfigListCountIndex++;
       continue;
     }
+
     //
     // Link the RedfishCS_EmptyProp_KeyValue list.
     //
@@ -2799,24 +2894,29 @@ GetPropertyVagueValue (
     } else {
       FirstEmptyPropKeyValueList = EmptyPropKeyValueList;
     }
+
     PreEmptyPropKeyValueList = EmptyPropKeyValueList;
-    ConfigListCountIndex ++;
-  };
+    ConfigListCountIndex++;
+  }
+
   goto LeaveFunction;
 
 ErrorLeave:;
   if (FirstEmptyPropKeyValueList != NULL) {
     FreeEmptyPropKeyValueList (FirstEmptyPropKeyValueList);
   }
+
   FirstEmptyPropKeyValueList = NULL;
 
 LeaveFunction:
   if (SearchPattern != NULL) {
     FreePool (SearchPattern);
   }
+
   if (ConfigureLangBuffer != NULL) {
     FreePool (ConfigureLangBuffer);
   }
+
   FreePool (ConfigureLangList);
 
   *NumberOfValues = (UINT32)ConfigListCount;
@@ -2836,15 +2936,15 @@ LeaveFunction:
 **/
 BOOLEAN
 PropertyChecker (
-  IN VOID         *PropertyBuffer,
-  IN BOOLEAN      ProvisionMode
+  IN VOID     *PropertyBuffer,
+  IN BOOLEAN  ProvisionMode
   )
 {
   if (ProvisionMode) {
     return TRUE;
   }
 
-  if (!ProvisionMode && PropertyBuffer != NULL) {
+  if (!ProvisionMode && (PropertyBuffer != NULL)) {
     return TRUE;
   }
 
@@ -2865,12 +2965,12 @@ PropertyChecker (
 **/
 BOOLEAN
 CheckEtag (
-  IN EFI_STRING Uri,
-  IN CHAR8      *EtagInHeader,
-  IN CHAR8      *EtagInJson
+  IN EFI_STRING  Uri,
+  IN CHAR8       *EtagInHeader,
+  IN CHAR8       *EtagInJson
   )
 {
-  CHAR8 *EtagInDb;
+  CHAR8  *EtagInDb;
 
   if (IS_EMPTY_STRING (Uri)) {
     return FALSE;
@@ -2920,15 +3020,15 @@ CheckEtag (
 **/
 EDKII_JSON_VALUE *
 MatchJsonObject (
-  IN EDKII_JSON_VALUE *JsonObj,
-  IN CHAR8            *ObjectName
+  IN EDKII_JSON_VALUE  *JsonObj,
+  IN CHAR8             *ObjectName
   )
 {
   EDKII_JSON_VALUE  N;
   CHAR8             *Key;
   EDKII_JSON_VALUE  Value;
 
-  if (JsonObj == NULL || IS_EMPTY_STRING (ObjectName)) {
+  if ((JsonObj == NULL) || IS_EMPTY_STRING (ObjectName)) {
     return NULL;
   }
 
@@ -2962,11 +3062,11 @@ MatchPropertyWithJsonContext (
   IN  CHAR8       *Json
   )
 {
-  CHAR8 *AsciiProperty;
-  CHAR8 *PropertyNode;
-  UINTN Index;
-  EDKII_JSON_VALUE *JsonObj;
-  EDKII_JSON_VALUE *MatchObj;
+  CHAR8             *AsciiProperty;
+  CHAR8             *PropertyNode;
+  UINTN             Index;
+  EDKII_JSON_VALUE  *JsonObj;
+  EDKII_JSON_VALUE  *MatchObj;
   EDKII_JSON_TYPE   JsonType;
 
   if (IS_EMPTY_STRING (Property) || IS_EMPTY_STRING (Json)) {
@@ -2974,7 +3074,7 @@ MatchPropertyWithJsonContext (
   }
 
   JsonObj = JsonLoadString (Json, 0, NULL);
-  if (JsonObj == NULL || !JsonValueIsObject (JsonObj)) {
+  if ((JsonObj == NULL) || !JsonValueIsObject (JsonObj)) {
     return FALSE;
   }
 
@@ -2983,18 +3083,17 @@ MatchPropertyWithJsonContext (
     return FALSE;
   }
 
-  Index = 0;
+  Index        = 0;
   PropertyNode = AsciiProperty;
-  MatchObj = JsonObj;
+  MatchObj     = JsonObj;
 
   //
   // Walk through property and find corresponding object in JSON input
   //
   while (AsciiProperty[Index] != '\0') {
-
     if (AsciiProperty[Index] == '/') {
       AsciiProperty[Index] = '\0';
-      MatchObj = MatchJsonObject (MatchObj, PropertyNode);
+      MatchObj             = MatchJsonObject (MatchObj, PropertyNode);
       if (MatchObj == NULL) {
         PropertyNode = NULL;
         break;
@@ -3023,16 +3122,19 @@ MatchPropertyWithJsonContext (
         if (JsonValueIsNull (MatchObj)) {
           MatchObj = NULL;
         }
+
         break;
       case EdkiiJsonTypeArray:
         if (JsonArrayCount (MatchObj) == 0) {
           MatchObj = NULL;
         }
+
         break;
       case EdkiiJsonTypeString:
         if (IS_EMPTY_STRING (JsonValueGetString (MatchObj))) {
           MatchObj = NULL;
         }
+
         break;
       case EdkiiJsonTypeNull:
         MatchObj = NULL;
@@ -3061,16 +3163,16 @@ MatchPropertyWithJsonContext (
 **/
 EFI_STATUS
 AddRedfishCharArray (
-  IN OUT  RedfishCS_char_Array **Head,
+  IN OUT  RedfishCS_char_Array  **Head,
   IN      CHAR8                 **StringArray,
   IN      UINTN                 ArraySize
   )
 {
-  UINTN                                 Index;
-  RedfishCS_char_Array                  *CharArrayBuffer;
-  RedfishCS_char_Array                  *PreArrayBuffer;
+  UINTN                 Index;
+  RedfishCS_char_Array  *CharArrayBuffer;
+  RedfishCS_char_Array  *PreArrayBuffer;
 
-  if (Head == NULL || StringArray == NULL || ArraySize == 0) {
+  if ((Head == NULL) || (StringArray == NULL) || (ArraySize == 0)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -3083,14 +3185,15 @@ AddRedfishCharArray (
     }
 
     if (Index == 0) {
-     *Head = CharArrayBuffer;
+      *Head = CharArrayBuffer;
     }
 
     CharArrayBuffer->ArrayValue = StringArray[Index];
-    CharArrayBuffer->Next = NULL;
+    CharArrayBuffer->Next       = NULL;
     if (PreArrayBuffer != NULL) {
       PreArrayBuffer->Next = CharArrayBuffer;
     }
+
     PreArrayBuffer = CharArrayBuffer;
   }
 
@@ -3111,16 +3214,16 @@ AddRedfishCharArray (
 **/
 EFI_STATUS
 AddRedfishNumericArray (
-  IN OUT  RedfishCS_int64_Array **Head,
-  IN      INT64                 *NumericArray,
-  IN      UINTN                 ArraySize
+  IN OUT  RedfishCS_int64_Array  **Head,
+  IN      INT64                  *NumericArray,
+  IN      UINTN                  ArraySize
   )
 {
-  UINTN                                 Index;
-  RedfishCS_int64_Array                 *NumericArrayBuffer;
-  RedfishCS_int64_Array                 *PreArrayBuffer;
+  UINTN                  Index;
+  RedfishCS_int64_Array  *NumericArrayBuffer;
+  RedfishCS_int64_Array  *PreArrayBuffer;
 
-  if (Head == NULL || NumericArray == NULL || ArraySize == 0) {
+  if ((Head == NULL) || (NumericArray == NULL) || (ArraySize == 0)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -3133,18 +3236,21 @@ AddRedfishNumericArray (
     }
 
     if (Index == 0) {
-     *Head = NumericArrayBuffer;
+      *Head = NumericArrayBuffer;
     }
+
     NumericArrayBuffer->ArrayValue =  AllocatePool (sizeof (RedfishCS_int64));
     if (NumericArrayBuffer->ArrayValue == NULL) {
       ASSERT (NumericArrayBuffer->ArrayValue != NULL);
       continue;
     }
+
     *NumericArrayBuffer->ArrayValue = NumericArray[Index];
-    NumericArrayBuffer->Next = NULL;
+    NumericArrayBuffer->Next        = NULL;
     if (PreArrayBuffer != NULL) {
       PreArrayBuffer->Next = NumericArrayBuffer;
     }
+
     PreArrayBuffer = NumericArrayBuffer;
   }
 
@@ -3170,11 +3276,11 @@ AddRedfishBooleanArray (
   IN      UINTN                 ArraySize
   )
 {
-  UINTN                                 Index;
-  RedfishCS_bool_Array                 *BooleanArrayBuffer;
-  RedfishCS_bool_Array                 *PreArrayBuffer;
+  UINTN                 Index;
+  RedfishCS_bool_Array  *BooleanArrayBuffer;
+  RedfishCS_bool_Array  *PreArrayBuffer;
 
-  if (Head == NULL || BooleanArray == NULL || ArraySize == 0) {
+  if ((Head == NULL) || (BooleanArray == NULL) || (ArraySize == 0)) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -3187,7 +3293,7 @@ AddRedfishBooleanArray (
     }
 
     if (Index == 0) {
-     *Head = BooleanArrayBuffer;
+      *Head = BooleanArrayBuffer;
     }
 
     BooleanArrayBuffer->ArrayValue =  AllocatePool (sizeof (RedfishCS_bool));
@@ -3195,11 +3301,13 @@ AddRedfishBooleanArray (
       ASSERT (BooleanArrayBuffer->ArrayValue != NULL);
       continue;
     }
+
     *BooleanArrayBuffer->ArrayValue = BooleanArray[Index];
-    BooleanArrayBuffer->Next = NULL;
+    BooleanArrayBuffer->Next        = NULL;
     if (PreArrayBuffer != NULL) {
       PreArrayBuffer->Next = BooleanArrayBuffer;
     }
+
     PreArrayBuffer = BooleanArrayBuffer;
   }
 
@@ -3222,22 +3330,21 @@ AddRedfishBooleanArray (
 **/
 BOOLEAN
 CompareRedfishStringArrayValues (
-  IN RedfishCS_char_Array *Head,
-  IN CHAR8                **StringArray,
-  IN UINTN                ArraySize
+  IN RedfishCS_char_Array  *Head,
+  IN CHAR8                 **StringArray,
+  IN UINTN                 ArraySize
   )
 {
   UINTN                 Index;
   RedfishCS_char_Array  *CharArrayBuffer;
 
-  if (Head == NULL || StringArray == NULL || ArraySize == 0) {
+  if ((Head == NULL) || (StringArray == NULL) || (ArraySize == 0)) {
     return FALSE;
   }
 
   CharArrayBuffer = Head;
-  Index = 0;
+  Index           = 0;
   while (CharArrayBuffer != NULL && Index < ArraySize) {
-
     if (AsciiStrCmp (StringArray[Index], CharArrayBuffer->ArrayValue) != 0) {
       break;
     }
@@ -3246,7 +3353,7 @@ CompareRedfishStringArrayValues (
     CharArrayBuffer = CharArrayBuffer->Next;
   }
 
-  if (CharArrayBuffer != NULL || Index < ArraySize) {
+  if ((CharArrayBuffer != NULL) || (Index < ArraySize)) {
     return FALSE;
   }
 
@@ -3269,20 +3376,20 @@ CompareRedfishStringArrayValues (
 **/
 BOOLEAN
 CompareRedfishNumericArrayValues (
-  IN RedfishCS_int64_Array *Head,
-  IN INT64                 *NumericArray,
-  IN UINTN                 ArraySize
+  IN RedfishCS_int64_Array  *Head,
+  IN INT64                  *NumericArray,
+  IN UINTN                  ArraySize
   )
 {
   UINTN                  Index;
   RedfishCS_int64_Array  *NumericArrayBuffer;
 
-  if (Head == NULL || NumericArray == NULL || ArraySize == 0) {
+  if ((Head == NULL) || (NumericArray == NULL) || (ArraySize == 0)) {
     return FALSE;
   }
 
   NumericArrayBuffer = Head;
-  Index = 0;
+  Index              = 0;
   while (NumericArrayBuffer != NULL && Index < ArraySize) {
     if (NumericArray[Index] != *NumericArrayBuffer->ArrayValue) {
       break;
@@ -3292,7 +3399,7 @@ CompareRedfishNumericArrayValues (
     NumericArrayBuffer = NumericArrayBuffer->Next;
   }
 
-  if (NumericArrayBuffer != NULL || Index < ArraySize) {
+  if ((NumericArrayBuffer != NULL) || (Index < ArraySize)) {
     return FALSE;
   }
 
@@ -3320,15 +3427,15 @@ CompareRedfishBooleanArrayValues (
   IN UINTN                 ArraySize
   )
 {
-  UINTN                  Index;
+  UINTN                 Index;
   RedfishCS_bool_Array  *BooleanArrayBuffer;
 
-  if (Head == NULL || BooleanArray == NULL || ArraySize == 0) {
+  if ((Head == NULL) || (BooleanArray == NULL) || (ArraySize == 0)) {
     return FALSE;
   }
 
   BooleanArrayBuffer = Head;
-  Index = 0;
+  Index              = 0;
   while (BooleanArrayBuffer != NULL && Index < ArraySize) {
     if (BooleanArray[Index] != *BooleanArrayBuffer->ArrayValue) {
       break;
@@ -3338,7 +3445,7 @@ CompareRedfishBooleanArrayValues (
     BooleanArrayBuffer = BooleanArrayBuffer->Next;
   }
 
-  if (BooleanArrayBuffer != NULL || Index < ArraySize) {
+  if ((BooleanArrayBuffer != NULL) || (Index < ArraySize)) {
     return FALSE;
   }
 
@@ -3361,12 +3468,12 @@ CompareRedfishBooleanArrayValues (
 **/
 BOOLEAN
 CompareRedfishPropertyVagueValues (
-  IN RedfishCS_EmptyProp_KeyValue *RedfishVagueKeyValuePtr,
-  IN UINT32                       RedfishVagueKeyValueNumber,
-  IN RedfishCS_EmptyProp_KeyValue *ConfigVagueKeyValuePtr,
-  IN UINT32                       ConfigVagueKeyValueNumber
+  IN RedfishCS_EmptyProp_KeyValue  *RedfishVagueKeyValuePtr,
+  IN UINT32                        RedfishVagueKeyValueNumber,
+  IN RedfishCS_EmptyProp_KeyValue  *ConfigVagueKeyValuePtr,
+  IN UINT32                        ConfigVagueKeyValueNumber
   )
-  {
+{
   RedfishCS_EmptyProp_KeyValue  *ThisConfigVagueKeyValuePtr;
   RedfishCS_EmptyProp_KeyValue  *ThisRedfishVagueKeyValuePtr;
 
@@ -3384,13 +3491,14 @@ CompareRedfishPropertyVagueValues (
     // Loop through all key/value on Redfish service..
     //
     while (ThisRedfishVagueKeyValuePtr != NULL) {
-      if (AsciiStrCmp(ThisConfigVagueKeyValuePtr->KeyNamePtr, ThisRedfishVagueKeyValuePtr->KeyNamePtr) == 0) {
+      if (AsciiStrCmp (ThisConfigVagueKeyValuePtr->KeyNamePtr, ThisRedfishVagueKeyValuePtr->KeyNamePtr) == 0) {
         //
         // Check the type of value.
         //
         if (ThisConfigVagueKeyValuePtr->Value->DataType != ThisRedfishVagueKeyValuePtr->Value->DataType) {
           return FALSE;
         }
+
         //
         // Check the value.
         //
@@ -3398,11 +3506,13 @@ CompareRedfishPropertyVagueValues (
           //
           // Is the string identical?
           //
-          if (AsciiStrCmp (ThisConfigVagueKeyValuePtr->Value->DataValue.CharPtr,
-                           ThisRedfishVagueKeyValuePtr->Value->DataValue.CharPtr
-                           ) == 0) {
+          if (AsciiStrCmp (
+                ThisConfigVagueKeyValuePtr->Value->DataValue.CharPtr,
+                ThisRedfishVagueKeyValuePtr->Value->DataValue.CharPtr
+                ) == 0)
+          {
             break;
-          } else{
+          } else {
             return FALSE;
           }
         } else if (ThisConfigVagueKeyValuePtr->Value->DataType == RedfishCS_Vague_DataType_Int64) {
@@ -3421,16 +3531,20 @@ CompareRedfishPropertyVagueValues (
           return FALSE;
         }
       }
+
       ThisRedfishVagueKeyValuePtr = ThisRedfishVagueKeyValuePtr->NextKeyValuePtr;
-    };
+    }
+
     if (ThisRedfishVagueKeyValuePtr == NULL) {
       //
       // No matched key name. Threat these two vague value set is different.
       //
       return FALSE;
     }
+
     ThisConfigVagueKeyValuePtr = ThisConfigVagueKeyValuePtr->NextKeyValuePtr;
-  };
+  }
+
   return TRUE;
 }
 
@@ -3448,11 +3562,10 @@ CompareRedfishPropertyVagueValues (
 EFI_STATUS
 EFIAPI
 RedfishFeatureUtilityLibConstructor (
-  IN EFI_HANDLE                            ImageHandle,
-  IN EFI_SYSTEM_TABLE                      *SystemTable
+  IN EFI_HANDLE        ImageHandle,
+  IN EFI_SYSTEM_TABLE  *SystemTable
   )
 {
-
   return EFI_SUCCESS;
 }
 
@@ -3468,8 +3581,8 @@ RedfishFeatureUtilityLibConstructor (
 EFI_STATUS
 EFIAPI
 RedfishFeatureUtilityLibDestructor (
-  IN EFI_HANDLE                            ImageHandle,
-  IN EFI_SYSTEM_TABLE                      *SystemTable
+  IN EFI_HANDLE        ImageHandle,
+  IN EFI_SYSTEM_TABLE  *SystemTable
   )
 {
   return EFI_SUCCESS;
