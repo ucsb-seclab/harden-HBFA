@@ -680,7 +680,7 @@ EfiHttpRequest (
   //
   // Create request message.
   //
-  if (Request->Method == HttpMethodConnect) {
+  if ((Request != NULL) && (Request->Method == HttpMethodConnect)) {
     //
     // HTTP Connect shall contain EndPoint host name in URI
     //
