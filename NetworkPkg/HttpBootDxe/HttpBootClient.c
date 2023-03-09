@@ -664,56 +664,63 @@ HttpBootFreeCache (
   IN  HTTP_BOOT_CACHE_CONTENT  *Cache
   )
 {
-  UINTN                  Index;
-  LIST_ENTRY             *Entry;
-  LIST_ENTRY             *NextEntry;
-  HTTP_BOOT_ENTITY_DATA  *EntityData;
+  UINTN                         Index;
+  LIST_ENTRY                    *Entry;
+  LIST_ENTRY                    *NextEntry;
+  HTTP_BOOT_ENTITY_DATA         *EntityData;
+  EFI_HTTP_CONNECT_REQUEST_DATA *ConnRequestData;
 
-  if (Cache != NULL) {
-    //
-    // Free the request data
-    //
-    if (Cache->RequestData != NULL) {
-      if (Cache->RequestData->Url != NULL) {
-        FreePool (Cache->RequestData->Url);
-      }
-
-      if (Cache->RequestData->ProxyUrl != NULL) {
-        FreePool (Cache->RequestData->ProxyUrl);
-      }
-
-      FreePool (Cache->RequestData);
-    }
-
-    //
-    // Free the response header
-    //
-    if (Cache->ResponseData != NULL) {
-      if (Cache->ResponseData->Headers != NULL) {
-        for (Index = 0; Index < Cache->ResponseData->HeaderCount; Index++) {
-          FreePool (Cache->ResponseData->Headers[Index].FieldName);
-          FreePool (Cache->ResponseData->Headers[Index].FieldValue);
-        }
-
-        FreePool (Cache->ResponseData->Headers);
-      }
-    }
-
-    //
-    // Free the response body
-    //
-    NET_LIST_FOR_EACH_SAFE (Entry, NextEntry, &Cache->EntityDataList) {
-      EntityData = NET_LIST_USER_STRUCT (Entry, HTTP_BOOT_ENTITY_DATA, Link);
-      if (EntityData->Block != NULL) {
-        FreePool (EntityData->Block);
-      }
-
-      RemoveEntryList (&EntityData->Link);
-      FreePool (EntityData);
-    }
-
-    FreePool (Cache);
+  if (Cache == NULL) {
+    return;
   }
+
+  //
+  // Free the request data
+  //
+  if (Cache->RequestData != NULL) {
+    if (Cache->RequestData->Url != NULL) {
+      FreePool (Cache->RequestData->Url);
+    }
+
+    if (Cache->RequestData->Method == HttpMethodConnect) {
+      ConnRequestData = (EFI_HTTP_CONNECT_REQUEST_DATA*)Cache->RequestData;
+
+      if (ConnRequestData->ProxyUrl != NULL) {
+        FreePool (ConnRequestData->ProxyUrl);
+      }
+    }
+
+    FreePool (Cache->RequestData);
+  }
+
+  //
+  // Free the response header
+  //
+  if (Cache->ResponseData != NULL) {
+    if (Cache->ResponseData->Headers != NULL) {
+      for (Index = 0; Index < Cache->ResponseData->HeaderCount; Index++) {
+        FreePool (Cache->ResponseData->Headers[Index].FieldName);
+        FreePool (Cache->ResponseData->Headers[Index].FieldValue);
+      }
+
+      FreePool (Cache->ResponseData->Headers);
+    }
+  }
+
+  //
+  // Free the response body
+  //
+  NET_LIST_FOR_EACH_SAFE (Entry, NextEntry, &Cache->EntityDataList) {
+    EntityData = NET_LIST_USER_STRUCT (Entry, HTTP_BOOT_ENTITY_DATA, Link);
+    if (EntityData->Block != NULL) {
+      FreePool (EntityData->Block);
+    }
+
+    RemoveEntryList (&EntityData->Link);
+    FreePool (EntityData);
+  }
+
+  FreePool (Cache);
 }
 
 /**
@@ -920,16 +927,16 @@ HttpBootConnectProxy (
   IN     HTTP_BOOT_PRIVATE_DATA  *Private
   )
 {
-  EFI_STATUS             Status;
-  EFI_HTTP_STATUS_CODE   StatusCode;
-  CHAR8                  *HostName;
-  EFI_HTTP_REQUEST_DATA  *RequestData;
-  HTTP_IO_RESPONSE_DATA  *ResponseData;
-  HTTP_IO                *HttpIo;
-  HTTP_IO_HEADER         *HttpIoHeader;
-  CHAR16                 *Url;
-  CHAR16                 *ProxyUrl;
-  UINTN                  UrlSize;
+  EFI_STATUS                      Status;
+  EFI_HTTP_STATUS_CODE            StatusCode;
+  CHAR8                           *HostName;
+  EFI_HTTP_CONNECT_REQUEST_DATA   *RequestData;
+  HTTP_IO_RESPONSE_DATA           *ResponseData;
+  HTTP_IO                         *HttpIo;
+  HTTP_IO_HEADER                  *HttpIoHeader;
+  CHAR16                          *Url;
+  CHAR16                          *ProxyUrl;
+  UINTN                           UrlSize;
 
   Url          = NULL;
   ProxyUrl     = NULL;
@@ -1006,15 +1013,15 @@ HttpBootConnectProxy (
   //
   // Build the rest of HTTP request info.
   //
-  RequestData = AllocatePool (sizeof (EFI_HTTP_REQUEST_DATA));
+  RequestData = AllocatePool (sizeof (EFI_HTTP_CONNECT_REQUEST_DATA));
   if (RequestData == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
     goto EXIT;
   }
 
-  RequestData->Method   = HttpMethodConnect;
-  RequestData->ProxyUrl = ProxyUrl;
-  RequestData->Url      = Url;
+  RequestData->Base.Method   = HttpMethodConnect;
+  RequestData->Base.Url      = Url;
+  RequestData->ProxyUrl      = ProxyUrl;
 
   //
   // Send out the request to HTTP server.
@@ -1022,7 +1029,7 @@ HttpBootConnectProxy (
   HttpIo = &Private->HttpIo;
   Status = HttpIoSendRequest (
              HttpIo,
-             RequestData,
+             &RequestData->Base,
              HttpIoHeader->HeaderCount,
              HttpIoHeader->Headers,
              0,
@@ -1130,7 +1137,6 @@ HttpBootGetBootFile (
   UINT8                    *Block;
   UINTN                    UrlSize;
   CHAR16                   *Url;
-  CHAR16                   *ProxyUrl;
   BOOLEAN                  IdentityMode;
   UINTN                    ReceivedSize;
   CHAR8                    BaseAuthValue[80];
@@ -1169,22 +1175,6 @@ HttpBootGetBootFile (
   //
   // Not found in cache, try to download it through HTTP.
   //
-
-  //
-  // Initialize ProxyUrl - Set to NULL if connecting without Proxy
-  //
-  if (Private->ProxyUri != NULL) {
-    UrlSize  = AsciiStrSize (Private->ProxyUri);
-    ProxyUrl = AllocatePool (UrlSize * (sizeof (CHAR16)));
-    if (ProxyUrl == NULL) {
-      Status = EFI_OUT_OF_RESOURCES;
-      goto ERROR_1;
-    }
-
-    AsciiStrToUnicodeStrS (Private->ProxyUri, ProxyUrl, UrlSize);
-  } else {
-    ProxyUrl = NULL;
-  }
 
   //
   // 1. Create a temp cache item for the requested URI if caller doesn't provide buffer.
@@ -1305,7 +1295,6 @@ HttpBootGetBootFile (
 
   RequestData->Method   = HeaderOnly ? HttpMethodHead : HttpMethodGet;
   RequestData->Url      = Url;
-  RequestData->ProxyUrl = ProxyUrl;
 
   //
   // 2.3 Record the request info in a temp cache item.
@@ -1639,10 +1628,6 @@ ERROR_2:
   }
 
 ERROR_1:
-  if (ProxyUrl != NULL) {
-    FreePool (ProxyUrl);
-  }
-
   if (Url != NULL) {
     FreePool (Url);
   }

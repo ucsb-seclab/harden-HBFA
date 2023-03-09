@@ -257,6 +257,8 @@ EfiHttpRequest (
   UINT16                 EndPointRemotePort;
   CHAR8                  *EndPointUrlMsg;
 
+  EFI_HTTP_CONNECT_REQUEST_DATA   *ConnRequest;
+
   //
   // Initializations
   //
@@ -273,6 +275,7 @@ EfiHttpRequest (
   TlsConfigure       = FALSE;
   EndPointUrlMsg     = NULL;
   EndPointRemotePort = 0;
+  ConnRequest        = NULL;
 
   if ((This == NULL) || (Token == NULL)) {
     return EFI_INVALID_PARAMETER;
@@ -298,7 +301,8 @@ EfiHttpRequest (
       case HttpMethodPatch:
         break;
       case HttpMethodConnect:
-        if (Request->ProxyUrl == NULL) {
+        ConnRequest = (EFI_HTTP_CONNECT_REQUEST_DATA*)Request;
+        if (ConnRequest->ProxyUrl == NULL) {
           return EFI_INVALID_PARAMETER;
         }
 
@@ -385,7 +389,7 @@ EfiHttpRequest (
     //
     if (Request->Method == HttpMethodConnect) {
       ProxyUrl    = HttpInstance->ProxyUrl;
-      ProxyUrlLen = StrLen (Request->ProxyUrl) + 1;
+      ProxyUrlLen = StrLen (ConnRequest->ProxyUrl) + 1;
       if (ProxyUrlLen > HttpInstance->ProxyUrlLen) {
         ProxyUrl = AllocateZeroPool (ProxyUrlLen);
         if (ProxyUrl == NULL) {
@@ -400,7 +404,7 @@ EfiHttpRequest (
         HttpInstance->ProxyUrlLen = ProxyUrlLen;
       }
 
-      UnicodeStrToAsciiStrS (Request->ProxyUrl, ProxyUrl, ProxyUrlLen);
+      UnicodeStrToAsciiStrS (ConnRequest->ProxyUrl, ProxyUrl, ProxyUrlLen);
     }
 
     //
