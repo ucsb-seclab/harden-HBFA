@@ -19,7 +19,7 @@
 
 * [CdePkgBlog 2022-01-16](blogs/2022-01-16#cdepkgblog-2022-01-16) — *Introduction of the ACPICA port to UEFI*
 * [CdePkgBlog 2021-12-19](blogs/2021-12-19#cdepkgblog-2021-12-19) — *Redfish on CdePkg*
-* [CdePkgBlog 2021-11-28](blogs/2021-11-28#cdepkgblog-2021-11-28) — *Using UEFI- and Standard-C-API in shell applications, creating MSDOS Tools for UEFI*
+* <img src="https://github.com/KilianKegel/pictures/blob/master/refresh-icon.png"  width="18" height="18">[CdePkgBlog 2021-11-28](blogs/2021-11-28#cdepkgblog-2021-11-28) — *Using UEFI- and Standard-C-API in shell applications, creating MSDOS Tools for UEFI*
 * [CdePkgBlog 2021-11-14](blogs/2021-11-14#cdepkgblog-2021-11-14) — *My legacy toolbox*
 
 ## Preface
