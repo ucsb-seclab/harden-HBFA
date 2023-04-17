@@ -5,6 +5,7 @@
 * [Abstract](README.md#Abstract)
 * [Introduction](README.md#Introduction)
     * [introductory email](https://edk2.groups.io/g/devel/topic/cdepkgblog_2021_11_18/87363412?p=,,,20,0,0,0::recentpostdate/sticky,,,20,2,0,87363412,previd=1638131716272402469,nextid=1637941879803363607&previd=1638131716272402469&nextid=1637941879803363607)
+* <img src="https://github.com/KilianKegel/pictures/blob/master/New-icon.png"  width="24" height="24">[Latest available release](https://github.com/KilianKegel/Visual-DOS-Tools-for-UEFI-Shell)
 * [In a nutshell: `FIND.EFI`](README.md#in-a-nutshell-findefi)
 * [Building: `FIND.EFI`](README.md#building-findefi)
 * [Internal Processing: FIND.C](README.md#internal-processing-findc)
