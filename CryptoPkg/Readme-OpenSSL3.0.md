@@ -46,10 +46,10 @@ Risk:
 |   openssl change   |   status   |    backup     |    tips   |  
 |--------------------|------------|---------------|------------|  
 | [Disable ECX][ecxcommit] | [WIP][ecxpr] | | |  
-| [Enable the legacy path][legacycommit] | Reject | [Enable in Edk2 code][legacybackup] | |  
+| [Enable the legacy path][legacycommit] | [Reject][legacypr] | [Enable in Edk2 code][legacybackup] | |  
 | Drop float for UEFI | [Done][floatpr] | | Bug fix |  
 | Param buffer overflow | [Done][ecpararm] | | Bug fix |  
-| Enable alg auto init | [WIP][legacypr] | [Enable in Edk2 code][autoinitbackup] | Bug fix |  
+| Enable alg auto init | [WIP][autoinit] | [Enable in Edk2 code][autoinitbackup] | Bug fix |  
   
 ## POC result
 Binaries mode (use crypto drivers)  
@@ -170,9 +170,10 @@ Target for 2023 Q1
 [ecxcommit]: https://github.com/tianocore/openssl/commit/730775da5247d8202e831ced6dc77ca1191fb0a0
 [ecxpr]: https://github.com/openssl/openssl/pull/20781
 [legacycommit]: https://github.com/tianocore/openssl/commit/d8c32896f2eb6b7982b2f1a1f12c1d211808478a
-[legacypr]: https://github.com/openssl/openssl/issues/20221
+[autoinit]: https://github.com/openssl/openssl/issues/20221
 [floatpr]: https://github.com/openssl/openssl/pull/20992
 [unusedcommit]: https://github.com/tianocore/openssl/commit/e20da1b442c46f25ba385020449f23c9ebebb684
 [ecpararm]: https://github.com/openssl/openssl/pull/20890
 [legacybackup]: https://github.com/tianocore/edk2/pull/4452/commits/076490698f399b45d72366f60284fab02ed4a1fd
 [autoinitbackup]: https://github.com/tianocore/edk2/pull/4452/commits/384187f66352e0507e06b0ff196ffb940822306d
+[legacypr]: https://github.com/openssl/openssl/pull/20777
