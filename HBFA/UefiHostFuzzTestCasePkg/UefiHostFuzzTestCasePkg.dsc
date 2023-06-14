@@ -114,249 +114,37 @@
       InstrumentHookLib|UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Universal/Disk/UdfDxe/InstrumentHookLibTestUdf/InstrumentHookLibTestUdf.inf
 !endif
   }
-  UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Universal/Disk/UdfDxe/TestFileName.inf {
-    <LibraryClasses>
-      NULL|MdeModulePkg/Universal/Disk/UdfDxe/UdfDxe.inf
-  }
 
-  UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Library/BaseBmpSupportLib/TestBmpSupportLib.inf {
-    <LibraryClasses>
-      BmpSupportLib|MdeModulePkg/Library/BaseBmpSupportLib/BaseBmpSupportLib.inf
-  }
-
-  UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Library/DxeCapsuleLibFmp/TestDxeCapsuleLibFmp.inf {
-    <LibraryClasses>
-    NULL|MdeModulePkg/Library/DxeCapsuleLibFmp/DxeCapsuleLib.inf
-    FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
-    UefiHiiServicesLib|MdeModulePkg/Library/UefiHiiServicesLib/UefiHiiServicesLib.inf
-    SortLib|MdeModulePkg/Library/BaseSortLib/BaseSortLib.inf
-    HiiLib|MdeModulePkg/Library/UefiHiiLib/UefiHiiLib.inf
-    DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
-    UefiBootManagerLib|MdeModulePkg/Library/UefiBootManagerLib/UefiBootManagerLib.inf
-    BmpSupportLib|MdeModulePkg/Library/BaseBmpSupportLib/BaseBmpSupportLib.inf
-    DisplayUpdateProgressLib|MdeModulePkg/Library/DisplayUpdateProgressLibGraphics/DisplayUpdateProgressLibGraphics.inf
-  }
-  UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Universal/CapsulePei/Common/TestCapsulePei.inf {
-    <LibraryClasses>
-    NULL|MdeModulePkg/Universal/CapsulePei/CapsulePei.inf
-  }
-
-  UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Universal/Variable/RuntimeDxe/TestVariableSmm.inf {
-    <LibraryClasses>
-    NULL|MdeModulePkg/Universal/Variable/RuntimeDxe/VariableSmm.inf
-    NULL|UefiHostTestPkg/Library/BaseLibNullCpuid/BaseLibNullCpuid.inf
-    AuthVariableLib|MdeModulePkg/Library/AuthVariableLibNull/AuthVariableLibNull.inf
-    VarCheckLib|UefiHostTestPkg/Library/VarCheckLibNull/VarCheckLibNull.inf
-    VariableFlashInfoLib|MdeModulePkg/Library/BaseVariableFlashInfoLib/BaseVariableFlashInfoLib.inf
-  }
-
-  UefiHostFuzzTestCasePkg/TestCase/SecurityPkg/Library/Tpm2CommandLib/TestTpm2CommandLib.inf {
-    <LibraryClasses>
-      Tpm2CommandLib|SecurityPkg/Library/Tpm2CommandLib/Tpm2CommandLib.inf
-      Tpm2DeviceLib|UefiHostFuzzTestCasePkg/TestStub/Tpm2DeviceLibStub/Tpm2DeviceLibStub.inf
-      Tpm2DeviceStubLib|UefiHostFuzzTestCasePkg/TestStub/Tpm2DeviceLibStub/Tpm2DeviceLibStub.inf
-  }
-
-  UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Bus/Usb/UsbBusDxe/TestUsb.inf {
-    <LibraryClasses>
-    NULL|MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBusDxe.inf
-  }
-  UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Bus/Usb/UsbBusPei/TestPeiUsb.inf {
-    <LibraryClasses>
-    NULL|MdeModulePkg/Bus/Usb/UsbBusPei/UsbBusPei.inf
-  }
-
-  UefiHostFuzzTestCasePkg/TestCase/SecurityPkg/Library/FmpAuthenticationLibPkcs7/TestFmpAuthenticationLibPkcs7.inf {
-    <LibraryClasses>
-    FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
-    BaseCryptLib|UefiHostFuzzTestCasePkg/TestCase/SecurityPkg/Library/FmpAuthenticationLibPkcs7/CryptoLibStubPkcs7.inf
-  }
-  UefiHostFuzzTestCasePkg/TestCase/SecurityPkg/Library/FmpAuthenticationLibRsa2048Sha256/TestFmpAuthenticationLibRsa2048Sha256.inf {
-    <LibraryClasses>
-    FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibRsa2048Sha256/FmpAuthenticationLibRsa2048Sha256.inf
-    BaseCryptLib|UefiHostFuzzTestCasePkg/TestCase/SecurityPkg/Library/FmpAuthenticationLibRsa2048Sha256/CryptoLibStubRsa2048Sha256.inf
-  }
-
-  UefiHostFuzzTestCasePkg/TestCase/FatPkg/FatPei/TestPeiGpt.inf {
-    <LibraryClasses>
-      NULL|UefiHostFuzzTestCasePkg/TestCase/FatPkg/FatPei/Override/FatPei.inf
-!if $(TEST_WITH_INSTRUMENT)
+  UefiHostFuzzTestCasePkg/TestCase/EmulatorPkg/TestDemo1/TestDemo1_WriteToEFIVar.inf {
     <BuildOptions>
-      MSFT:  *_*_*_CC_FLAGS = "-DTEST_WITH_INSTRUMENT=TRUE"
-      GCC:*_*_*_CC_FLAGS = "-DTEST_WITH_INSTRUMENT=TRUE"
+      GCC:*_*_*_CC_FLAGS = --coverage
+      GCC:*_*_*_DLINK_FLAGS = --coverage
     <LibraryClasses>
-      InstrumentHookLib|UefiHostFuzzTestCasePkg/TestCase/FatPkg/FatPei/InstrumentHookLibTestPeiGpt/InstrumentHookLibTestPeiGpt.inf
-!endif
+      RngLib|MdePkg/Library/BaseRngLibTimerLib/BaseRngLibTimerLib.inf
+      NULL|EmulatorPkg/Demo1_Variable/Demo1_Variable.inf
+      NULL|EmulatorPkg/Demo1_Access_Key/Demo1_Access_Key.inf
+      NULL|UefiHostTestPkg/Library/BaseLibNullCpuid/BaseLibNullCpuid.inf
+      UefiApplicationEntryPoint|MdePkg/Library/UefiApplicationEntryPoint/UefiApplicationEntryPoint.inf
+      AuthVariableLib|MdeModulePkg/Library/AuthVariableLibNull/AuthVariableLibNull.inf
+      VarCheckLib|UefiHostTestPkg/Library/VarCheckLibNull/VarCheckLibNull.inf
+      VariableFlashInfoLib|MdeModulePkg/Library/BaseVariableFlashInfoLib/BaseVariableFlashInfoLib.inf
+      NULL|SecurityPkg/RandomNumberGenerator/RngDxe/RngDxe.inf
   }
 
-  UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Library/SmmLockBoxLib/UpdateLockBoxTestCase/TestUpdateLockBoxFuzzLength.inf {
-  <LibraryClasses>
-    NULL|MdeModulePkg/Library/SmmLockBoxLib/SmmLockBoxSmmLib.inf
-  }
-  UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Library/SmmLockBoxLib/UpdateLockBoxTestCase/TestUpdateLockBoxFuzzOffset.inf {
-  <LibraryClasses>
-    NULL|MdeModulePkg/Library/SmmLockBoxLib/SmmLockBoxSmmLib.inf
-  }
-  UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Bus/Ata/AhciPei/TestIdentifyAtaDevice.inf{
-  <LibraryClasses>
-      NULL|UefiHostFuzzTestCasePkg/TestCase/MdeModulePkg/Bus/Ata/AhciPei/Override/AhciPei.inf
-      IoLib|MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
-      PeiServicesLib|MdePkg/Library/PeiServicesLib/PeiServicesLib.inf
-      LockBoxLib|MdeModulePkg/Library/LockBoxNullLib/LockBoxNullLib.inf
-      PeiServicesTablePointerLib|MdePkg/Library/PeiServicesTablePointerLib/PeiServicesTablePointerLib.inf
-      TdxLib|MdePkg/Library/TdxLib/TdxLib.inf 
-     CcProbeLib|OvmfPkg/Library/CcProbeLib/DxeCcProbeLib.inf
-	    RegisterFilterLib|MdePkg/Library/RegisterFilterLibNull/RegisterFilterLibNull.inf 
-  }
-
-  UefiHostFuzzTestCasePkg/TestCase/OvmfPkg/Library/TdxStartupLib/TestHobList.inf {
-  <LibraryClasses>
-   LocalApicLib|UefiCpuPkg/Library/BaseXApicX2ApicLib/BaseXApicX2ApicLib.inf
-   QemuFwCfgSimpleParserLib|OvmfPkg/Library/QemuFwCfgSimpleParserLib/QemuFwCfgSimpleParserLib.inf
-   MtrrLib|UefiCpuPkg/Library/MtrrLib/MtrrLib.inf
-   PeiHardwareInfoLib|OvmfPkg/Library/HardwareInfoLib/PeiHardwareInfoLib.inf
-   PrePiHobListPointerLib|OvmfPkg/IntelTdx/PrePiHobListPointerLibTdx/PrePiHobListPointerLibTdx.inf
-   PlatformInitLib|OvmfPkg/Library/PlatformInitLib/PlatformInitLib.inf
-   PeilessStartupLib|OvmfPkg/Library/PeilessStartupLib/PeilessStartupLib.inf
-   RegisterFilterLib|MdePkg/Library/RegisterFilterLibNull/RegisterFilterLibNull.inf
-   UefiCpuLib|UefiCpuPkg/Library/BaseUefiCpuLib/BaseUefiCpuLib.inf
-   IoLib|MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsicSev.inf
-   #LocalApicLib|UefiCpuPkg/Library/BaseXApicX2ApicLib/BaseXApicX2ApicLibSec.inf
-   CpuExceptionHandlerLib|UefiCpuPkg/Library/CpuExceptionHandlerLib/DxeCpuExceptionHandlerLib.inf
-   TdxLib|MdePkg/Library/TdxLib/TdxLib.inf
-   PrePiLib|EmbeddedPkg/Library/PrePiLib/PrePiLib.inf
-   HashLib|SecurityPkg/Library/HashLibTdx/HashLibTdx.inf 
-   UefiDecompressLib|MdePkg/Library/BaseUefiDecompressLib/BaseUefiDecompressLib.inf
-   PeCoffLib|MdePkg/Library/BasePeCoffLib/BasePeCoffLib.inf
-   ExtractGuidedSectionLib|MdePkg/Library/BaseExtractGuidedSectionLib/BaseExtractGuidedSectionLib.inf
-   PeCoffExtraActionLib|SourceLevelDebugPkg/Library/PeCoffExtraActionLibDebug/PeCoffExtraActionLibDebug.inf
-   PciLib|MdePkg/Library/BasePciLibCf8/BasePciLibCf8.inf
-   QemuFwCfgLib|OvmfPkg/Library/QemuFwCfgLib/QemuFwCfgDxeLib.inf
-   MemEncryptTdxLib|OvmfPkg/Library/BaseMemEncryptTdxLib/BaseMemEncryptTdxLib.inf
-   MemEncryptSevLib|OvmfPkg/Library/BaseMemEncryptSevLib/DxeMemEncryptSevLib.inf
-   CpuLib|MdePkg/Library/BaseCpuLib/BaseCpuLib.inf
-   PciCf8Lib|MdePkg/Library/BasePciCf8Lib/BasePciCf8Lib.inf
-   CcExitLib|OvmfPkg/Library/CcExitLib/CcExitLib.inf
-   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
-   CcExitLib|OvmfPkg/Library/CcExitLib/CcExitLib.inf
-   CcProbeLib|OvmfPkg/Library/CcProbeLib/DxeCcProbeLib.inf
-   TdxMailboxLib|OvmfPkg/Library/TdxMailboxLib/TdxMailboxLib.inf
-   TpmMeasurementLib|SecurityPkg/Library/DxeTpmMeasurementLib/DxeTpmMeasurementLib.inf
-   HobLib|EmbeddedPkg/Library/PrePiHobLib/PrePiHobLib.inf
-   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
-  } 
-    UefiHostFuzzTestCasePkg/TestCase/SecurityPkg/Library/DxeTpm2MeasureBootLib/TestTcg2MeasureGptTable.inf{
-  <LibraryClasses>
-   NULL|SecurityPkg/Library/DxeTpm2MeasureBootLib/DxeTpm2MeasureBootLib.inf
-   BaseCryptLib|UefiHostFuzzTestCasePkg/TestCase/SecurityPkg/Library/FmpAuthenticationLibPkcs7/CryptoLibStubPkcs7.inf
-   PeCoffLib|MdePkg/Library/BasePeCoffLib/BasePeCoffLib.inf
-   SecurityManagementLib|MdeModulePkg/Library/DxeSecurityManagementLib/DxeSecurityManagementLib.inf
-   DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
-   PeCoffExtraActionLib|MdePkg/Library/BasePeCoffExtraActionLibNull/BasePeCoffExtraActionLibNull.inf
-   OpensslLib|CryptoPkg/Library/OpensslLib/OpensslLib.inf
-   IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
-   RngLib|MdePkg/Library/BaseRngLibTimerLib/BaseRngLibTimerLib.inf
-   CcProbeLib|OvmfPkg/Library/CcProbeLib/DxeCcProbeLib.inf
+  UefiHostFuzzTestCasePkg/TestCase/SecurityPkg/Library/DxeTpm2MeasureBootLib/TestTcg2MeasureGptTable.inf{
+    <LibraryClasses>
+    NULL|SecurityPkg/Library/DxeTpm2MeasureBootLib/DxeTpm2MeasureBootLib.inf
+    BaseCryptLib|UefiHostFuzzTestCasePkg/TestCase/SecurityPkg/Library/FmpAuthenticationLibPkcs7/CryptoLibStubPkcs7.inf
+    PeCoffLib|MdePkg/Library/BasePeCoffLib/BasePeCoffLib.inf
+    SecurityManagementLib|MdeModulePkg/Library/DxeSecurityManagementLib/DxeSecurityManagementLib.inf
+    DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
+    PeCoffExtraActionLib|MdePkg/Library/BasePeCoffExtraActionLibNull/BasePeCoffExtraActionLibNull.inf
+    OpensslLib|CryptoPkg/Library/OpensslLib/OpensslLib.inf
+    IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
+    RngLib|MdePkg/Library/BaseRngLibTimerLib/BaseRngLibTimerLib.inf
+    CcProbeLib|OvmfPkg/Library/CcProbeLib/DxeCcProbeLib.inf
   }
  
-  UefiHostFuzzTestCasePkg/TestCase/SecurityPkg/Library/DxeTpm2MeasureBootLib/TestTcg2MeasurePeImage.inf{
-  <LibraryClasses>
-   NULL|SecurityPkg/Library/DxeTpm2MeasureBootLib/DxeTpm2MeasureBootLib.inf
-   BaseCryptLib|UefiHostFuzzTestCasePkg/TestCase/SecurityPkg/Library/FmpAuthenticationLibPkcs7/CryptoLibStubPkcs7.inf
-   PeCoffLib|MdePkg/Library/BasePeCoffLib/BasePeCoffLib.inf
-   SecurityManagementLib|MdeModulePkg/Library/DxeSecurityManagementLib/DxeSecurityManagementLib.inf
-   DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
-   PeCoffExtraActionLib|MdePkg/Library/BasePeCoffExtraActionLibNull/BasePeCoffExtraActionLibNull.inf
-   OpensslLib|CryptoPkg/Library/OpensslLib/OpensslLib.inf
-   IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
-   RngLib|MdePkg/Library/BaseRngLibTimerLib/BaseRngLibTimerLib.inf
-   CcProbeLib|OvmfPkg/Library/CcProbeLib/DxeCcProbeLib.inf
-  }
- UefiHostFuzzTestCasePkg/TestCase/OvmfPkg/EmuVariableFvbRuntimeDxe/TestValidateTdxCfv.inf{
-  <LibraryClasses>
-   NULL|OvmfPkg/EmuVariableFvbRuntimeDxe/Fvb.inf
-   UefiRuntimeLib|MdePkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
-   PlatformFvbLib|OvmfPkg/Library/EmuVariableFvbLib/EmuVariableFvbLib.inf
-   CcProbeLib|OvmfPkg/Library/CcProbeLib/DxeCcProbeLib.inf
-   PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
-   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
-   PeiHardwareInfoLib|OvmfPkg/Library/HardwareInfoLib/PeiHardwareInfoLib.inf
-   RegisterFilterLib|MdePkg/Library/RegisterFilterLibNull/RegisterFilterLibNull.inf
-   UefiCpuLib|UefiCpuPkg/Library/BaseUefiCpuLib/BaseUefiCpuLib.inf
-   LocalApicLib|UefiCpuPkg/Library/BaseXApicX2ApicLib/BaseXApicX2ApicLib.inf
-   CcExitLib|OvmfPkg/Library/CcExitLib/CcExitLib.inf
-   MemEncryptTdxLib|OvmfPkg/Library/BaseMemEncryptTdxLib/BaseMemEncryptTdxLib.inf
-   MemEncryptSevLib|OvmfPkg/Library/BaseMemEncryptSevLib/DxeMemEncryptSevLib.inf
-   CpuLib|MdePkg/Library/BaseCpuLib/BaseCpuLib.inf
-   PciExpressLib|MdePkg/Library/BasePciExpressLib/BasePciExpressLib.inf  
-   PciCf8Lib|MdePkg/Library/BasePciCf8Lib/BasePciCf8Lib.inf
-   TdxLib|MdePkg/Library/TdxLib/TdxLib.inf
-   PciLib|OvmfPkg/Library/DxePciLibI440FxQ35/DxePciLibI440FxQ35.inf
-   MtrrLib|UefiCpuPkg/Library/MtrrLib/MtrrLib.inf
-   QemuFwCfgSimpleParserLib|OvmfPkg/Library/QemuFwCfgSimpleParserLib/QemuFwCfgSimpleParserLib.inf
-   QemuFwCfgLib|OvmfPkg/Library/QemuFwCfgLib/QemuFwCfgDxeLib.inf
-   IoLib|MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsicSev.inf
-   PlatformInitLib|OvmfPkg/Library/PlatformInitLib/PlatformInitLib.inf
-  }
-
- UefiHostFuzzTestCasePkg/TestCase/OvmfPkg/VirtioPciDeviceDxe/TestVirtioPciDevice.inf{
-  <LibraryClasses>
-   UefiPciCapPciIoLib|OvmfPkg/Library/UefiPciCapPciIoLib/UefiPciCapPciIoLib.inf
-   BasePciCapLib|OvmfPkg/Library/BasePciCapLib/BasePciCapLib.inf
-   VirtioPciDevice10StubLib|UefiHostFuzzTestCasePkg/TestStub/VirtioPciDevice10StubLib/VirtioPciDevice10StubLib.inf
-   VirtioLib|OvmfPkg/Library/VirtioLib/VirtioLib.inf
-   UefiRuntimeLib|MdePkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
-   OrderedCollectionLib|MdePkg/Library/BaseOrderedCollectionRedBlackTreeLib/BaseOrderedCollectionRedBlackTreeLib.inf
-  }
-
- UefiHostFuzzTestCasePkg/TestCase/OvmfPkg/Virtio10BlkDxe/TestVirtio10Blk.inf{
-  <LibraryClasses>
-   NULL|OvmfPkg/VirtioBlkDxe/VirtioBlk.inf
-   UefiPciCapPciIoLib|OvmfPkg/Library/UefiPciCapPciIoLib/UefiPciCapPciIoLib.inf
-   BasePciCapLib|OvmfPkg/Library/BasePciCapLib/BasePciCapLib.inf
-   VirtioBlkStubLib|UefiHostFuzzTestCasePkg/TestStub/VirtioBlkStubLib/VirtioBlkStubLib.inf
-   VirtioPciDevice10StubLib|UefiHostFuzzTestCasePkg/TestStub/VirtioPciDevice10StubLib/VirtioPciDevice10StubLib.inf
-   VirtioLib|OvmfPkg/Library/VirtioLib/VirtioLib.inf
-   UefiRuntimeLib|MdePkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
-   OrderedCollectionLib|MdePkg/Library/BaseOrderedCollectionRedBlackTreeLib/BaseOrderedCollectionRedBlackTreeLib.inf
-  }
-
- UefiHostFuzzTestCasePkg/TestCase/OvmfPkg/VirtioBlkDxe/TestVirtioBlk.inf{
-  <LibraryClasses>
-   NULL|OvmfPkg/VirtioBlkDxe/VirtioBlk.inf
-   NULL|OvmfPkg/VirtioPciDeviceDxe/VirtioPciDeviceDxe.inf
-   VirtioBlkStubLib|UefiHostFuzzTestCasePkg/TestStub/VirtioBlkStubLib/VirtioBlkStubLib.inf
-   VirtioPciDevice10StubLib|UefiHostFuzzTestCasePkg/TestStub/VirtioPciDeviceStubLib/VirtioPciDeviceStubLib.inf
-   VirtioLib|OvmfPkg/Library/VirtioLib/VirtioLib.inf
-   UefiRuntimeLib|MdePkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
-   OrderedCollectionLib|MdePkg/Library/BaseOrderedCollectionRedBlackTreeLib/BaseOrderedCollectionRedBlackTreeLib.inf
-  }
-
- UefiHostFuzzTestCasePkg/TestCase/OvmfPkg/VirtioBlkReadWrite/TestVirtioBlkReadWrite.inf{
-  <LibraryClasses>
-   NULL|OvmfPkg/VirtioBlkDxe/VirtioBlk.inf
-   NULL|OvmfPkg/VirtioPciDeviceDxe/VirtioPciDeviceDxe.inf
-   VirtioBlkStubLib|UefiHostFuzzTestCasePkg/TestStub/VirtioBlkStubLib/VirtioBlkStubLib.inf
-   VirtioPciDevice10StubLib|UefiHostFuzzTestCasePkg/TestStub/VirtioPciDeviceStubLib/VirtioPciDeviceStubLib.inf
-   VirtioLib|OvmfPkg/Library/VirtioLib/VirtioLib.inf
-   UefiRuntimeLib|MdePkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
-   OrderedCollectionLib|MdePkg/Library/BaseOrderedCollectionRedBlackTreeLib/BaseOrderedCollectionRedBlackTreeLib.inf
-  }
-
-  UefiHostFuzzTestCasePkg/TestCase/OvmfPkg/Library/CcExitLib/TestParseMmioExitInstructions.inf{
-  <LibraryClasses>
-   CcExitLib|OvmfPkg/Library/CcExitLib/CcExitLib.inf
-   LocalApicLib|UefiCpuPkg/Library/BaseXApicX2ApicLib/BaseXApicX2ApicLib.inf
-   MemEncryptSevLib|OvmfPkg/Library/BaseMemEncryptSevLib/SecMemEncryptSevLib.inf
-   CpuLib|MdePkg/Library/BaseCpuLib/BaseCpuLib.inf
-   IoLib|MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsicSev.inf
-   UefiCpuLib|UefiCpuPkg/Library/BaseUefiCpuLib/BaseUefiCpuLib.inf
-   RegisterFilterLib|MdePkg/Library/RegisterFilterLibNull/RegisterFilterLibNull.inf
-   CcProbeLib|OvmfPkg/Library/CcProbeLib/SecPeiCcProbeLib.inf
-   TdxLib|MdePkg/Library/TdxLib/TdxLib.inf  
-   PlatformInitLib|OvmfPkg/Library/PlatformInitLib/PlatformInitLib.inf
-  }
-
   [PcdsDynamicDefault]
     gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase64|0
     gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase|0

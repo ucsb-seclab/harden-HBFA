@@ -1,0 +1,56 @@
+## @file
+# Component description file for TestDemo1Variable module.
+#
+# Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = TestDemo1_WriteToEFIVar
+  FILE_GUID                      = a22051e8-fe5f-4060-9ac5-323b92569163
+  MODULE_TYPE                    = USER_DEFINED
+  VERSION_STRING                 = 1.0
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64
+#
+
+[Sources]
+  TestDemo1_WriteToEFIVar.c
+  EmulatorPkg/Demo1_Variable/Demo1_Variable.h
+  EmulatorPkg/Demo1_Access_Key/Demo1_Access_Key.h
+  MdeModulePkg/Universal/Variable/RuntimeDxe/Variable.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmulatorPkg/EmulatorPkg.dec
+  UefiHostTestPkg/UefiHostTestPkg.dec
+  UefiHostFuzzTestCasePkg/UefiHostFuzzTestCasePkg.dec
+  SecurityPkg/SecurityPkg.dec
+  CryptoPkg/CryptoPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  DebugLib
+  UefiApplicationEntryPoint
+  UefiLib
+  ToolChainHarnessLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  PrintLib
+  RngLib
+
+  
+[Protocols]
+ gEfiRngProtocolGuid                      ## CONSUMES
+ gDemo1AccessKeyProtocolGuid              ## PRODUCES
+ gDemo1AccessKeyReadyToLockGuid           ## PRODUCES 
+[Guids]
+ gExampleVariableGuid
